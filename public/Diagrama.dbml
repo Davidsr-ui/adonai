@@ -1,0 +1,39 @@
+Table configuracion {
+  id: int [pk, increment]
+  nombre: varchar
+  descripcion: varchar
+  direccion: varchar
+  telefono: varchar
+  divisa: varchar
+  email: varchar
+  web : varchar
+  logo: varchar
+}
+
+table gestiones {
+  id int [pk, increment] // Primary key
+  nombre varchar
+}
+
+table periodos{
+  id int [pk, increment] //Primary key
+  nombre varchar
+}
+
+Table niveles{
+  id int [pk, increment] //Primary key
+  nombre varchar
+  gestion_id int [ref: > gestiones.id]
+
+}
+
+Table turnos {
+  id int [pk, increment]
+  nombre varchar
+  hora_inicio time
+  hora_fin time
+  estado enum('activo', 'inactivo')
+  descripcion text
+  created_at timestamp
+  updated_at timestamp
+}

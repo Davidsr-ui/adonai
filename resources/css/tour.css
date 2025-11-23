@@ -1,0 +1,485 @@
+:root {
+  --accent: #8b0000;
+  --gold-start: #ffd700;
+  --gold-end: #ff8c00;
+  --bg: #fafafa;
+}
+
+/* ------------------- RESET GENERAL ------------------- */
+* {
+box-sizing: border-box;
+transition: all 0.3s ease;
+}
+
+html,
+body {
+height: 100%;
+margin: 0;
+font-family: "Inter", sans-serif;
+background: var(--bg);
+color: #333;
+}
+
+/* ------------------- CONTENEDOR ------------------- */
+/* Espaciado general del tour */
+.virtual-tour {
+  padding-top: 100px !important;   /* deja espacio bajo el navbar fijo */
+  padding-bottom: 80px !important; /* separa del footer */
+}
+.container {
+  width: 100%;
+  padding: 40px 2%;
+  max-width: 100%;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+
+.subtitle {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  color: #666;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ------------------- TOUR VIEWER ------------------- */
+.tour-viewer {
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.06),
+    -8px -8px 20px rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+/* Fondo dinámico principal */
+#mainDisplay {
+  position: relative;
+  width: 100%;
+  min-height: 550px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: background-image 0.8s ease-in-out, transform 1.5s ease;
+  transform: scale(1);
+  z-index: 0; /* se coloca debajo del contenido */
+}
+
+/* Efecto de zoom suave */
+#mainDisplay.fade-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+#mainDisplay.fade-out {
+  opacity: 0;
+  transform: scale(1.05);
+}
+
+/* Capa de sombreado */
+#mainDisplay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+  z-index: 0; /* BAJO el texto, para no tapar la imagen */
+  border-radius: 16px;
+}
+
+/* Texto del visor */
+.place-content {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  width: 38%;
+  color: white;
+  z-index: 2;
+  text-align: left;
+  transition: all 0.4s ease;
+}
+
+.place-content.changing {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.place-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 18px;
+  filter: brightness(0) invert(1);
+  display: block;
+}
+
+.place-title {
+  font-size: 1.8rem;
+  margin: 0 0 8px;
+  font-weight: 700;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.place-description {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ------------------- BOTONES DE NAVEGACIÓN ------------------- */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent);
+  cursor: pointer;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.08),
+    -6px -6px 15px rgba(255, 255, 255, 0.7);
+  transition: transform 0.25s ease;
+}
+
+#prevBtn {
+  left: 14px;
+}
+
+#nextBtn {
+  right: 14px;
+}
+
+.nav-btn:hover {
+  transform: translateY(-50%) scale(1.06);
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.15),
+    -4px -4px 12px rgba(255, 255, 255, 0.7);
+}
+
+/* ------------------- CONTROLES ------------------- */
+.controls {
+  padding: 22px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.counter {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.progress-bar {
+  width: 240px;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-start), var(--gold-end));
+  width: 0;
+}
+
+/* ------------------- TARJETAS DE LUGARES ------------------- */
+.places-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.place-card {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.06),
+    -8px -8px 20px rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.28s ease;
+}
+
+.place-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.1),
+    -4px -4px 15px rgba(255, 255, 255, 0.6);
+}
+
+.place-card.active {
+  border-color: var(--gold-start);
+  background: linear-gradient(135deg, #fff, #fff9e6);
+}
+
+.card-icon {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.card-summary {
+  color: #666;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* ------------------- GALERÍA ------------------- */
+.gallery-btn {
+  position: absolute;
+  bottom: 22px;
+  right: 22px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.08),
+    -6px -6px 15px rgba(255, 255, 255, 0.7);
+}
+
+.gallery-btn .gallery-icon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0);
+}
+
+.gallery-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.gallery-modal.active {
+  display: flex;
+}
+
+.gallery-content {
+  position: relative;
+  width: 95vw;
+  max-width: 1200px;
+  max-height: 85vh;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.gallery-image {
+  width: 100%;
+  height: auto;
+  max-height: 85vh;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.gallery-close {
+  position: absolute;
+  top: -48px;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.gallery-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1001;
+  box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.08),
+    -6px -6px 15px rgba(255, 255, 255, 0.7);
+}
+
+.gallery-prev {
+  left: 30px;
+}
+
+.gallery-next {
+  right: 30px;
+}
+
+.gallery-counter {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 0.95rem;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 8px 14px;
+  border-radius: 20px;
+}
+
+.gallery-info {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  color: white;
+  width: 40%;
+  max-width: 500px;
+  text-align: left;
+}
+
+.gallery-info h3 {
+  margin: 0 0 8px;
+  font-size: 1.8rem;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.7);
+}
+
+.gallery-info p {
+  margin: 0;
+  opacity: 0.95;
+  line-height: 1.6;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* ------------------- RESPONSIVE ------------------- */
+@media (max-width: 768px) {
+  #mainDisplay {
+    min-height: 420px;
+  }
+
+  .place-content {
+    width: 70%;
+    left: 20px;
+    bottom: 20px;
+  }
+
+  .gallery-info {
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    width: auto;
+  }
+
+  .gallery-image {
+    width: 95vw;
+    max-height: 70vh;
+  }
+
+  .progress-bar {
+    width: 160px;
+  }
+
+  .nav-btn {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .places-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .title {
+    font-size: clamp(1.4rem, 6vw, 1.6rem);
+  }
+
+  .place-content {
+    width: 85%;
+    bottom: 15px;
+    left: 10px;
+  }
+}
+
+/* ===============================
+   FIX para conflictos con style.css
+   =============================== */
+
+/* Asegura que el visor ocupe todo el ancho real */
+.tour-viewer {
+background: transparent !important;
+border-radius: 16px !important;
+padding: 0 !important;
+margin: 0 auto !important;
+max-width: 100% !important;
+display: block !important;
+overflow: hidden !important;
+}
+
+/* Corrige el contenedor general */
+.container.tour-container,
+.virtual-tour .container {
+padding: 0 !important;
+margin: 0 !important;
+max-width: 100% !important;
+}
+
+/* Elimina cualquier fondo gris heredado */
+.virtual-tour {
+background: var(--bg) !important;
+}
+
+/* Ajuste visual para que el fondo se vea completo */
+#mainDisplay {
+min-height: 550px;
+width: 100% !important;
+border-radius: 16px;
+background-size: cover !important;
+background-position: center !important;
+background-repeat: no-repeat !important;
+background-color: transparent !important;
+}
