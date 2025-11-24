@@ -1,69 +1,68 @@
-
 // ------------------------------
 // DATOS DEL TOUR
 // ------------------------------
 const places = [
-{
-icon: "https://cdn-icons-png.flaticon.com/512/8026/8026006.png",
-title: "Museo de Arte Moderno",
-description:
-"Descubre una impresionante colección de arte contemporáneo con más de 500 obras de artistas nacionales e internacionales.",
-image:
-"https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=1200&h=800&fit=crop&q=80",
-gallery: [
-{
+  {
+    icon: "https://cdn-icons-png.flaticon.com/512/8026/8026006.png",
+    title: "Museo de Arte Moderno",
+    description:
+      "Descubre una impresionante colección de arte contemporáneo con más de 500 obras de artistas nacionales e internacionales.",
     image:
       "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1200&h=800&fit=crop&q=80",
-    title: "Sala Principal",
-    description: "El corazón del museo con obras maestras.",
-},
-{
-    image:
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=800&fit=crop&q=80",
-    title: "Galería de Esculturas",
-    description: "Colección de esculturas modernas.",
-},
-{
-    image:
-    "https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=1200&h=800&fit=crop&q=80",
-    title: "Exposición Temporal",
-    description: "Exposiciones rotativas de artistas emergentes.",
-},
-],
-},
-{
-icon: "https://cdn-icons-png.flaticon.com/512/1598/1598431.png",
-title: "Parque Botánico",
-description:
-"Un oasis verde con más de 200 especies de plantas nativas, senderos naturales y espacios para contemplación.",
-image:
-    "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1200&h=800&fit=crop&q=80",
     gallery: [
-{
-image:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&h=800&fit=crop&q=80",
-title: "Jardín Central",
-description: "Patio interior con plantas tropicales.",
-},
-{
-image:
-    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=800&fit=crop&q=80",
-title: "Sendero Natural",
-description: "Caminos entre árboles centenarios.",
-},
-{
+      {
         image:
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1200&h=800&fit=crop&q=80",
+        title: "Sala Principal",
+        description: "El corazón del museo con obras maestras.",
+      },
+      {
+        image:
+          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=800&fit=crop&q=80",
+        title: "Galería de Esculturas",
+        description: "Colección de esculturas modernas.",
+      },
+      {
+        image:
+          "https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=1200&h=800&fit=crop&q=80",
+        title: "Exposición Temporal",
+        description: "Exposiciones rotativas de artistas emergentes.",
+      },
+    ],
+  },
+  {
+    icon: "https://cdn-icons-png.flaticon.com/512/1598/1598431.png",
+    title: "Parque Botánico",
+    description:
+      "Un oasis verde con más de 200 especies de plantas nativas, senderos naturales y espacios para contemplación.",
+    image:
+      "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1200&h=800&fit=crop&q=80",
+    gallery: [
+      {
+        image:
+          "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&h=800&fit=crop&q=80",
+        title: "Jardín Central",
+        description: "Patio interior con plantas tropicales.",
+      },
+      {
+        image:
+          "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=800&fit=crop&q=80",
+        title: "Sendero Natural",
+        description: "Caminos entre árboles centenarios.",
+      },
+      {
+        image:
+          "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop&q=80",
         title: "Mirador del Bosque",
         description: "Vista panorámica desde el punto más alto.",
-    },
+      },
     ],
-},
-{
+  },
+  {
     icon: "https://cdn-icons-png.flaticon.com/512/1047/1047461.png",
     title: "Plaza Central",
     description:
-    "Un punto de encuentro lleno de historia, rodeado de arquitectura colonial, cafeterías y vida urbana.",
+      "Un punto de encuentro lleno de historia, rodeado de arquitectura colonial, cafeterías y vida urbana.",
     image:
       "https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?w=1200&h=800&fit=crop&q=80",
     gallery: [
@@ -157,6 +156,11 @@ const elements = {};
 // ------------------------------
 function createPlaceCards() {
   const grid = document.getElementById("placesGrid");
+  if (!grid) {
+    console.warn("⚠️ No se encontró el contenedor #placesGrid");
+    return;
+  }
+
   grid.innerHTML = "";
 
   places.forEach((place, index) => {
@@ -205,22 +209,36 @@ function initElements() {
   elements.galleryTitle = document.getElementById("galleryTitle");
   elements.galleryDescription = document.getElementById("galleryDescription");
 
-  // Eventos principales
-  elements.nextBtn.addEventListener("click", nextPlace);
-  elements.prevBtn.addEventListener("click", prevPlace);
-  elements.galleryBtn.addEventListener("click", openGallery);
-  elements.galleryClose.addEventListener("click", closeGallery);
-  elements.galleryNext.addEventListener("click", nextGalleryImage);
-  elements.galleryPrev.addEventListener("click", prevGalleryImage);
+  if (!elements.mainDisplay) {
+    console.warn("⚠️ No se encontró #mainDisplay. ¿Estás en la vista del tour?");
+    return;
+  }
+
+  // Eventos principales (solo si existen)
+  elements.nextBtn && elements.nextBtn.addEventListener("click", nextPlace);
+  elements.prevBtn && elements.prevBtn.addEventListener("click", prevPlace);
+  elements.galleryBtn && elements.galleryBtn.addEventListener("click", openGallery);
+  elements.galleryClose &&
+    elements.galleryClose.addEventListener("click", closeGallery);
+  elements.galleryNext &&
+    elements.galleryNext.addEventListener("click", nextGalleryImage);
+  elements.galleryPrev &&
+    elements.galleryPrev.addEventListener("click", prevGalleryImage);
 
   // Cerrar galería al hacer click fuera
-  elements.galleryModal.addEventListener("click", (e) => {
-    if (e.target === elements.galleryModal) closeGallery();
-  });
+  if (elements.galleryModal) {
+    elements.galleryModal.addEventListener("click", (e) => {
+      if (e.target === elements.galleryModal) closeGallery();
+    });
+  }
 
   // Navegación con teclado
   document.addEventListener("keydown", (e) => {
-    if (elements.galleryModal.classList.contains("active")) {
+    const galleryOpen =
+      elements.galleryModal &&
+      elements.galleryModal.classList.contains("active");
+
+    if (galleryOpen) {
       if (e.key === "ArrowRight") nextGalleryImage();
       if (e.key === "ArrowLeft") prevGalleryImage();
       if (e.key === "Escape") closeGallery();
@@ -232,37 +250,49 @@ function initElements() {
 }
 
 // ------------------------------
-// ACTUALIZAR DISPLAY PRINCIPAL (con fade suave)
+// ACTUALIZAR DISPLAY PRINCIPAL (cambio directo)
 // ------------------------------
 function updateDisplay() {
+  if (!elements.mainDisplay) return;
+
   const place = places[currentIndex];
   const display = elements.mainDisplay;
 
-  // Fade-out
-  display.style.opacity = "0";
-  elements.placeContent.classList.add("changing");
+  // Fondo principal
+  display.style.backgroundImage = `url('${place.image}')`;
 
-  setTimeout(() => {
+  // Icono
+  if (elements.icon) {
     elements.icon.src = place.icon;
     elements.icon.alt = `${place.title} icono`;
-    elements.title.textContent = place.title;
-    elements.description.textContent = place.description;
-    elements.counter.textContent = `${currentIndex + 1} de ${places.length}`;
-    display.style.backgroundImage = `url('${place.image}')`;
+  }
 
-    // Fade-in
-    display.style.opacity = "1";
-    elements.placeContent.classList.remove("changing");
-  }, 250);
+  // Título y descripción
+  if (elements.title) {
+    elements.title.textContent = place.title;
+  }
+
+  if (elements.description) {
+    elements.description.textContent = place.description;
+  }
+
+  // Contador
+  if (elements.counter) {
+    elements.counter.textContent = `${currentIndex + 1} de ${places.length}`;
+  }
 
   // Progreso
   const progress = ((currentIndex + 1) / places.length) * 100;
-  elements.progressFill.style.width = `${progress}%`;
+  if (elements.progressFill) {
+    elements.progressFill.style.width = `${progress}%`;
+  }
 
   // Tarjeta activa
-  elements.cards.forEach((card, idx) => {
-    card.classList.toggle("active", idx === currentIndex);
-  });
+  if (elements.cards) {
+    elements.cards.forEach((card, idx) => {
+      card.classList.toggle("active", idx === currentIndex);
+    });
+  }
 }
 
 // ------------------------------
@@ -289,8 +319,12 @@ function prevPlace() {
 
 // ------------------------------
 // GALERÍA DE IMÁGENES
+// (mismo estilo de cambio directo que el visor principal)
 // ------------------------------
 function openGallery() {
+  const gallery = places[currentIndex].gallery || [];
+  if (!gallery.length || !elements.galleryModal) return;
+
   currentGalleryIndex = 0;
   updateGalleryImage();
   elements.galleryModal.classList.add("active");
@@ -298,6 +332,7 @@ function openGallery() {
 }
 
 function closeGallery() {
+  if (!elements.galleryModal) return;
   elements.galleryModal.classList.remove("active");
   document.body.style.overflow = "";
 }
@@ -307,11 +342,24 @@ function updateGalleryImage() {
   if (!gallery.length) return;
 
   const currentImage = gallery[currentGalleryIndex];
-  elements.galleryImage.src = currentImage.image;
-  elements.galleryImage.alt = currentImage.title || "Galería";
-  elements.galleryCounter.textContent = `${currentGalleryIndex + 1} de ${gallery.length}`;
-  elements.galleryTitle.textContent = currentImage.title || "";
-  elements.galleryDescription.textContent = currentImage.description || "";
+
+  if (elements.galleryImage) {
+    elements.galleryImage.src = currentImage.image;
+    elements.galleryImage.alt = currentImage.title || "Galería";
+  }
+
+  if (elements.galleryCounter) {
+    elements.galleryCounter.textContent = `${currentGalleryIndex + 1} de ${gallery.length}`;
+  }
+
+  if (elements.galleryTitle) {
+    elements.galleryTitle.textContent = currentImage.title || "";
+  }
+
+  if (elements.galleryDescription) {
+    elements.galleryDescription.textContent =
+      currentImage.description || "";
+  }
 }
 
 function nextGalleryImage() {
@@ -324,7 +372,8 @@ function nextGalleryImage() {
 function prevGalleryImage() {
   const gallery = places[currentIndex].gallery || [];
   if (!gallery.length) return;
-  currentGalleryIndex = (currentGalleryIndex - 1 + gallery.length) % gallery.length;
+  currentGalleryIndex =
+    (currentGalleryIndex - 1 + gallery.length) % gallery.length;
   updateGalleryImage();
 }
 

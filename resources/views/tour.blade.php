@@ -28,22 +28,17 @@
         <div class="nav-container">
             <div class="logo">
                 <a href="/" class="logo-link">
-                    <img src="/img/logoad.png" alt="Logo Colegio Adonai" class="logo-img">
+                    <img src="/img/logoad.png" alt="Colegio Adonai" class="logo-img">
                 </a>
             </div>
 
             <ul class="nav-menu" id="nav-menu">
                 <li class="nav-item"><a href="/" class="nav-link">Inicio</a></li>
-                <li class="nav-item dropdown">
-                    <a href="#nosotros" class="nav-link dropdown-toggle">
-                        Sobre Nosotros <i class="bi bi-chevron-down dropdown-icon"></i>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#mision" class="dropdown-link">Misión</a></li>
-                        <li><a href="#vision" class="dropdown-link">Visión</a></li>
-                        <li><a href="#valores" class="dropdown-link">Valores</a></li>
-                    </ul>
+
+                <li class="nav-item">
+                    <a href="/#nosotros" class="nav-link">Sobre Nosotros</a>
                 </li>
+                
                 <li class="nav-item"><a href="{{ route('cursos') }}" class="nav-link">Cursos</a></li>
                 <li class="nav-item"><a href="{{ route('talleres') }}" class="nav-link">Talleres</a></li>
                 <li class="nav-item"><a href="{{ route('docentes') }}" class="nav-link">Profesores</a></li>
@@ -57,7 +52,7 @@
                     <i class="bi bi-person-circle"></i>
                 </a>
 
-                <button class="menu-toggle" id="menu-toggle" aria-label="Menú">
+                <button class="menu-toggle" id="menu-toggle">
                     <span></span><span></span><span></span>
                 </button>
             </div>
@@ -67,7 +62,14 @@
     <!-- CONTENIDO DEL TOUR -->
     <main class="container virtual-tour">
         <section class="tour-viewer">
-            <div class="main-display" id="mainDisplay" aria-live="polite" role="region">
+            <div
+                class="main-display"
+                id="mainDisplay"
+                aria-live="polite"
+                role="region"
+                style="background-image: url('https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1200&h=800&fit=crop&q=80');"
+            >
+
                 <button class="nav-btn" id="prevBtn" aria-label="Anterior">
                     <svg viewBox="0 0 24 24" width="24" height="24">
                         <path fill="#e99000" d="M14.985 19a.992.992 0 0 1-.681-.27l-5.69-5.322a1.905 1.905 0 0 1 0-2.803l5.689-5.319a.997.997 0 0 1 1.6 1.142.998.998 0 0 1-.237.316l-5.628 5.266 5.629 5.263A.999.999 0 0 1 14.985 19z"/>
@@ -88,14 +90,6 @@
                     <img class="place-icon" id="currentIcon" src="" alt="Icono del lugar">
                     <h2 class="place-title" id="currentTitle">—</h2>
                     <p class="place-description" id="currentDescription">—</p>
-                </div>
-
-                <!-- Controles de Zoom -->
-                <div class="zoom-controls">
-                    <button id="zoomOut" aria-label="Alejar">−</button>
-                    <input type="range" id="zoomSlider" min="1" max="3" step="0.01" value="1">
-                    <button id="zoomIn" aria-label="Acercar">+</button>
-                    <button id="resetView" aria-label="Restaurar vista">⟳</button>
                 </div>
             </div>
 
@@ -119,13 +113,13 @@
 
             <button class="gallery-nav gallery-prev" id="galleryPrev" aria-label="Imagen anterior">
                 <svg viewBox="0 0 24 24" width="24" height="24">
-                    <path fill="#ffffff" d="M14.985 19a.992.992 0 0 1-.681-.27l-5.69-5.322a1.905 1.905 0 0 1 0-2.803l5.689-5.319a.997.997 0 0 1 1.6 1.142.998.998 0 0 1-.237.316l-5.628 5.266 5.629 5.263A.999.999 0 0 1 14.985 19z"/>
+                    <path fill="#e99000" d="M14.985 19a.992.992 0 0 1-.681-.27l-5.69-5.322a1.905 1.905 0 0 1 0-2.803l5.689-5.319a.997.997 0 0 1 1.6 1.142.998.998 0 0 1-.237.316l-5.628 5.266 5.629 5.263A.999.999 0 0 1 14.985 19z"/>
                 </svg>
             </button>
 
             <button class="gallery-nav gallery-next" id="galleryNext" aria-label="Imagen siguiente">
                 <svg viewBox="0 0 24 24" width="24" height="24" transform="scale(-1,1)">
-                    <path fill="#ffffff" d="M14.985 19a.992.992 0 0 1-.681-.27l-5.69-5.322a1.905 1.905 0 0 1 0-2.803l5.689-5.319a.997.997 0 0 1 1.6 1.142.998.998 0 0 1-.237.316l-5.628 5.266 5.629 5.263A.999.999 0 0 1 14.985 19z"/>
+                    <path fill="#e99000" d="M14.985 19a.992.992 0 0 1-.681-.27l-5.69-5.322a1.905 1.905 0 0 1 0-2.803l5.689-5.319a.997.997 0 0 1 1.6 1.142.998.998 0 0 1-.237.316l-5.628 5.266 5.629 5.263A.999.999 0 0 1 14.985 19z"/>
                 </svg>
             </button>
 
@@ -139,29 +133,33 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
+    <!-- Footer -->
     <footer class="footer" id="footer">
         <div class="container">
             <div class="footer-content">
+                
                 <div class="footer-column">
                     <div class="footer-logo">
-                        <i class="bi bi-mortarboard-fill"></i>
+                        <div class="logo-icon">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
                         <span>Colegio Adonai</span>
                     </div>
                     <p>Formando vidas con propósito desde 2009</p>
+
                     <h4>Ubícanos</h4>
-        <div class="footer-map">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3893.1234567890123!2d-79.125678901234!3d-7.860123456789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9108abcdef12345%3A0xabcdef1234567890!2sChicama%2C%20Per%C3%BA!5e0!3m2!1ses!2spe!4v1695700000000!5m2!1ses!2spe"
-            loading="lazy"
-            allowfullscreen=""
-          ></iframe>
-        </div>
+                    <div class="footer-map">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3893.1234567890123!2d-79.125678901234!3d-7.860123456789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9108abcdef12345%3A0xabcdef1234567890!2sChicama%2C%20Per%C3%BA!5e0!3m2!1ses!2spe!4v1695700000000!5m2!1ses!2spe"
+                            loading="lazy"
+                            allowfullscreen=""
+                        ></iframe>
+                    </div>
                 </div>
 
                 <div class="footer-column">
                     <h4>Contacto</h4>
-                    <p><i class="bi bi-geo-alt-fill"></i> Av. Principal 123, Lima</p>
+                    <p><i class="bi bi-geo-alt-fill"></i> Av. Principal 123, Trujillo</p>
                     <p><i class="bi bi-telephone-fill"></i> (01) 234-5678</p>
                     <p><i class="bi bi-envelope-fill"></i> info@colegioadonai.edu.pe</p>
                 </div>
@@ -177,15 +175,23 @@
                 <div class="footer-column">
                     <h4>Síguenos</h4>
                     <div class="social-links">
-                        <a href="https://www.facebook.com/colegiocristiano.mgsa" target="_blank" class="social-icon"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="social-icon"><i class="bi bi-youtube"></i></a>
-                        <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
+                        <a href="https://www.facebook.com/colegiocristiano.mgsa?locale=es_LA" target="_blank" class="social-icon" aria-label="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="YouTube">
+                            <i class="bi bi-youtube"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="Twitter">
+                            <i class="bi bi-twitter"></i>
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <div class="footer-bottom text-center">
+            <div class="text-center footer-bottom">
                 <p>&copy; 2025 Colegio Adonai. Todos los derechos reservados.</p>
             </div>
         </div>
@@ -194,94 +200,5 @@
     <a href="https://wa.me/51999999999" class="whatsapp-float" target="_blank" aria-label="Contactar por WhatsApp">
         <i class="bi bi-whatsapp"></i>
     </a>
-
-   <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const display = document.getElementById('mainDisplay');
-  const zoomSlider = document.getElementById('zoomSlider');
-  const zoomIn = document.getElementById('zoomIn');
-  const zoomOut = document.getElementById('zoomOut');
-  const resetView = document.getElementById('resetView');
-  const zoomControls = document.querySelector('.zoom-controls');
-
-  let scale = 1;
-  let translateX = 0, translateY = 0;
-  let isDragging = false, startX = 0, startY = 0;
-  let canDrag = false;
-
-  // 🧭 Actualiza zoom y movimiento
-  const updateTransform = () => {
-    display.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-  };
-
-  // 🔍 Control de zoom con slider
-  zoomSlider.addEventListener('input', e => {
-    scale = parseFloat(e.target.value);
-    canDrag = scale > 1; // Solo arrastra si está ampliado
-    if (!canDrag) {
-      translateX = 0;
-      translateY = 0;
-    }
-    updateTransform();
-  });
-
-  // ➕ Zoom In
-  zoomIn.addEventListener('click', () => {
-    scale = Math.min(3, scale + 0.1);
-    zoomSlider.value = scale.toFixed(2);
-    canDrag = scale > 1;
-    updateTransform();
-  });
-
-  // ➖ Zoom Out
-  zoomOut.addEventListener('click', () => {
-    scale = Math.max(1, scale - 0.1);
-    zoomSlider.value = scale.toFixed(2);
-    if (scale === 1) {
-      translateX = 0;
-      translateY = 0;
-      canDrag = false;
-    }
-    updateTransform();
-  });
-
-  // ⟳ Restaurar vista
-  resetView.addEventListener('click', () => {
-    scale = 1;
-    translateX = 0;
-    translateY = 0;
-    zoomSlider.value = 1;
-    canDrag = false;
-    updateTransform();
-  });
-
-  // 🖱️ Arrastrar solo si hay zoom
-  display.addEventListener('mousedown', e => {
-    if (!canDrag) return;
-    isDragging = true;
-    startX = e.clientX - translateX;
-    startY = e.clientY - translateY;
-    display.style.cursor = 'grabbing';
-  });
-
-  window.addEventListener('mouseup', () => {
-    isDragging = false;
-    display.style.cursor = canDrag ? 'grab' : 'default';
-  });
-
-  window.addEventListener('mousemove', e => {
-    if (!isDragging || !canDrag) return;
-    translateX = e.clientX - startX;
-    translateY = e.clientY - startY;
-    updateTransform();
-  });
-
-  // 🧷 Asegura que los botones nunca desaparezcan
-  zoomControls.style.position = 'absolute';
-  zoomControls.style.zIndex = '100';
-});
-</script>
-
-
 </body>
 </html>
