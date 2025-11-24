@@ -7,17 +7,17 @@
 
 /* ------------------- RESET GENERAL ------------------- */
 * {
-box-sizing: border-box;
-transition: all 0.3s ease;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
 }
 
 html,
 body {
-height: 100%;
-margin: 0;
-font-family: "Inter", sans-serif;
-background: var(--bg);
-color: #333;
+  height: 100%;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  color: #333;
 }
 
 /* ------------------- CONTENEDOR ------------------- */
@@ -26,6 +26,7 @@ color: #333;
   padding-top: 100px !important;   /* deja espacio bajo el navbar fijo */
   padding-bottom: 80px !important; /* separa del footer */
 }
+
 .container {
   width: 100%;
   padding: 40px 2%;
@@ -65,27 +66,16 @@ color: #333;
 /* Fondo dinámico principal */
 #mainDisplay {
   position: relative;
-  width: 100%;
+  width: 100% !important;
   min-height: 550px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-color: transparent !important;
   border-radius: 16px;
   overflow: hidden;
-  transition: background-image 0.8s ease-in-out, transform 1.5s ease;
-  transform: scale(1);
-  z-index: 0; /* se coloca debajo del contenido */
-}
-
-/* Efecto de zoom suave */
-#mainDisplay.fade-in {
+  /* Opacidad para pequeños cambios suaves si quieres en el futuro */
   opacity: 1;
-  transform: scale(1);
-}
-
-#mainDisplay.fade-out {
-  opacity: 0;
-  transform: scale(1.05);
 }
 
 /* Capa de sombreado */
@@ -266,7 +256,7 @@ color: #333;
 /* ------------------- GALERÍA ------------------- */
 .gallery-btn {
   position: absolute;
-  bottom: 22px;
+  top: 22px;      /* arriba a la derecha */
   right: 22px;
   width: 50px;
   height: 50px;
@@ -334,6 +324,7 @@ color: #333;
   cursor: pointer;
 }
 
+/* Botones izquierda/derecha de la galería */
 .gallery-nav {
   position: fixed;
   top: 50%;
@@ -342,14 +333,22 @@ color: #333;
   height: 60px;
   border-radius: 50%;
   border: none;
-  background: var(--bg);
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 1001;
-  box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.08),
-    -6px -6px 15px rgba(255, 255, 255, 0.7);
+  box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.25);
+}
+
+.gallery-nav svg {
+  width: 24px;
+  height: 24px;
+}
+
+.gallery-nav svg path {
+  fill: var(--accent); /* 👈 ahora las flechas se ven bien */
 }
 
 .gallery-prev {
@@ -451,35 +450,24 @@ color: #333;
 
 /* Asegura que el visor ocupe todo el ancho real */
 .tour-viewer {
-background: transparent !important;
-border-radius: 16px !important;
-padding: 0 !important;
-margin: 0 auto !important;
-max-width: 100% !important;
-display: block !important;
-overflow: hidden !important;
+  background: transparent !important;
+  border-radius: 16px !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  max-width: 100% !important;
+  display: block !important;
+  overflow: hidden !important;
 }
 
 /* Corrige el contenedor general */
 .container.tour-container,
 .virtual-tour .container {
-padding: 0 !important;
-margin: 0 !important;
-max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
 }
 
 /* Elimina cualquier fondo gris heredado */
 .virtual-tour {
-background: var(--bg) !important;
-}
-
-/* Ajuste visual para que el fondo se vea completo */
-#mainDisplay {
-min-height: 550px;
-width: 100% !important;
-border-radius: 16px;
-background-size: cover !important;
-background-position: center !important;
-background-repeat: no-repeat !important;
-background-color: transparent !important;
+  background: var(--bg) !important;
 }
