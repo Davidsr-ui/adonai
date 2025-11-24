@@ -90,8 +90,11 @@
             </div>
 
             <div class="levels-grid">
+                <!-- INICIAL -->
                 <div class="level-card course-card">
-                    <div class="level-image course-image"></div>
+                    <div class="level-image course-image">
+                        <img src="{{ asset('img/inicial.jpg') }}" alt="Nivel Inicial - Colegio Adonai">
+                    </div>
                     <div class="level-content">
                         <h3>Inicial</h3>
                         <p>Desarrollo integral en un ambiente seguro y estimulante con metodología lúdica.</p>
@@ -104,8 +107,11 @@
                     </div>
                 </div>
 
+                <!-- PRIMARIA -->
                 <div class="level-card course-card">
-                    <div class="level-image course-image"></div>
+                    <div class="level-image course-image">
+                        <img src="{{ asset('img/primaria.jpg') }}" alt="Nivel Primaria - Colegio Adonai">
+                    </div>
                     <div class="level-content">
                         <h3>Primaria</h3>
                         <p>Formación académica sólida con énfasis en valores y desarrollo de habilidades.</p>
@@ -118,8 +124,11 @@
                     </div>
                 </div>
 
+                <!-- SECUNDARIA -->
                 <div class="level-card course-card">
-                    <div class="level-image course-image"></div>
+                    <div class="level-image course-image">
+                        <img src="{{ asset('img/secundaria.jpg') }}" alt="Nivel Secundaria - Colegio Adonai">
+                    </div>
                     <div class="level-content">
                         <h3>Secundaria</h3>
                         <p>Preparación académica de excelencia con enfoque en liderazgo y proyecto de vida.</p>
@@ -178,12 +187,17 @@
         </div>
     </section>
 
+    <!-- Botón WhatsApp -->
+    <a href="https://wa.me/51999999999" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+    </a>
+
     <!-- Script específico de esta página (hero + contadores) -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
             /* ------------------------------------------
-            🖼️ CARRUSEL HERO (cambio directo, sin gris)
+               🖼️ CARRUSEL HERO (cambio directo, sin gris)
             ------------------------------------------- */
             const heroBg = document.querySelector(".hero-background");
             const images = [
@@ -194,46 +208,40 @@
             let current = 0;
 
             if (heroBg) {
-                // Aseguramos que no haya animaciones raras aquí
                 heroBg.style.transition = "none";
                 heroBg.style.opacity = "1";
                 heroBg.style.backgroundSize = "cover";
                 heroBg.style.backgroundPosition = "center center";
 
-                // Pre-cargamos todas las imágenes en objetos Image
                 const preloaded = images.map(src => {
                     const img = new Image();
                     img.src = src;
                     return img;
                 });
 
-                // Imagen inicial
                 heroBg.style.backgroundImage = `url(${images[current]})`;
 
                 setInterval(() => {
                     const nextIndex = (current + 1) % images.length;
                     const nextImg = preloaded[nextIndex];
 
-                    // Si ya está cargada, cambiamos directo
                     if (nextImg.complete) {
                         current = nextIndex;
                         heroBg.style.backgroundImage = `url(${images[current]})`;
                     } else {
-                        // Si por alguna razón no, esperamos al onload
                         nextImg.onload = () => {
                             current = nextIndex;
                             heroBg.style.backgroundImage = `url(${images[current]})`;
                         };
                     }
-                }, 6000); // cada 6 segundos
+                }, 6000);
             }
 
             /* ------------------------------------------
-            🔢 CONTADORES (con anti-reinicio)
+               🔢 CONTADORES (con anti-reinicio)
             ------------------------------------------- */
             function animateCounter(element, target, suffix, duration = 1500) {
 
-                // Ya se animó → no repetir
                 if (element.dataset.done === "true") return;
 
                 let startTime = null;
@@ -259,7 +267,7 @@
             }
 
             /* ------------------------------------------
-            OBSERVER PARA ACTIVAR CONTADORES SOLO 1 VEZ
+               OBSERVER PARA ACTIVAR CONTADORES SOLO 1 VEZ
             ------------------------------------------- */
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -288,5 +296,26 @@
         });
     </script>
 
-@endsection
+    {{-- Estilos específicos para que las imágenes de niveles se vean completas --}}
+    <style>
+        .levels-section .level-card .level-image {
+            width: 100%;
+            height: 190px;
+            border-radius: 24px 24px 0 0;   /* respeta el estilo redondeado */
+            overflow: hidden;
+            background: #000000ff;             /* fondo claro detrás de la foto */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;                      /* por si .course-image tenía padding */
+        }
 
+        .levels-section .level-card .level-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;             /* 👉 muestra la imagen completa */
+            display: block;
+        }
+    </style>
+
+@endsection
