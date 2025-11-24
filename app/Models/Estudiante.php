@@ -34,7 +34,7 @@ class Estudiante extends Model
                     ->withTimestamps();
     }
 
-    // ⭐ RELACIÓN AGREGADA PARA EL CRUD ⭐
+    
     public function tutorEstudiantes()
     {
         return $this->hasMany(TutorEstudiante::class);
@@ -105,7 +105,7 @@ class Estudiante extends Model
         return $this->tutores()->wherePivot('tipo', 'Principal')->first();
     }
 
-    // ⭐ MÉTODOS ÚTILES AGREGADOS ⭐
+
     
     // Obtener el tutor principal usando hasMany
     public function tutorPrincipal()
@@ -158,5 +158,60 @@ class Estudiante extends Model
                     ->where('autorizacion_recojo', true)
                     ->where('estado', 'Activo')
                     ->count();
+    }
+
+
+    /**
+     * Verificar si el estudiante puede matricularse
+     * Solo estudiantes con condición "Regular" o "Irregular" pueden matricularse
+     * 
+     * Condiciones permitidas: Regular, Irregular
+     * Condiciones NO permitidas: Retirado, Egresado, Suspendido
+     * 
+     * @return bool
+     */
+    public function puedeMatricularse()
+    {
+        return in_array($this->condicion, ['Regular', 'Irregular']);
+    }
+
+    /**
+     * Verificar si el estudiante está retirado
+     * 
+     * @return bool
+     */
+    public function estaRetirado()
+    {
+        return $this->condicion === 'Retirado';
+    }
+
+    /**
+     * Obtener badge de Bootstrap según condición
+     * 
+     * @return string
+     */
+    public function getCondicionBadgeAttribute()
+    {
+        return match($this->condicion) {
+            'Regular' => 'success',
+            'Irregular' => 'warning',
+            'Retirado' => 'danger',
+            default => 'secondary'
+        };
+    }
+
+    /**
+     * Obtener ícono según condición
+     * 
+     * @return string
+     */
+    public function getCondicionIconoAttribute()
+    {
+        return match($this->condicion) {
+            'Regular' => 'fa-check-circle',
+            'Irregular' => 'fa-exclamation-triangle',
+            'Retirado' => 'fa-times-circle',
+            default => 'fa-question-circle'
+        };
     }
 }

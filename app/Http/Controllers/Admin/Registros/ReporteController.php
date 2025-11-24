@@ -21,47 +21,47 @@ class ReporteController extends Controller
     public function index(Request $request)
     {
         $query = Reporte::with(['estudiante.persona', 'docente.persona', 'periodo', 'gestion']);
-        
+
         // Filtros
         if ($request->has('estudiante_id') && $request->estudiante_id) {
             $query->where('estudiante_id', $request->estudiante_id);
         }
-        
+
         if ($request->has('periodo_id') && $request->periodo_id) {
             $query->where('periodo_id', $request->periodo_id);
         }
-        
+
         if ($request->has('gestion_id') && $request->gestion_id) {
             $query->where('gestion_id', $request->gestion_id);
         }
-        
+
         if ($request->has('tipo') && $request->tipo) {
             $query->where('tipo', $request->tipo);
         }
-        
+
         if ($request->has('visible') && $request->visible !== '') {
             $query->where('visible_tutor', $request->visible);
         }
-        
+
         $reportes = $query->orderBy('fecha_generacion', 'desc')
-                         ->orderBy('created_at', 'desc')
-                         ->get();
-        
-        $estudiantes = Estudiante::with('persona')->whereHas('persona', function($query) {
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $estudiantes = Estudiante::with('persona')->whereHas('persona', function ($query) {
             $query->where('estado', 'Activo');
         })->get();
-        
-        $docentes = Docente::with('persona')->whereHas('persona', function($query) {
+
+        $docentes = Docente::with('persona')->whereHas('persona', function ($query) {
             $query->where('estado', 'Activo');
         })->get();
-        
-          $periodos = Periodo::join('gestions', 'periodos.gestion_id', '=', 'gestions.id')
-        ->select('periodos.*', 'gestions.año as gestion_año') // opcional para mostrar el año
-        ->orderBy('gestions.año', 'desc')
-        ->orderBy('periodos.numero', 'desc')
-        ->get();
+
+        $periodos = Periodo::join('gestions', 'periodos.gestion_id', '=', 'gestions.id')
+            ->select('periodos.*', 'gestions.año as gestion_año') // opcional para mostrar el año
+            ->orderBy('gestions.año', 'desc')
+            ->orderBy('periodos.numero', 'desc')
+            ->get();
         $gestiones = Gestion::orderBy('año', 'desc')->get();
-        
+
         return view('admin.reportes.index', compact('reportes', 'estudiantes', 'docentes', 'periodos', 'gestiones'));
     }
 
@@ -102,10 +102,10 @@ class ReporteController extends Controller
             'archivo_pdf_create.mimes' => 'El archivo debe ser un PDF.',
             'archivo_pdf_create.max' => 'El archivo no puede superar los 5MB.',
         ]);
-        
+
         try {
             DB::beginTransaction();
-            
+
             $reporte = new Reporte();
             $reporte->estudiante_id = $request->estudiante_id_create;
             $reporte->docente_id = $request->docente_id_create;
@@ -117,12 +117,12 @@ class ReporteController extends Controller
             $reporte->comentario_final = $request->comentario_final_create;
             $reporte->visible_tutor = $request->has('visible_tutor_create') ? true : false;
             $reporte->fecha_generacion = now();
-            
+
             // Si marca visible, publicar automáticamente
             if ($reporte->visible_tutor) {
                 $reporte->fecha_publicacion = now();
             }
-            
+
             // Manejar archivo PDF
             if ($request->hasFile('archivo_pdf_create')) {
                 $file = $request->file('archivo_pdf_create');
@@ -130,15 +130,14 @@ class ReporteController extends Controller
                 $path = $file->storeAs('reportes', $filename, 'public');
                 $reporte->archivo_pdf = $path;
             }
-            
+
             $reporte->save();
-            
+
             DB::commit();
-            
+
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Reporte registrado correctamente')
                 ->with('icono', 'success');
-                
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.reportes.index')
@@ -153,19 +152,19 @@ class ReporteController extends Controller
     public function show($id)
     {
         $reporte = Reporte::with(['estudiante.persona', 'estudiante.grado', 'docente.persona', 'periodo', 'gestion'])->findOrFail($id);
-        
+
         // Obtener notas del periodo
-        $notas = \App\Models\Nota::whereHas('matricula', function($query) use ($reporte) {
+        $notas = \App\Models\Nota::whereHas('matricula', function ($query) use ($reporte) {
             $query->where('estudiante_id', $reporte->estudiante_id);
         })
-        ->where('periodo_id', $reporte->periodo_id)
-        ->with('matricula.curso')
-        ->get();
-        
+            ->where('periodo_id', $reporte->periodo_id)
+            ->with('matricula.curso')
+            ->get();
+
         // Obtener asistencias del periodo
         $asistencias = \App\Models\Asistencia::where('estudiante_id', $reporte->estudiante_id)
             ->get();
-        
+
         // Obtener comportamientos del periodo
         $comportamientos = \App\Models\Comportamiento::where('estudiante_id', $reporte->estudiante_id)
             ->whereBetween('fecha', [
@@ -174,7 +173,7 @@ class ReporteController extends Controller
             ])
             ->orderBy('fecha', 'desc')
             ->get();
-        
+
         return view('admin.reportes.show', compact('reporte', 'notas', 'asistencias', 'comportamientos'));
     }
 
@@ -221,7 +220,7 @@ class ReporteController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $reporte->estudiante_id = $request->estudiante_id;
             $reporte->docente_id = $request->docente_id;
             $reporte->periodo_id = $request->periodo_id;
@@ -230,41 +229,40 @@ class ReporteController extends Controller
             $reporte->promedio_general = $request->promedio_general;
             $reporte->porcentaje_asistencia = $request->porcentaje_asistencia;
             $reporte->comentario_final = $request->comentario_final;
-            
+
             $visibleAntes = $reporte->visible_tutor;
             $reporte->visible_tutor = $request->has('visible_tutor') ? true : false;
-            
+
             // Si marca visible y antes no lo estaba, publicar
             if ($reporte->visible_tutor && !$visibleAntes) {
                 $reporte->fecha_publicacion = now();
             }
-            
+
             // Si desmarca visible, despublicar
             if (!$reporte->visible_tutor && $visibleAntes) {
                 $reporte->fecha_publicacion = null;
             }
-            
+
             // Manejar archivo PDF
             if ($request->hasFile('archivo_pdf')) {
                 // Eliminar archivo anterior si existe
                 if ($reporte->archivo_pdf && Storage::disk('public')->exists($reporte->archivo_pdf)) {
                     Storage::disk('public')->delete($reporte->archivo_pdf);
                 }
-                
+
                 $file = $request->file('archivo_pdf');
                 $filename = 'reporte_' . time() . '_' . $reporte->estudiante_id . '.pdf';
                 $path = $file->storeAs('reportes', $filename, 'public');
                 $reporte->archivo_pdf = $path;
             }
-            
+
             $reporte->save();
-            
+
             DB::commit();
 
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Reporte actualizado correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.reportes.index')
@@ -280,22 +278,21 @@ class ReporteController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $reporte = Reporte::findOrFail($id);
-            
+
             // Eliminar archivo PDF si existe
             if ($reporte->archivo_pdf && Storage::disk('public')->exists($reporte->archivo_pdf)) {
                 Storage::disk('public')->delete($reporte->archivo_pdf);
             }
-            
+
             $reporte->delete();
-            
+
             DB::commit();
 
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Reporte eliminado correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.reportes.index')
@@ -316,7 +313,6 @@ class ReporteController extends Controller
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Reporte publicado correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Error al publicar: ' . $e->getMessage())
@@ -336,7 +332,6 @@ class ReporteController extends Controller
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Reporte despublicado correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Error al despublicar: ' . $e->getMessage())
@@ -356,7 +351,6 @@ class ReporteController extends Controller
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Datos calculados correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Error al calcular datos: ' . $e->getMessage())
@@ -371,15 +365,26 @@ class ReporteController extends Controller
     {
         try {
             $reporte = Reporte::findOrFail($id);
-            
+
             if (!$reporte->tienePdf()) {
                 return redirect()->route('admin.reportes.index')
                     ->with('mensaje', 'El reporte no tiene un archivo PDF')
                     ->with('icono', 'warning');
             }
-            
-           
 
+            $rutaArchivo = storage_path('app/public/' . $reporte->archivo_pdf);
+
+            if (!file_exists($rutaArchivo)) {
+                return redirect()->route('admin.reportes.index')
+                    ->with('mensaje', 'El archivo PDF no se encuentra en el servidor')
+                    ->with('icono', 'error');
+            }
+
+            $nombreArchivo = 'Reporte_' . $reporte->estudiante->codigo_estudiante . '_' .
+                $reporte->periodo->nombre . '_' .
+                $reporte->tipo . '.pdf';
+
+            return response()->download($rutaArchivo, $nombreArchivo);
         } catch (\Exception $e) {
             return redirect()->route('admin.reportes.index')
                 ->with('mensaje', 'Error al descargar PDF: ' . $e->getMessage())
