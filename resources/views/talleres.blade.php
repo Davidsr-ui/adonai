@@ -30,6 +30,7 @@
                 @php
                     use App\Models\Taller;
                     use Carbon\Carbon;
+                    use Illuminate\Support\Facades\Storage;
 
                     $talleres = Taller::where('activo', true)->get();
 
@@ -63,15 +64,15 @@
                             $categoria = 'oratoria';
                         }
 
-                        // Determinar etiqueta para mostrar
+                        // Etiquetas visibles
                         $etiquetas = [
-                            'musica' => 'Música',
+                            'musica'   => 'Música',
                             'deportes' => 'Deportes',
-                            'arte' => 'Arte',
+                            'arte'     => 'Arte',
                             'robotica' => 'Robótica',
-                            'teatro' => 'Teatro',
+                            'teatro'   => 'Teatro',
                             'oratoria' => 'Oratoria',
-                            'general' => 'Taller'
+                            'general'  => 'Taller',
                         ];
 
                         $etiqueta = $etiquetas[$categoria] ?? 'Taller';
@@ -86,13 +87,18 @@
                             ? substr($taller->horario_inicio, 0, 5) . ' - ' . substr($taller->horario_fin, 0, 5)
                             : 'Horario por definir';
 
+                        // URL de imagen SIEMPRE usando storage
+                        // Si no tiene imagen, usamos una por defecto en storage/app/public/talleres/default.jpg
+                        $imagePath = $taller->imagen ?: 'talleres/default.jpg';
+                        $imageUrl  = Storage::url($imagePath);
+
                         // WhatsApp message
                         $whatsappMessage = "Estoy interesado en el taller: " . urlencode($taller->nombre);
                     @endphp
 
                     <article class="workshop-card" data-category="{{ $categoria }}"
                         data-title="{{ $taller->nombre }}"
-                        data-image="{{ $taller->imagen ? asset('storage/'.$taller->imagen) : '/img/taller-default.jpg' }}"
+                        data-image="{{ $imageUrl }}"
                         data-desc="{{ $taller->descripcion ?? 'Taller formativo para el desarrollo de habilidades.' }}"
                         data-instructor="{{ $taller->instructor }}"
                         data-schedule="{{ $horarioTexto }}"
@@ -100,11 +106,14 @@
                         data-cost="{{ $taller->costo ? 'S/ ' . $taller->costo : 'Gratuito' }}"
                         data-slots="{{ $taller->cupos_maximos }} cupos disponibles"
                         data-category-label="{{ $etiqueta }}">
+
                         <div class="workshop-image">
-                            <img src="{{ $taller->imagen ? asset('storage/'.$taller->imagen) : '/img/taller-default.jpg' }}"
-                                alt="{{ $taller->nombre }}"
-                                onerror="this.src='/img/taller-default.jpg'">
+                            <img src="{{ $imageUrl }}"
+                                 alt="{{ $taller->nombre }}"
+                                 style="width:100%; height:220px; object-fit:cover; border-radius:16px 16px 0 0;"
+                                 onerror="this.onerror=null; this.style.display='none';">
                         </div>
+
                         <div class="workshop-body">
                             <div class="workshop-meta">
                                 <small class="workshop-tag">{{ $etiqueta }}</small>
@@ -137,9 +146,9 @@
                             <div class="workshop-actions">
                                 <button class="btn btn-outline btn-more">Más info</button>
                                 <a class="btn btn-primary"
-                                    href="https://wa.me/51999999999?text={{ $whatsappMessage }}"
-                                    target="_blank"
-                                    rel="noopener">
+                                   href="https://wa.me/51999999999?text={{ $whatsappMessage }}"
+                                   target="_blank"
+                                   rel="noopener">
                                     Inscribirme
                                 </a>
                             </div>
@@ -149,11 +158,11 @@
 
                 <!-- Mensaje si no hay talleres -->
                 @if($talleres->count() == 0)
-                <div class="no-workshops">
-                    <i class="bi bi-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <h3>No hay talleres disponibles</h3>
-                    <p>Próximamente anunciaremos nuestros nuevos talleres extracurriculares.</p>
-                </div>
+                    <div class="no-workshops">
+                        <i class="bi bi-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <h3>No hay talleres disponibles</h3>
+                        <p>Próximamente anunciaremos nuestros nuevos talleres extracurriculares.</p>
+                    </div>
                 @endif
 
             </div>
@@ -256,16 +265,16 @@
                 if (!moreBtn) return;
 
                 moreBtn.addEventListener('click', function() {
-                    const title = card.getAttribute('data-title');
-                    const image = card.getAttribute('data-image');
-                    const desc = card.getAttribute('data-desc');
-                    const instructor = card.getAttribute('data-instructor');
-                    const schedule = card.getAttribute('data-schedule');
-                    const duration = card.getAttribute('data-duration');
-                    const cost = card.getAttribute('data-cost');
-                    const slots = card.getAttribute('data-slots');
-                    const categoryLabel = card.getAttribute('data-category-label');
-                    const category = card.getAttribute('data-category');
+                    const title          = card.getAttribute('data-title');
+                    const image          = card.getAttribute('data-image');
+                    const desc           = card.getAttribute('data-desc');
+                    const instructor     = card.getAttribute('data-instructor');
+                    const schedule       = card.getAttribute('data-schedule');
+                    const duration       = card.getAttribute('data-duration');
+                    const cost           = card.getAttribute('data-cost');
+                    const slots          = card.getAttribute('data-slots');
+                    const categoryLabel  = card.getAttribute('data-category-label');
+                    const category       = card.getAttribute('data-category');
 
                     // Llenar modal
                     document.getElementById('modal-title').textContent = title;
