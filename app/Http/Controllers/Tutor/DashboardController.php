@@ -44,40 +44,6 @@ class DashboardController extends Controller
         $estudiantes = $tutor->estudiantes()->with(['persona', 'grado'])->get();
         $estudiantesIds = $estudiantes->pluck('id');
 
-        // Estadísticas de Asistencias
-        $asistencias = Asistencia::whereIn('estudiante_id', $estudiantesIds)
-            ->where('fecha', '>=', Carbon::now()->subDays(30))
-            ->get();
-
-        $totalAsistencias = $asistencias->count();
-        $presentes = $asistencias->where('estado', 'Presente')->count();
-        $ausentes = $asistencias->where('estado', 'Ausente')->count();
-        $tardanzas = $asistencias->where('estado', 'Tardanza')->count();
-        $porcentajeAsistencia = $totalAsistencias > 0 
-            ? round(($presentes / $totalAsistencias) * 100, 2) 
-            : 0;
-
-        // Estadísticas de Notas
-        $notas = Nota::whereHas('matricula', function($q) use ($estudiantesIds) {
-                $q->whereIn('estudiante_id', $estudiantesIds);
-            })
-            ->where('visible_tutor', true)
-            ->get();
-
-        $totalNotas = $notas->count();
-        $notasAprobadas = $notas->where('nota_final', '>=', 14)->count();
-        $notasDesaprobadas = $notas->where('nota_final', '<', 14)->count();
-        $promedioGeneral = $totalNotas > 0 ? round($notas->avg('nota_final'), 2) : 0;
-
-        // Estadísticas de Comportamientos
-        $comportamientos = Comportamiento::whereIn('estudiante_id', $estudiantesIds)
-            ->where('notificado_tutor', true)
-            ->get();
-
-        $comportamientosPositivos = $comportamientos->where('tipo', 'Positivo')->count();
-        $comportamientosNegativos = $comportamientos->where('tipo', 'Negativo')->count();
-        $comportamientosNeutrales = $comportamientos->where('tipo', 'Neutral')->count();
-
         // Estadísticas de Reportes
         $reportes = Reporte::whereIn('estudiante_id', $estudiantesIds)
             ->where('visible_tutor', true)
@@ -85,7 +51,7 @@ class DashboardController extends Controller
 
         $totalReportes = $reportes->count();
 
-        // Alertas (estudiantes con bajo rendimiento o muchas inasistencias)
+        // ✅ Alertas (estudiantes que requieren atención)
         $alertas = [];
         
         foreach ($estudiantes as $estudiante) {
@@ -156,18 +122,6 @@ class DashboardController extends Controller
             'periodos',
             'periodoActual',
             'estudiantes',
-            'totalAsistencias',
-            'presentes',
-            'ausentes',
-            'tardanzas',
-            'porcentajeAsistencia',
-            'totalNotas',
-            'notasAprobadas',
-            'notasDesaprobadas',
-            'promedioGeneral',
-            'comportamientosPositivos',
-            'comportamientosNegativos',
-            'comportamientosNeutrales',
             'totalReportes',
             'alertas',
             'ultimosComportamientos',

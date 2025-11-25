@@ -13,34 +13,32 @@
             <div class="card">
                 <div class="card-header bg-info">
                     <h3 class="card-title"><i class="fas fa-user-check"></i> Registro de Comportamientos</h3>
+                    <div class="card-tools">
+                        @if($tutor->estudiantes->count() > 1)
+                            <select id="estudianteSelect" class="form-control form-control-sm" onchange="cambiarEstudiante()">
+                                @foreach($tutor->estudiantes as $est)
+                                    <option value="{{ $est->id }}" {{ $estudiante && $estudiante->id == $est->id ? 'selected' : '' }}>
+                                        {{ $est->persona->apellidos }} {{ $est->persona->nombres }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
                 </div>
                 <div class="card-body">
-                    @if(Auth::user()->persona && Auth::user()->persona->tutor)
-                        @php
-                            // Obtener los estudiantes del tutor
-                            $estudiantes = Auth::user()->persona->tutor->estudiantes;
-                            $estudiantesIds = $estudiantes->pluck('id');
-                            
-                            // ✅ CORREGIDO: Sin ->curso
-                            $comportamientos = \App\Models\Comportamiento::whereIn('estudiante_id', $estudiantesIds)
-                                ->where('notificado_tutor', true)
-                                ->with(['estudiante.persona', 'estudiante.grado', 'docente.persona'])
-                                ->orderBy('fecha', 'desc')
-                                ->get();
-                        @endphp
-                        
-                        @if($comportamientos->count() > 0)
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i>
-                                Puedes ver los comportamientos que los docentes han notificado de tus estudiantes.
-                            </div>
+                    @if($estudiante)
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-user"></i> Estudiante:</strong> {{ $estudiante->persona->apellidos }} {{ $estudiante->persona->nombres }}<br>
+                            <strong><i class="fas fa-graduation-cap"></i> Grado:</strong> {{ $estudiante->grado->nombre ?? 'N/A' }}<br>
+                            <strong><i class="fas fa-layer-group"></i> Nivel:</strong> {{ $estudiante->grado->nivel->nombre ?? 'N/A' }}
+                        </div>
 
+                        @if($comportamientos->count() > 0)
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped table-hover table-sm" id="tablaComportamientos">
                                     <thead class="bg-dark">
                                         <tr>
                                             <th>Fecha</th>
-                                            <th>Estudiante</th>
                                             <th>Grado</th>
                                             <th class="text-center">Tipo</th>
                                             <th>Descripción</th>
@@ -55,11 +53,6 @@
                                                     <strong>{{ $comportamiento->fecha_formateada }}</strong>
                                                     <br>
                                                     <small class="text-muted">{{ $comportamiento->dia_semana }}</small>
-                                                </td>
-                                                <td>
-                                                    <i class="fas fa-user-graduate"></i>
-                                                    <strong>{{ $comportamiento->estudiante->persona->apellidos }}, 
-                                                    {{ $comportamiento->estudiante->persona->nombres }}</strong>
                                                 </td>
                                                 <td>
                                                     <span class="badge badge-info">
@@ -245,7 +238,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-primary">
                                         <div class="inner">
-                                            <h3>{{ $comportamientos->count() }}</h3>
+                                            <h3>{{ $totalComportamientos }}</h3>
                                             <p>Total Registros</p>
                                         </div>
                                         <div class="icon">
@@ -256,7 +249,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-success">
                                         <div class="inner">
-                                            <h3>{{ $comportamientos->where('tipo', 'Positivo')->count() }}</h3>
+                                            <h3>{{ $positivos }}</h3>
                                             <p>Comportamientos Positivos</p>
                                         </div>
                                         <div class="icon">
@@ -267,7 +260,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-danger">
                                         <div class="inner">
-                                            <h3>{{ $comportamientos->where('tipo', 'Negativo')->count() }}</h3>
+                                            <h3>{{ $negativos }}</h3>
                                             <p>Comportamientos Negativos</p>
                                         </div>
                                         <div class="icon">
@@ -278,7 +271,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-warning">
                                         <div class="inner">
-                                            <h3>{{ $comportamientos->whereNotNull('sancion')->count() }}</h3>
+                                            <h3>{{ $conSancion }}</h3>
                                             <p>Con Sanción</p>
                                         </div>
                                         <div class="icon">
@@ -287,16 +280,22 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="mt-3">
+                                <a href="{{ route('tutor.dashboard') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
+                            </div>
                         @else
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                No hay comportamientos notificados para tus estudiantes.
+                                No hay comportamientos notificados para este estudiante.
                             </div>
                         @endif
                     @else
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle"></i>
-                            Tu perfil de tutor no está completo. Por favor contacta al administrador.
+                            No tienes estudiantes asignados.
                         </div>
                     @endif
                 </div>
@@ -321,6 +320,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
+        function cambiarEstudiante() {
+            const estudianteId = document.getElementById('estudianteSelect').value;
+            window.location.href = '{{ route("tutor.comportamientos") }}?estudiante_id=' + estudianteId;
+        }
+
         $(document).ready(function() {
             $('#tablaComportamientos').DataTable({
                 language: {

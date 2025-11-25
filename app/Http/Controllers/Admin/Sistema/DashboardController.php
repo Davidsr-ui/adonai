@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Sistema;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 use App\Models\Persona;
 use App\Models\Estudiante;
@@ -22,6 +23,7 @@ use App\Models\Comportamiento;
 use App\Models\Reporte;
 use App\Models\Mensaje;
 use App\Models\Notificacion;
+use App\Models\Taller;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -37,46 +39,47 @@ class DashboardController extends Controller
         
         // Estadísticas Generales
         $estadisticas = [
-            'usuarios' => $this->obtenerEstadisticasUsuarios(),
-            'personas' => $this->obtenerEstadisticasPersonas(),
+            'usuarios'    => $this->obtenerEstadisticasUsuarios(),
+            'personas'    => $this->obtenerEstadisticasPersonas(),
             'estudiantes' => $this->obtenerEstadisticasEstudiantes(),
-            'docentes' => $this->obtenerEstadisticasDocentes(),
-            'academico' => $this->obtenerEstadisticasAcademicas($gestionActiva),
-            'registros' => $this->obtenerEstadisticasRegistros($gestionActiva, $periodoActivo),
-            'mensajeria' => $this->obtenerEstadisticasMensajeria(),
+            'docentes'    => $this->obtenerEstadisticasDocentes(),
+            'academico'   => $this->obtenerEstadisticasAcademicas($gestionActiva),
+            'registros'   => $this->obtenerEstadisticasRegistros($gestionActiva, $periodoActivo),
+            'mensajeria'  => $this->obtenerEstadisticasMensajeria(),
         ];
         
         // Gráficos
         $graficos = [
-            'estudiantes_por_nivel' => $this->obtenerEstudiantesPorNivel($gestionActiva),
-            'estudiantes_por_grado' => $this->obtenerEstudiantesPorGrado($gestionActiva),
-            'matriculas_por_mes' => $this->obtenerMatriculasPorMes($gestionActiva),
-            'asistencias_ultimos_7_dias' => $this->obtenerAsistenciasUltimos7Dias(),
-            'notas_distribucion' => $this->obtenerDistribucionNotas($periodoActivo),
-            'comportamientos_por_tipo' => $this->obtenerComportamientosPorTipo($gestionActiva),
+            'estudiantes_por_nivel'        => $this->obtenerEstudiantesPorNivel($gestionActiva),
+            'estudiantes_por_grado'        => $this->obtenerEstudiantesPorGrado($gestionActiva),
+            'matriculas_por_mes'           => $this->obtenerMatriculasPorMes($gestionActiva),
+            'asistencias_ultimos_7_dias'   => $this->obtenerAsistenciasUltimos7Dias(),
+            'notas_distribucion'           => $this->obtenerDistribucionNotas($periodoActivo),
+            'comportamientos_por_tipo'     => $this->obtenerComportamientosPorTipo($gestionActiva), // ya no se muestra en UI, pero se mantiene por si lo usas luego
         ];
         
         // Actividad Reciente
         $actividadReciente = [
-            'ultimas_matriculas' => $this->obtenerUltimasMatriculas(5),
-            'ultimos_mensajes' => $this->obtenerUltimosMensajes(5),
-            'ultimas_notas' => $this->obtenerUltimasNotas(5),
-            'ultimos_comportamientos' => $this->obtenerUltimosComportamientos(5),
+            'ultimas_matriculas'    => $this->obtenerUltimasMatriculas(5),
+            'ultimos_mensajes'      => $this->obtenerUltimosMensajes(5),
+            'ultimas_notas'         => $this->obtenerUltimasNotas(5),
+            'ultimos_comportamientos' => $this->obtenerUltimosComportamientos(5), // idem anterior, ya no se muestra pero se conserva
         ];
         
         // Alertas y Notificaciones
         $alertas = [
-            'estudiantes_sin_matricula' => $this->obtenerEstudiantesSinMatricula($gestionActiva),
-            'cursos_sin_docente' => $this->obtenerCursosSinDocente($gestionActiva),
-            'estudiantes_bajo_rendimiento' => $this->obtenerEstudiantesBajoRendimiento($periodoActivo),
-            'estudiantes_inasistencias' => $this->obtenerEstudiantesConInasistencias(),
+            'estudiantes_sin_matricula'   => $this->obtenerEstudiantesSinMatricula($gestionActiva),
+            'cursos_sin_docente'          => $this->obtenerCursosSinDocente($gestionActiva),
+            'estudiantes_bajo_rendimiento'=> $this->obtenerEstudiantesBajoRendimiento($periodoActivo),
+            'estudiantes_inasistencias'   => $this->obtenerEstudiantesConInasistencias(),
         ];
         
         // Top Rankings
         $rankings = [
-            'mejores_estudiantes' => $this->obtenerMejoresEstudiantes($periodoActivo, 10),
-            'cursos_mas_matriculas' => $this->obtenerCursosConMasMatriculas($gestionActiva, 5),
-            'docentes_mas_cursos' => $this->obtenerDocentesConMasCursos($gestionActiva, 5),
+            'mejores_estudiantes'      => $this->obtenerMejoresEstudiantes($periodoActivo, 10),
+            'cursos_mas_matriculas'    => $this->obtenerCursosConMasMatriculas($gestionActiva, 5), // ya no se muestra, pero se deja por si lo necesitas luego
+            'docentes_mas_cursos'      => $this->obtenerDocentesConMasCursos($gestionActiva, 5),
+            'talleres_mas_solicitados' => $this->obtenerTalleresMasSolicitados(5),
         ];
         
         return view('admin.dashboard.index', compact(
@@ -96,8 +99,8 @@ class DashboardController extends Controller
     private function obtenerEstadisticasUsuarios()
     {
         return [
-            'total' => User::count(),
-            'activos' => User::whereHas('persona', function($q) {
+            'total'       => User::count(),
+            'activos'     => User::whereHas('persona', function($q) {
                 $q->where('estado', 'Activo');
             })->count(),
             'verificados' => User::whereNotNull('email_verified_at')->count(),
@@ -111,10 +114,10 @@ class DashboardController extends Controller
     private function obtenerEstadisticasPersonas()
     {
         return [
-            'total' => Persona::count(),
-            'activas' => Persona::where('estado', 'Activo')->count(),
-            'con_usuario' => Persona::whereNotNull('user_id')->count(),
-            'sin_usuario' => Persona::whereNull('user_id')->count(),
+            'total'      => Persona::count(),
+            'activas'    => Persona::where('estado', 'Activo')->count(),
+            'con_usuario'=> Persona::whereNotNull('user_id')->count(),
+            'sin_usuario'=> Persona::whereNull('user_id')->count(),
         ];
     }
 
@@ -124,8 +127,8 @@ class DashboardController extends Controller
     private function obtenerEstadisticasEstudiantes()
     {
         return [
-            'total' => Estudiante::count(),
-            'activos' => Estudiante::whereHas('persona', function($q) {
+            'total'     => Estudiante::count(),
+            'activos'   => Estudiante::whereHas('persona', function($q) {
                 $q->where('estado', 'Activo');
             })->count(),
             'con_tutor' => DB::table('tutor_estudiante')->distinct('estudiante_id')->count(),
@@ -139,11 +142,11 @@ class DashboardController extends Controller
     private function obtenerEstadisticasDocentes()
     {
         return [
-            'total' => Docente::count(),
-            'activos' => Docente::whereHas('persona', function($q) {
+            'total'       => Docente::count(),
+            'activos'     => Docente::whereHas('persona', function($q) {
                 $q->where('estado', 'Activo');
             })->count(),
-            'nombrados' => Docente::where('tipo_contrato', 'Nombrado')->count(),
+            'nombrados'   => Docente::where('tipo_contrato', 'Nombrado')->count(),
             'contratados' => Docente::where('tipo_contrato', 'Contratado')->count(),
         ];
     }
@@ -154,13 +157,13 @@ class DashboardController extends Controller
     private function obtenerEstadisticasAcademicas($gestion)
     {
         return [
-            'gestiones' => Gestion::count(),
-            'periodos' => Periodo::count(),
-            'grados' => Grado::count(),
-            'cursos' => Curso::count(),
-            'matriculas' => $gestion ? Matricula::where('gestion_id', $gestion->id)->count() : 0,
-            'matriculas_activas' => $gestion ? Matricula::where('gestion_id', $gestion->id)
-                ->where('estado', 'Matriculado')->count() : 0,
+            'gestiones'         => Gestion::count(),
+            'periodos'          => Periodo::count(),
+            'grados'            => Grado::count(),
+            'cursos'            => Curso::count(),
+            'matriculas'        => $gestion ? Matricula::where('gestion_id', $gestion->id)->count() : 0,
+            'matriculas_activas'=> $gestion ? Matricula::where('gestion_id', $gestion->id)
+                                                ->where('estado', 'Matriculado')->count() : 0,
         ];
     }
 
@@ -169,16 +172,16 @@ class DashboardController extends Controller
      */
     private function obtenerEstadisticasRegistros($gestion, $periodo)
     {
-        $notas = $periodo ? Nota::where('periodo_id', $periodo->id)->count() : 0;
-        $asistencias = Asistencia::whereDate('fecha', Carbon::today())->count();
-        $comportamientos = $gestion ? Comportamiento::whereYear('fecha', $gestion->año)->count() : 0;
-        $reportes = $gestion ? Reporte::where('gestion_id', $gestion->id)->count() : 0;
+        $notas          = $periodo ? Nota::where('periodo_id', $periodo->id)->count() : 0;
+        $asistencias    = Asistencia::whereDate('fecha', Carbon::today())->count();
+        $comportamientos= $gestion ? Comportamiento::whereYear('fecha', $gestion->año)->count() : 0;
+        $reportes       = $gestion ? Reporte::where('gestion_id', $gestion->id)->count() : 0;
 
         return [
-            'notas' => $notas,
-            'asistencias_hoy' => $asistencias,
-            'comportamientos' => $comportamientos,
-            'reportes' => $reportes,
+            'notas'             => $notas,
+            'asistencias_hoy'   => $asistencias,
+            'comportamientos'   => $comportamientos,
+            'reportes'          => $reportes,
         ];
     }
 
@@ -188,9 +191,9 @@ class DashboardController extends Controller
     private function obtenerEstadisticasMensajeria()
     {
         return [
-            'mensajes_total' => Mensaje::count(),
-            'mensajes_hoy' => Mensaje::whereDate('created_at', Carbon::today())->count(),
-            'notificaciones' => DB::table('notificaciones')->count(),
+            'mensajes_total'      => Mensaje::count(),
+            'mensajes_hoy'        => Mensaje::whereDate('created_at', Carbon::today())->count(),
+            'notificaciones'      => DB::table('notificaciones')->count(),
             'notificaciones_no_leidas' => DB::table('notificaciones')->where('leido', false)->count(),
         ];
     }
@@ -247,7 +250,7 @@ class DashboardController extends Controller
             ->map(function($item) {
                 $meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
                 return [
-                    'mes' => $meses[$item->mes - 1],
+                    'mes'   => $meses[$item->mes - 1],
                     'total' => $item->total
                 ];
             });
@@ -273,9 +276,9 @@ class DashboardController extends Controller
             ->get()
             ->map(function($item) {
                 return [
-                    'fecha' => Carbon::parse($item->fecha)->format('d/m'),
+                    'fecha'     => Carbon::parse($item->fecha)->format('d/m'),
                     'presentes' => $item->presentes,
-                    'ausentes' => $item->ausentes,
+                    'ausentes'  => $item->ausentes,
                     'tardanzas' => $item->tardanzas,
                 ];
             });
@@ -305,6 +308,7 @@ class DashboardController extends Controller
 
     /**
      * Comportamientos por Tipo
+     * (Se deja disponible aunque ya no se pinte en el dashboard)
      */
     private function obtenerComportamientosPorTipo($gestion)
     {
@@ -352,6 +356,7 @@ class DashboardController extends Controller
 
     /**
      * Últimos Comportamientos
+     * (ya no se muestra en el dashboard, pero lo dejamos por si luego se reutiliza)
      */
     private function obtenerUltimosComportamientos($limit = 5)
     {
@@ -472,6 +477,7 @@ class DashboardController extends Controller
 
     /**
      * Cursos con Más Matrículas
+     * (Ya no se muestra, pero se deja disponible)
      */
     private function obtenerCursosConMasMatriculas($gestion, $limit = 5)
     {
@@ -510,48 +516,61 @@ class DashboardController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Talleres más solicitados
+     *
+     * NOTA:
+     * - Si ya tienes una tabla de inscripciones de talleres (ej: inscripciones_taller),
+     *   ajusta aquí el nombre de la tabla / columnas.
+     * - Por ahora, si no hay tabla de inscripciones, se usa cupos_maximos como aproximación.
      */
+    private function obtenerTalleresMasSolicitados($limit = 5)
+    {
+        // Si tienes una tabla real de inscripciones de talleres, podrías hacer algo como:
+        // if (Schema::hasTable('inscripciones_taller')) {
+        //     return DB::table('inscripciones_taller')
+        //         ->join('tallers', 'inscripciones_taller.taller_id', '=', 'tallers.id')
+        //         ->select('tallers.nombre', DB::raw('COUNT(*) as total'))
+        //         ->groupBy('tallers.id', 'tallers.nombre')
+        //         ->orderByDesc('total')
+        //         ->limit($limit)
+        //         ->get();
+        // }
+
+        // Fallback: ordenamos por cupos_maximos para que al menos el ranking funcione
+        return Taller::where('activo', 1)
+            ->select('nombre', DB::raw('cupos_maximos as total'))
+            ->orderByDesc('cupos_maximos')
+            ->limit($limit)
+            ->get();
+    }
+
+    // Métodos REST no usados: redirigen al dashboard
+
     public function create()
     {
         return redirect()->route('admin.dashboard.index');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         return redirect()->route('admin.dashboard.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         return redirect()->route('admin.dashboard.index');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         return redirect()->route('admin.dashboard.index');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         return redirect()->route('admin.dashboard.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         return redirect()->route('admin.dashboard.index');

@@ -6,6 +6,7 @@
     <div class="row">
         <div class="col-md-8">
             <h1><b><i class="fas fa-tachometer-alt"></i> Dashboard del Sistema</b></h1>
+            <small class="text-muted">Resumen general de la gestión académica y administrativa.</small>
         </div>
         <div class="col-md-4 text-right">
             @if($gestionActiva)
@@ -24,7 +25,9 @@
 @stop
 
 @section('content')
-    <!-- Estadísticas Principales -->
+    <!-- ===============================
+         TARJETAS PRINCIPALES (USUARIOS / ROLES)
+    ================================ -->
     <div class="row">
         <!-- Usuarios -->
         <div class="col-lg-3 col-6">
@@ -95,7 +98,9 @@
         </div>
     </div>
 
-    <!-- Estadísticas Académicas -->
+    <!-- ===============================
+         ESTADÍSTICAS ACADÉMICAS RESUMIDAS
+    ================================ -->
     <div class="row">
         <div class="col-md-3">
             <div class="info-box bg-primary">
@@ -127,24 +132,29 @@
             </div>
         </div>
 
+        <!-- En vez de "Comportamientos", mostramos algo más útil: Notas registradas -->
         <div class="col-md-3">
             <div class="info-box bg-info">
-                <span class="info-box-icon"><i class="fas fa-user-check"></i></span>
+                <span class="info-box-icon"><i class="fas fa-file-signature"></i></span>
                 <div class="info-box-content">
-                    <span class="info-box-text">Comportamientos</span>
-                    <span class="info-box-number">{{ $estadisticas['registros']['comportamientos'] ?? 0 }}</span>
+                    <span class="info-box-text">Notas Registradas</span>
+                    <span class="info-box-number">{{ $estadisticas['registros']['notas'] ?? 0 }}</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Gráficos Principales -->
+    <!-- ===============================
+         GRÁFICOS PRINCIPALES
+    ================================ -->
     <div class="row">
-        <!-- Gráfico: Estudiantes por Nivel -->
+        <!-- Estudiantes por Nivel -->
         <div class="col-md-6">
-            <div class="card card-primary">
+            <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-chart-bar"></i> Estudiantes por Nivel</h3>
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> Estudiantes por Nivel
+                    </h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -155,7 +165,7 @@
                     @if($graficos['estudiantes_por_nivel']->count() > 0)
                         <canvas id="chartEstudiantesNivel" height="200"></canvas>
                     @else
-                        <div class="alert alert-info">
+                        <div class="alert alert-info mb-0">
                             <i class="fas fa-info-circle"></i> No hay datos de estudiantes por nivel.
                         </div>
                     @endif
@@ -163,11 +173,13 @@
             </div>
         </div>
 
-        <!-- Gráfico: Estudiantes por Grado -->
+        <!-- Estudiantes por Grado (Top 10) -->
         <div class="col-md-6">
-            <div class="card card-success">
+            <div class="card card-success card-outline">
                 <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-chart-pie"></i> Top 10 Grados</h3>
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-pie"></i> Top 10 Grados con más estudiantes
+                    </h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -178,7 +190,7 @@
                     @if($graficos['estudiantes_por_grado']->count() > 0)
                         <canvas id="chartEstudiantesGrado" height="200"></canvas>
                     @else
-                        <div class="alert alert-info">
+                        <div class="alert alert-info mb-0">
                             <i class="fas fa-info-circle"></i> No hay datos de estudiantes por grado.
                         </div>
                     @endif
@@ -187,14 +199,69 @@
         </div>
     </div>
 
-    <!-- Alertas y Notificaciones -->
+    <!-- Segunda fila de gráficos: Matrículas y Asistencias -->
+    <div class="row">
+        <!-- Matrículas por mes -->
+        <div class="col-md-6">
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Matrículas por Mes (Gestión actual)
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if($graficos['matriculas_por_mes']->count() > 0)
+                        <canvas id="chartMatriculasMes" height="200"></canvas>
+                    @else
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i> No hay matrículas registradas en esta gestión.
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Asistencias últimos 7 días -->
+        <div class="col-md-6">
+            <div class="card card-warning card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-check"></i> Asistencias últimos 7 días
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if($graficos['asistencias_ultimos_7_dias']->count() > 0)
+                        <canvas id="chartAsistencias7Dias" height="200"></canvas>
+                    @else
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i> No hay asistencias registradas en los últimos 7 días.
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===============================
+         ALERTAS DEL SISTEMA
+    ================================ -->
     @if(($alertas['estudiantes_sin_matricula']->count() > 0) || 
         ($alertas['cursos_sin_docente']->count() > 0) || 
         (isset($alertas['estudiantes_bajo_rendimiento']) && $alertas['estudiantes_bajo_rendimiento']->count() > 0) ||
         (isset($alertas['estudiantes_inasistencias']) && $alertas['estudiantes_inasistencias']->count() > 0))
     <div class="row">
         <div class="col-md-12">
-            <div class="card card-danger">
+            <div class="card card-danger card-outline">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
                     <div class="card-tools">
@@ -220,7 +287,7 @@
                         @if($alertas['cursos_sin_docente']->count() > 0)
                         <div class="col-md-3">
                             <div class="alert alert-info">
-                                <h5><i class="fas fa-chalkboard"></i> Sin Docente</h5>
+                                <h5><i class="fas fa-chalkboard"></i> Cursos sin Docente</h5>
                                 <p><strong>{{ $alertas['cursos_sin_docente']->count() }}</strong> cursos sin docente asignado.</p>
                                 <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#modalSinDocente">
                                     Ver lista
@@ -259,12 +326,15 @@
     </div>
     @endif
 
-    <!-- Estadísticas de Comportamientos y Reportes -->
+    <!-- ===============================
+         DISTRIBUCIÓN DE NOTAS + GESTIÓN ACADÉMICA
+    ================================ -->
     <div class="row">
+        <!-- Distribución de notas (en vez del gráfico de comportamientos) -->
         <div class="col-md-6">
-            <div class="card card-warning">
+            <div class="card card-warning card-outline">
                 <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-user-check"></i> Comportamientos Registrados</h3>
+                    <h3 class="card-title"><i class="fas fa-chart-pie"></i> Distribución de Notas (Periodo actual)</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -272,19 +342,20 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    @if(isset($graficos['comportamientos_por_tipo']) && $graficos['comportamientos_por_tipo']->count() > 0)
-                        <canvas id="chartComportamientos" height="200"></canvas>
+                    @if(isset($graficos['notas_distribucion']) && $graficos['notas_distribucion']->count() > 0)
+                        <canvas id="chartDistribucionNotas" height="200"></canvas>
                     @else
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> No hay comportamientos registrados.
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i> No hay notas registradas en el periodo actual.
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
+        <!-- Gestión Académica (sin comportamientos ni reportes) -->
         <div class="col-md-6">
-            <div class="card card-primary">
+            <div class="card card-primary card-outline">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-chart-line"></i> Gestión Académica</h3>
                     <div class="card-tools">
@@ -314,20 +385,20 @@
                             </div>
                         </div>
                         <div class="col-6 text-center">
-                            <div class="info-box bg-warning">
-                                <span class="info-box-icon"><i class="fas fa-user-check"></i></span>
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-file-signature"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Comportamientos</span>
-                                    <span class="info-box-number">{{ $estadisticas['registros']['comportamientos'] ?? 0 }}</span>
+                                    <span class="info-box-text">Notas Registradas</span>
+                                    <span class="info-box-number">{{ $estadisticas['registros']['notas'] ?? 0 }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6 text-center">
-                            <div class="info-box bg-info">
-                                <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
+                            <div class="info-box bg-secondary">
+                                <span class="info-box-icon"><i class="fas fa-calendar-check"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Reportes</span>
-                                    <span class="info-box-number">{{ $estadisticas['registros']['reportes'] ?? 0 }}</span>
+                                    <span class="info-box-text">Asistencias (hoy)</span>
+                                    <span class="info-box-number">{{ $estadisticas['registros']['asistencias_hoy'] ?? 0 }}</span>
                                 </div>
                             </div>
                         </div>
@@ -337,12 +408,14 @@
         </div>
     </div>
 
-    <!-- Rankings -->
+    <!-- ===============================
+         RANKINGS
+    ================================ -->
     @if(isset($rankings['mejores_estudiantes']) && $rankings['mejores_estudiantes']->count() > 0)
     <div class="row">
         <!-- Mejores Estudiantes -->
         <div class="col-md-6">
-            <div class="card card-success">
+            <div class="card card-success card-outline">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-trophy"></i> Top 10 Mejores Estudiantes</h3>
                     <div class="card-tools">
@@ -352,7 +425,7 @@
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-sm table-hover">
+                    <table class="table table-sm table-hover mb-0">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -388,11 +461,11 @@
             </div>
         </div>
 
-        <!-- Cursos Más Populares -->
+        <!-- En vez de Cursos Más Populares → Talleres Más Solicitados -->
         <div class="col-md-6">
-            <div class="card card-primary">
+            <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-fire"></i> Cursos Más Populares</h3>
+                    <h3 class="card-title"><i class="fas fa-fire"></i> Talleres más solicitados</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -400,22 +473,22 @@
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    @if(isset($rankings['cursos_mas_matriculas']) && $rankings['cursos_mas_matriculas']->count() > 0)
-                    <table class="table table-sm table-hover">
+                    @if(isset($rankings['talleres_mas_solicitados']) && $rankings['talleres_mas_solicitados']->count() > 0)
+                    <table class="table table-sm table-hover mb-0">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Curso</th>
-                                <th class="text-center">Matrículas</th>
+                                <th>Taller</th>
+                                <th class="text-center">Participantes</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($rankings['cursos_mas_matriculas'] as $index => $curso)
+                            @foreach($rankings['talleres_mas_solicitados'] as $index => $taller)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $curso->nombre }}</td>
+                                <td>{{ $taller->nombre }}</td>
                                 <td class="text-center">
-                                    <span class="badge badge-primary">{{ $curso->total }}</span>
+                                    <span class="badge badge-primary">{{ $taller->total }}</span>
                                 </td>
                             </tr>
                             @endforeach
@@ -424,7 +497,7 @@
                     @else
                     <div class="p-3">
                         <div class="alert alert-info mb-0">
-                            <i class="fas fa-info-circle"></i> No hay matrículas registradas.
+                            <i class="fas fa-info-circle"></i> Aún no hay talleres con inscripciones registradas.
                         </div>
                     </div>
                     @endif
@@ -434,11 +507,13 @@
     </div>
     @endif
 
-    <!-- Actividad Reciente -->
+    <!-- ===============================
+         ACTIVIDAD RECIENTE
+    ================================ -->
     @if(isset($actividadReciente))
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card card-outline card-default">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-history"></i> Actividad Reciente</h3>
                     <div class="card-tools">
@@ -473,27 +548,28 @@
                             @endif
                         </div>
 
-                        <!-- Últimos Comportamientos -->
+                        <!-- En vez de Últimos Comportamientos → Últimas Notas Publicadas -->
                         <div class="col-md-6">
-                            <h5><i class="fas fa-user-check"></i> Últimos Comportamientos</h5>
-                            @if(isset($actividadReciente['ultimos_comportamientos']) && $actividadReciente['ultimos_comportamientos']->count() > 0)
+                            <h5><i class="fas fa-file-alt"></i> Últimas Notas Publicadas</h5>
+                            @if(isset($actividadReciente['ultimas_notas']) && $actividadReciente['ultimas_notas']->count() > 0)
                             <ul class="list-group">
-                                @foreach($actividadReciente['ultimos_comportamientos'] as $comp)
+                                @foreach($actividadReciente['ultimas_notas'] as $nota)
                                 <li class="list-group-item">
-                                    <span class="badge badge-{{ $comp->tipo == 'Positivo' ? 'success' : ($comp->tipo == 'Negativo' ? 'danger' : 'secondary') }}">
-                                        {{ $comp->tipo }}
-                                    </span>
-                                    <strong>{{ $comp->estudiante->persona->nombres }} {{ $comp->estudiante->persona->apellidos }}</strong>
+                                    <strong>{{ $nota->matricula->estudiante->persona->nombres }}
+                                        {{ $nota->matricula->estudiante->persona->apellidos }}</strong>
                                     <br>
                                     <small>
-                                        {{ \Str::limit($comp->descripcion, 50) }}
-                                        <span class="float-right text-muted">{{ \Carbon\Carbon::parse($comp->fecha)->diffForHumans() }}</span>
+                                        Docente: {{ $nota->docente->persona->nombres }} {{ $nota->docente->persona->apellidos }}
+                                        <span class="ml-2">Nota final: <b>{{ $nota->nota_final }}</b></span>
+                                        <span class="float-right text-muted">
+                                            {{ \Carbon\Carbon::parse($nota->fecha_publicacion)->diffForHumans() }}
+                                        </span>
                                     </small>
                                 </li>
                                 @endforeach
                             </ul>
                             @else
-                            <div class="alert alert-info">No hay comportamientos recientes.</div>
+                            <div class="alert alert-info">No hay notas publicadas recientemente.</div>
                             @endif
                         </div>
                     </div>
@@ -503,7 +579,9 @@
     </div>
     @endif
 
-    <!-- MODALES DE ALERTAS -->
+    <!-- ===============================
+         MODALES DE ALERTAS
+    ================================ -->
     
     <!-- Modal: Estudiantes Sin Matrícula -->
     <div class="modal fade" id="modalSinMatricula" tabindex="-1" role="dialog">
@@ -528,7 +606,11 @@
                             <tr>
                                 <td>{{ $est->persona->dni }}</td>
                                 <td>{{ $est->persona->nombres }} {{ $est->persona->apellidos }}</td>
-                                <td><span class="badge badge-{{ $est->persona->estado == 'Activo' ? 'success' : 'danger' }}">{{ $est->persona->estado }}</span></td>
+                                <td>
+                                    <span class="badge badge-{{ $est->persona->estado == 'Activo' ? 'success' : 'danger' }}">
+                                        {{ $est->persona->estado }}
+                                    </span>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -649,7 +731,7 @@
             padding: 0.4rem 0.8rem;
         }
         .small-box {
-            border-radius: 0.25rem;
+            border-radius: 0.35rem;
         }
         .info-box {
             min-height: 80px;
@@ -661,6 +743,12 @@
         .bg-purple .small-box-footer {
             background-color: rgba(0, 0, 0, 0.1);
         }
+
+        /* Un poco más de orden visual en tablas pequeñas */
+        .table-sm th,
+        .table-sm td {
+            vertical-align: middle !important;
+        }
     </style>
 @stop
 
@@ -668,83 +756,171 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
         $(document).ready(function() {
-            
-            // Gráfico: Estudiantes por Nivel
+
+            // Fuente y estilo global de Chart.js
+            if (window.Chart) {
+                Chart.defaults.font.family = "'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif";
+                Chart.defaults.font.size = 12;
+                Chart.defaults.plugins.legend.position = 'bottom';
+            }
+
+            // ========= ESTUDIANTES POR NIVEL (BARRAS) =========
             @if(isset($graficos['estudiantes_por_nivel']) && $graficos['estudiantes_por_nivel']->count() > 0)
-            var ctxNivel = document.getElementById('chartEstudiantesNivel').getContext('2d');
-            new Chart(ctxNivel, {
-                type: 'bar',
-                data: {
-                    labels: {!! json_encode($graficos['estudiantes_por_nivel']->pluck('nombre')) !!},
-                    datasets: [{
-                        label: 'Estudiantes',
-                        data: {!! json_encode($graficos['estudiantes_por_nivel']->pluck('total')) !!},
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        y: { beginAtZero: true }
+            (function () {
+                const ctx = document.getElementById('chartEstudiantesNivel').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {!! json_encode($graficos['estudiantes_por_nivel']->pluck('nombre')) !!},
+                        datasets: [{
+                            label: 'Estudiantes',
+                            data: {!! json_encode($graficos['estudiantes_por_nivel']->pluck('total')) !!},
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 5 }
+                            }
+                        }
                     }
-                }
-            });
+                });
+            })();
             @endif
 
-            // Gráfico: Estudiantes por Grado
+            // ========= ESTUDIANTES POR GRADO (TOP 10, DOUGHNUT) =========
             @if(isset($graficos['estudiantes_por_grado']) && $graficos['estudiantes_por_grado']->count() > 0)
-            var ctxGrado = document.getElementById('chartEstudiantesGrado').getContext('2d');
-            new Chart(ctxGrado, {
-                type: 'pie',
-                data: {
-                    labels: {!! json_encode($graficos['estudiantes_por_grado']->pluck('nombre')) !!},
-                    datasets: [{
-                        data: {!! json_encode($graficos['estudiantes_por_grado']->pluck('total')) !!},
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.5)',
-                            'rgba(54, 162, 235, 0.5)',
-                            'rgba(255, 206, 86, 0.5)',
-                            'rgba(75, 192, 192, 0.5)',
-                            'rgba(153, 102, 255, 0.5)',
-                            'rgba(255, 159, 64, 0.5)',
-                            'rgba(199, 199, 199, 0.5)',
-                            'rgba(83, 102, 255, 0.5)',
-                            'rgba(255, 99, 255, 0.5)',
-                            'rgba(99, 255, 132, 0.5)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
-            });
+            (function () {
+                const ctx = document.getElementById('chartEstudiantesGrado').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: {!! json_encode($graficos['estudiantes_por_grado']->pluck('nombre')) !!},
+                        datasets: [{
+                            data: {!! json_encode($graficos['estudiantes_por_grado']->pluck('total')) !!},
+                            backgroundColor: [
+                                '#4e79a7','#f28e2b','#e15759','#76b7b2',
+                                '#59a14f','#edc948','#b07aa1','#ff9da7',
+                                '#9c755f','#bab0ab'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%'
+                    }
+                });
+            })();
             @endif
 
-            // Gráfico: Comportamientos
-            @if(isset($graficos['comportamientos_por_tipo']) && $graficos['comportamientos_por_tipo']->count() > 0)
-            var ctxComp = document.getElementById('chartComportamientos').getContext('2d');
-            new Chart(ctxComp, {
-                type: 'pie',
-                data: {
-                    labels: {!! json_encode($graficos['comportamientos_por_tipo']->pluck('tipo')) !!},
-                    datasets: [{
-                        data: {!! json_encode($graficos['comportamientos_por_tipo']->pluck('total')) !!},
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.5)',
-                            'rgba(255, 99, 132, 0.5)',
-                            'rgba(201, 203, 207, 0.5)'
+            // ========= MATRÍCULAS POR MES (LÍNEA) =========
+            @if(isset($graficos['matriculas_por_mes']) && $graficos['matriculas_por_mes']->count() > 0)
+            (function () {
+                const ctx = document.getElementById('chartMatriculasMes').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: {!! json_encode($graficos['matriculas_por_mes']->pluck('mes')) !!},
+                        datasets: [{
+                            label: 'Matrículas',
+                            data: {!! json_encode($graficos['matriculas_por_mes']->pluck('total')) !!},
+                            fill: true,
+                            backgroundColor: 'rgba(75, 192, 192, 0.25)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 5 }
+                            }
+                        }
+                    }
+                });
+            })();
+            @endif
+
+            // ========= ASISTENCIAS ÚLTIMOS 7 DÍAS (BARRAS APILADAS) =========
+            @if(isset($graficos['asistencias_ultimos_7_dias']) && $graficos['asistencias_ultimos_7_dias']->count() > 0)
+            (function () {
+                const ctx = document.getElementById('chartAsistencias7Dias').getContext('2d');
+                const labels = {!! json_encode($graficos['asistencias_ultimos_7_dias']->pluck('fecha')) !!};
+                const presentes = {!! json_encode($graficos['asistencias_ultimos_7_dias']->pluck('presentes')) !!};
+                const ausentes = {!! json_encode($graficos['asistencias_ultimos_7_dias']->pluck('ausentes')) !!};
+                const tardanzas = {!! json_encode($graficos['asistencias_ultimos_7_dias']->pluck('tardanzas')) !!};
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: 'Presentes',
+                                data: presentes,
+                                backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                            },
+                            {
+                                label: 'Ausentes',
+                                data: ausentes,
+                                backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                            },
+                            {
+                                label: 'Tardanzas',
+                                data: tardanzas,
+                                backgroundColor: 'rgba(255, 205, 86, 0.8)'
+                            }
                         ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
-            });
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { stacked: true },
+                            y: { stacked: true, beginAtZero: true }
+                        }
+                    }
+                });
+            })();
+            @endif
+
+            // ========= DISTRIBUCIÓN DE NOTAS =========
+            @if(isset($graficos['notas_distribucion']) && $graficos['notas_distribucion']->count() > 0)
+            (function () {
+                const ctx = document.getElementById('chartDistribucionNotas').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: {!! json_encode($graficos['notas_distribucion']->pluck('rango')) !!},
+                        datasets: [{
+                            data: {!! json_encode($graficos['notas_distribucion']->pluck('cantidad')) !!},
+                            backgroundColor: [
+                                '#4caf50',  // Excelente
+                                '#2196f3',  // Bueno
+                                '#ffb300',  // Regular
+                                '#f44336'   // Deficiente
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            })();
             @endif
 
         });

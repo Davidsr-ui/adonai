@@ -13,35 +13,31 @@
             <div class="card">
                 <div class="card-header bg-success">
                     <h3 class="card-title"><i class="fas fa-star"></i> Calificaciones de Mis Estudiantes</h3>
+                    <div class="card-tools">
+                        @if($tutor->estudiantes->count() > 1)
+                            <select id="estudianteSelect" class="form-control form-control-sm" onchange="cambiarEstudiante()">
+                                @foreach($tutor->estudiantes as $est)
+                                    <option value="{{ $est->id }}" {{ $estudiante && $estudiante->id == $est->id ? 'selected' : '' }}>
+                                        {{ $est->persona->apellidos }} {{ $est->persona->nombres }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
                 </div>
                 <div class="card-body">
-                    @if(Auth::user()->persona && Auth::user()->persona->tutor)
-                        @php
-                            // Obtener los estudiantes del tutor
-                            $estudiantes = Auth::user()->persona->tutor->estudiantes;
-                            $estudiantesIds = $estudiantes->pluck('id');
-                            
-                            // Obtener las notas de esos estudiantes que están visibles para tutores
-                            $notas = \App\Models\Nota::whereHas('matricula', function($q) use ($estudiantesIds) {
-                                    $q->whereIn('estudiante_id', $estudiantesIds);
-                                })
-                                ->where('visible_tutor', true)
-                                ->with(['matricula.estudiante.persona', 'matricula.curso', 'periodo', 'docente.persona'])
-                                ->orderBy('created_at', 'desc')
-                                ->get();
-                        @endphp
-                        
-                        @if($notas->count() > 0)
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i>
-                                Puedes ver las notas que los docentes han publicado para tutores.
-                            </div>
+                    @if($estudiante)
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-user"></i> Estudiante:</strong> {{ $estudiante->persona->apellidos }} {{ $estudiante->persona->nombres }}<br>
+                            <strong><i class="fas fa-graduation-cap"></i> Grado:</strong> {{ $estudiante->grado->nombre ?? 'N/A' }}<br>
+                            <strong><i class="fas fa-layer-group"></i> Nivel:</strong> {{ $estudiante->grado->nivel->nombre ?? 'N/A' }}
+                        </div>
 
+                        @if($notas->count() > 0)
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped table-hover table-sm" id="tablaNotas">
                                     <thead class="bg-dark">
                                         <tr>
-                                            <th>Estudiante</th>
                                             <th>Curso</th>
                                             <th>Periodo</th>
                                             <th>Tipo</th>
@@ -55,10 +51,6 @@
                                     <tbody>
                                         @foreach($notas as $nota)
                                             <tr>
-                                                <td>
-                                                    <strong>{{ $nota->matricula->estudiante->persona->apellidos }}, 
-                                                    {{ $nota->matricula->estudiante->persona->nombres }}</strong>
-                                                </td>
                                                 <td>{{ $nota->matricula->curso->nombre }}</td>
                                                 <td>
                                                     <span class="badge badge-secondary">
@@ -100,7 +92,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-success">
                                         <div class="inner">
-                                            <h3>{{ $notas->where('nota_final', '>=', 14)->count() }}</h3>
+                                            <h3>{{ $aprobados }}</h3>
                                             <p>Aprobados</p>
                                         </div>
                                         <div class="icon">
@@ -111,7 +103,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-danger">
                                         <div class="inner">
-                                            <h3>{{ $notas->where('nota_final', '<', 14)->count() }}</h3>
+                                            <h3>{{ $desaprobados }}</h3>
                                             <p>Desaprobados</p>
                                         </div>
                                         <div class="icon">
@@ -122,7 +114,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-info">
                                         <div class="inner">
-                                            <h3>{{ number_format($notas->avg('nota_final'), 2) }}</h3>
+                                            <h3>{{ number_format($promedio, 2) }}</h3>
                                             <p>Promedio General</p>
                                         </div>
                                         <div class="icon">
@@ -133,7 +125,7 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-warning">
                                         <div class="inner">
-                                            <h3>{{ $notas->count() }}</h3>
+                                            <h3>{{ $totalNotas }}</h3>
                                             <p>Total Notas</p>
                                         </div>
                                         <div class="icon">
@@ -142,16 +134,22 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="mt-3">
+                                <a href="{{ route('tutor.dashboard') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
+                            </div>
                         @else
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                No hay notas publicadas para tus estudiantes en este momento.
+                                No hay notas publicadas para este estudiante.
                             </div>
                         @endif
                     @else
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle"></i>
-                            Tu perfil de tutor no está completo. Por favor contacta al administrador.
+                            No tienes estudiantes asignados.
                         </div>
                     @endif
                 </div>
@@ -170,6 +168,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
+        function cambiarEstudiante() {
+            const estudianteId = document.getElementById('estudianteSelect').value;
+            window.location.href = '{{ route("tutor.notas") }}?estudiante_id=' + estudianteId;
+        }
+
         $(document).ready(function() {
             $('#tablaNotas').DataTable({
                 language: {
@@ -177,7 +180,7 @@
                 },
                 responsive: true,
                 autoWidth: false,
-                order: [[0, 'asc'], [2, 'desc']]
+                order: [[1, 'desc']]
             });
 
             @if(session('mensaje'))

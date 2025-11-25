@@ -13,6 +13,7 @@ use App\Models\MensajeDestinatario;
 use App\Models\Docente;
 use App\Models\Matricula;
 use App\Models\User;
+use App\Models\Nota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,25 +27,25 @@ class TutorAcademicoController extends Controller
     private function obtenerTutorActual()
     {
         $user = Auth::user();
-        
+
         // CAMBIO: Buscar persona por user_id
         $persona = Persona::where('user_id', $user->id)->first();
-        
+
         if (!$persona) {
             \Log::error('Usuario sin persona vinculada', ['user_id' => $user->id]);
             return null;
         }
-        
+
         // Buscar el tutor usando persona_id
         $tutor = Tutor::where('persona_id', $persona->id)->first();
-        
+
         if (!$tutor) {
             \Log::error('No se encontró tutor', [
                 'user_id' => $user->id,
                 'persona_id' => $persona->id
             ]);
         }
-        
+
         return $tutor;
     }
 
@@ -54,7 +55,7 @@ class TutorAcademicoController extends Controller
     public function horarios()
     {
         $tutor = $this->obtenerTutorActual();
-        
+
         if (!$tutor) {
             return redirect()->route('tutor.dashboard')
                 ->with('mensaje', 'No se encontró información de tutor')
@@ -62,14 +63,14 @@ class TutorAcademicoController extends Controller
         }
 
         $tutor->load(['estudiantes.persona', 'estudiantes.grado.nivel']);
-        
+
         $estudiante = $tutor->estudiantes->first();
         $estudiante_id = request('estudiante_id', $estudiante?->id);
-        
+
         if ($estudiante_id) {
             $estudiante = Estudiante::with(['grado.nivel', 'persona'])->find($estudiante_id);
         }
-        
+
         $horarios = [];
         if ($estudiante && $estudiante->grado) {
             // ✅ CORRECCIÓN: Obtener solo IDs de cursos donde el estudiante está matriculado
@@ -77,20 +78,20 @@ class TutorAcademicoController extends Controller
                 ->where('estudiante_id', $estudiante->id)
                 ->where('estado', 'Matriculado')
                 ->pluck('curso_id');
-            
+
             // ✅ Filtrar horarios SOLO de esos cursos
             if ($cursosMatriculadosIds->isNotEmpty()) {
                 $horarios = Horario::where('grado_id', $estudiante->grado_id)
-                                  ->whereIn('curso_id', $cursosMatriculadosIds)  // ✅ FILTRO CRÍTICO
-                                  ->with(['curso', 'docente.persona'])
-                                  ->orderBy('dia_semana')
-                                  ->orderBy('hora_inicio')
-                                  ->get();
+                    ->whereIn('curso_id', $cursosMatriculadosIds)  // ✅ FILTRO CRÍTICO
+                    ->with(['curso', 'docente.persona'])
+                    ->orderBy('dia_semana')
+                    ->orderBy('hora_inicio')
+                    ->get();
             }
         }
-        
+
         $horarioSemanal = $this->organizarHorarioSemanal($horarios);
-        
+
         return view('tutor.horarios', compact('tutor', 'estudiante', 'horarioSemanal'));
     }
 
@@ -100,7 +101,7 @@ class TutorAcademicoController extends Controller
     public function cursos()
     {
         $tutor = $this->obtenerTutorActual();
-        
+
         if (!$tutor) {
             return redirect()->route('tutor.dashboard')
                 ->with('mensaje', 'No se encontró información de tutor')
@@ -108,22 +109,22 @@ class TutorAcademicoController extends Controller
         }
 
         $tutor->load(['estudiantes.persona', 'estudiantes.grado.nivel']);
-        
+
         $estudiante = $tutor->estudiantes->first();
         $estudiante_id = request('estudiante_id', $estudiante?->id);
-        
+
         if ($estudiante_id) {
             $estudiante = Estudiante::with(['grado.nivel', 'persona'])->find($estudiante_id);
         }
-        
+
         $cursos = [];
         if ($estudiante && $estudiante->grado) {
             // ✅ CORRECCIÓN: Filtrar solo cursos donde el estudiante está matriculado
             $cursos = DB::table('matriculas as m')
                 ->join('cursos as c', 'm.curso_id', '=', 'c.id')
-                ->join('docente_curso as dc', function($join) use ($estudiante) {
+                ->join('docente_curso as dc', function ($join) use ($estudiante) {
                     $join->on('dc.curso_id', '=', 'c.id')
-                         ->where('dc.grado_id', '=', $estudiante->grado_id);
+                        ->where('dc.grado_id', '=', $estudiante->grado_id);
                 })
                 ->join('docentes as d', 'dc.docente_id', '=', 'd.id')
                 ->join('personas as p', 'd.persona_id', '=', 'p.id')
@@ -143,8 +144,178 @@ class TutorAcademicoController extends Controller
                 ->distinct()
                 ->get();
         }
-        
+
         return view('tutor.cursos', compact('tutor', 'estudiante', 'cursos'));
+    }
+
+    /**
+     * Consultar Notas - Con filtro por estudiante
+     */
+    public function notas()
+    {
+        $tutor = $this->obtenerTutorActual();
+
+        if (!$tutor) {
+            return redirect()->route('tutor.dashboard')
+                ->with('mensaje', 'No se encontró información de tutor')
+                ->with('icono', 'error');
+        }
+
+        $tutor->load(['estudiantes.persona', 'estudiantes.grado.nivel']);
+
+        $estudiante = $tutor->estudiantes->first();
+        $estudiante_id = request('estudiante_id', $estudiante?->id);
+
+        if ($estudiante_id) {
+            $estudiante = Estudiante::with(['grado.nivel', 'persona'])->find($estudiante_id);
+        }
+
+        // Obtener notas del estudiante seleccionado
+        $notas = collect();
+        $aprobados = 0;
+        $desaprobados = 0;
+        $promedio = 0;
+        $totalNotas = 0;
+
+        if ($estudiante) {
+            $notas = \App\Models\Nota::whereHas('matricula', function ($q) use ($estudiante) {
+                $q->where('estudiante_id', $estudiante->id);
+            })
+                ->where('visible_tutor', true)
+                ->with(['matricula.estudiante.persona', 'matricula.curso', 'periodo', 'docente.persona'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Calcular estadísticas
+            $totalNotas = $notas->count();
+            $aprobados = $notas->where('nota_final', '>=', 14)->count();
+            $desaprobados = $notas->where('nota_final', '<', 14)->count();
+            $promedio = $totalNotas > 0 ? $notas->avg('nota_final') : 0;
+        }
+
+        return view('tutor.notas', compact(
+            'tutor',
+            'estudiante',
+            'notas',
+            'aprobados',
+            'desaprobados',
+            'promedio',
+            'totalNotas'
+        ));
+    }
+
+    /**
+     * Consultar Asistencias - Con filtro por estudiante
+     */
+    public function asistencias()
+    {
+        $tutor = $this->obtenerTutorActual();
+
+        if (!$tutor) {
+            return redirect()->route('tutor.dashboard')
+                ->with('mensaje', 'No se encontró información de tutor')
+                ->with('icono', 'error');
+        }
+
+        $tutor->load(['estudiantes.persona', 'estudiantes.grado.nivel']);
+
+        $estudiante = $tutor->estudiantes->first();
+        $estudiante_id = request('estudiante_id', $estudiante?->id);
+
+        if ($estudiante_id) {
+            $estudiante = Estudiante::with(['grado.nivel', 'persona'])->find($estudiante_id);
+        }
+
+        // Obtener asistencias del estudiante seleccionado
+        $asistencias = collect();
+        $presentes = 0;
+        $ausentes = 0;
+        $tardanzas = 0;
+        $totalAsistencias = 0;
+        $porcentaje = 0;
+
+        if ($estudiante) {
+            $asistencias = \App\Models\Asistencia::where('estudiante_id', $estudiante->id)
+                ->with(['estudiante.persona', 'curso', 'docente.persona'])
+                ->orderBy('fecha', 'desc')
+                ->get();
+
+            // Calcular estadísticas
+            $totalAsistencias = $asistencias->count();
+            $presentes = $asistencias->where('estado', 'Presente')->count();
+            $ausentes = $asistencias->where('estado', 'Ausente')->count();
+            $tardanzas = $asistencias->where('estado', 'Tardanza')->count();
+            $porcentaje = $totalAsistencias > 0 ? round(($presentes / $totalAsistencias) * 100, 2) : 0;
+        }
+
+        return view('tutor.asistencias', compact(
+            'tutor',
+            'estudiante',
+            'asistencias',
+            'presentes',
+            'ausentes',
+            'tardanzas',
+            'totalAsistencias',
+            'porcentaje'
+        ));
+    }
+
+
+    /**
+     * Consultar Comportamientos - Con filtro por estudiante
+     */
+    public function comportamientos()
+    {
+        $tutor = $this->obtenerTutorActual();
+
+        if (!$tutor) {
+            return redirect()->route('tutor.dashboard')
+                ->with('mensaje', 'No se encontró información de tutor')
+                ->with('icono', 'error');
+        }
+
+        $tutor->load(['estudiantes.persona', 'estudiantes.grado.nivel']);
+
+        $estudiante = $tutor->estudiantes->first();
+        $estudiante_id = request('estudiante_id', $estudiante?->id);
+
+        if ($estudiante_id) {
+            $estudiante = Estudiante::with(['grado.nivel', 'persona'])->find($estudiante_id);
+        }
+
+        // Obtener comportamientos del estudiante seleccionado
+        $comportamientos = collect();
+        $positivos = 0;
+        $negativos = 0;
+        $neutros = 0;
+        $conSancion = 0;
+        $totalComportamientos = 0;
+
+        if ($estudiante) {
+            $comportamientos = \App\Models\Comportamiento::where('estudiante_id', $estudiante->id)
+                ->where('notificado_tutor', true)
+                ->with(['estudiante.persona', 'estudiante.grado', 'docente.persona'])
+                ->orderBy('fecha', 'desc')
+                ->get();
+
+            // Calcular estadísticas
+            $totalComportamientos = $comportamientos->count();
+            $positivos = $comportamientos->where('tipo', 'Positivo')->count();
+            $negativos = $comportamientos->where('tipo', 'Negativo')->count();
+            $neutros = $comportamientos->where('tipo', 'Neutro')->count();
+            $conSancion = $comportamientos->whereNotNull('sancion')->count();
+        }
+
+        return view('tutor.comportamientos', compact(
+            'tutor',
+            'estudiante',
+            'comportamientos',
+            'positivos',
+            'negativos',
+            'neutros',
+            'conSancion',
+            'totalComportamientos'
+        ));
     }
 
     /**
@@ -153,9 +324,9 @@ class TutorAcademicoController extends Controller
     public function mensajes()
     {
         $user = Auth::user();
-        
+
         $tutor = $this->obtenerTutorActual();
-        
+
         if (!$tutor) {
             return redirect()->route('tutor.dashboard')
                 ->with('mensaje', 'No se encontró información de tutor')
@@ -163,21 +334,21 @@ class TutorAcademicoController extends Controller
         }
 
         $tutor->load(['estudiantes.persona']);
-        
+
         $mensajesEnviados = Mensaje::enviadosPor($user->id)
-                                   ->with(['estudiante.persona', 'destinatarios.destinatario.persona'])
-                                   ->orderBy('created_at', 'desc')
-                                   ->get();
-        
+            ->with(['estudiante.persona', 'destinatarios.destinatario.persona'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $mensajesRecibidos = Mensaje::recibidosPor($user->id)
-                                    ->with(['remitente.persona', 'estudiante.persona'])
-                                    ->orderBy('created_at', 'desc')
-                                    ->get();
-        
+            ->with(['remitente.persona', 'estudiante.persona'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $mensajesNoLeidos = Mensaje::noLeidosPor($user->id)->count();
-        
+
         $docentes = $this->obtenerDocentesDeEstudiantes($tutor);
-        
+
         return view('tutor.mensajes', compact('tutor', 'mensajesEnviados', 'mensajesRecibidos', 'mensajesNoLeidos', 'docentes'));
     }
 
@@ -244,8 +415,8 @@ class TutorAcademicoController extends Controller
         $user = Auth::user();
 
         $mensaje = Mensaje::with(['remitente.persona', 'estudiante.persona', 'destinatarios.destinatario.persona'])
-                          ->findOrFail($id);
-        
+            ->findOrFail($id);
+
         if ($mensaje->remitente_id != $user->id && !$mensaje->destinatarios->contains('destinatario_id', $user->id)) {
             abort(403, 'No autorizado');
         }
@@ -319,12 +490,16 @@ class TutorAcademicoController extends Controller
 
         foreach ($horarios as $horario) {
             $dia = $horario->dia_semana;
-            $hora = substr($horario->hora_inicio, 0, 5) . ' - ' . substr($horario->hora_fin, 0, 5);
-            
+
+            // ✅ CORRECCIÓN: Ya son objetos Carbon, solo formatear
+            $horaInicio = $horario->hora_inicio->format('H:i');
+            $horaFin = $horario->hora_fin->format('H:i');
+            $hora = $horaInicio . ' - ' . $horaFin;
+
             if (!isset($horarioSemanal[$hora])) {
                 $horarioSemanal[$hora] = [];
             }
-            
+
             $horarioSemanal[$hora][$dia] = [
                 'curso' => $horario->curso->nombre ?? 'N/A',
                 'docente' => $horario->docente->persona->nombres ?? 'N/A',
@@ -363,7 +538,7 @@ class TutorAcademicoController extends Controller
                         DB::raw($estudiante->id . ' as estudiante_id')
                     )
                     ->get();
-                
+
                 $docentes = $docentes->merge($docentesMatriculados);
             }
         }

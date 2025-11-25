@@ -315,7 +315,7 @@ return [
             'icon' => 'fas fa-fw fa-paint-brush',
             'role' => 'Administrador',
         ],
-        
+
         [
             'text' => 'Asignación Docentes',
             'url' => 'admin/asignaciones',
@@ -341,13 +341,6 @@ return [
             'text' => 'Comportamientos',
             'url' => 'admin/comportamientos',
             'icon' => 'fas fa-fw fa-user-check',
-            'role' => 'Administrador',
-        ],
-
-        [
-            'text' => 'Reportes',
-            'url' => 'admin/reportes',
-            'icon' => 'fas fa-fw fa-file-alt',
             'role' => 'Administrador',
         ],
 
@@ -472,10 +465,10 @@ return [
             'role' => 'Tutor',
         ],
         [
-            'text' => 'Ver Reportes',
+            'text' => 'Reportes Académicos',
+            'route' => 'tutor.reportes.index',  // ✅ Así debe estar
             'icon' => 'fas fa-file-alt',
-            'url'  => 'tutor/reportes',
-            'role' => 'Tutor',
+            'role' => 'Tutor', 
         ],
         // 🆕 NUEVAS OPCIONES TUTOR
         [
@@ -540,7 +533,7 @@ return [
         JeroenNoten\LaravelAdminLte\Menu\Filters\ClassesFilter::class,
         JeroenNoten\LaravelAdminLte\Menu\Filters\LangFilter::class,
         JeroenNoten\LaravelAdminLte\Menu\Filters\DataFilter::class,
-        
+
         // ✅ FILTRO PERSONALIZADO PARA ROLES
         App\Http\MenuFilter::class,
     ],
