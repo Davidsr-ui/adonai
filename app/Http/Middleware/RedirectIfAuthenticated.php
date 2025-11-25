@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +20,7 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                // Si el usuario ya está autenticado, redirigir según su rol
+                // Si ya está autenticado, redirigimos según su rol
                 return redirect($this->redirectTo());
             }
         }
@@ -30,13 +29,19 @@ class RedirectIfAuthenticated
     }
 
     /**
-     * Determinar a dónde redirigir según el rol del usuario
+     * Determinar a dónde redirigir según el rol del usuario.
      */
     protected function redirectTo()
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
-        // Administrador (acepta AMBOS roles: Administrador y admin)
+        if (!$user) {
+            // Ruta por defecto si por alguna razón no hay usuario
+            return '/home';
+        }
+
+        // Admin (acepta roles: Administrador o admin)
         if ($user->tieneRol('Administrador') || $user->tieneRol('admin')) {
             return '/admin/dashboard';
         }
@@ -51,12 +56,7 @@ class RedirectIfAuthenticated
             return '/tutor/dashboard';
         }
 
-        // Estudiante
-        if ($user->tieneRol('estudiante')) {
-            return '/estudiante/dashboard';
-        }
-
-        // Por defecto (si no tiene rol específico)
+        // Por defecto
         return '/home';
     }
 }
