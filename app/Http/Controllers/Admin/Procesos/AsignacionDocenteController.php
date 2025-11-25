@@ -32,7 +32,7 @@ class AsignacionDocenteController extends Controller
         $grados = Grado::with('nivel')->where('estado', 'Activo')->orderBy('nivel_id')->orderBy('nombre')->get();
         $gestiones = Gestion::orderBy('año', 'desc')->get();
         
-        return view('admin.asignaciones.index', compact('asignaciones', 'docentes', 'cursos', 'grados', 'gestiones'));
+        return view('admin.Asignaciones.index', compact('asignaciones', 'docentes', 'cursos', 'grados', 'gestiones'));
     }
 
     /**
@@ -41,7 +41,7 @@ class AsignacionDocenteController extends Controller
     public function create()
     {
         // Vista manejada en el modal del index
-        return redirect()->route('admin.asignaciones.index');
+        return redirect()->route('admin.Asignaciones.index');
     }
 
     /**
@@ -75,7 +75,7 @@ class AsignacionDocenteController extends Controller
                 ->exists();
 
             if ($existeAsignacion) {
-                return redirect()->route('admin.asignaciones.index')
+                return redirect()->route('admin.Asignaciones.index')
                     ->with('mensaje', 'Esta asignación ya existe.')
                     ->with('icono', 'warning');
             }
@@ -88,7 +88,7 @@ class AsignacionDocenteController extends Controller
                     ->exists();
 
                 if ($tieneTutor) {
-                    return redirect()->route('admin.asignaciones.index')
+                    return redirect()->route('admin.Asignaciones.index')
                         ->with('mensaje', 'Este grado ya tiene un tutor de aula asignado para esta gestión.')
                         ->with('icono', 'error');
                 }
@@ -102,12 +102,12 @@ class AsignacionDocenteController extends Controller
             $asignacion->es_tutor_aula = $request->has('es_tutor_aula_create') ? true : false;
             $asignacion->save();
             
-            return redirect()->route('admin.asignaciones.index')
+            return redirect()->route('admin.Asignaciones.index')
                 ->with('mensaje', 'Asignación creada correctamente')
                 ->with('icono', 'success');
                 
         } catch (\Exception $e) {
-            return redirect()->route('admin.asignaciones.index')
+            return redirect()->route('admin.Asignaciones.index')
                 ->with('mensaje', 'Error al crear la asignación: ' . $e->getMessage())
                 ->with('icono', 'error');
         }
@@ -119,7 +119,7 @@ class AsignacionDocenteController extends Controller
     public function show($id)
     {
         $asignacion = DocenteCurso::with(['docente.persona', 'curso', 'grado.nivel', 'gestion'])->findOrFail($id);
-        return view('admin.asignaciones.show', compact('asignacion'));
+        return view('admin.Asignaciones.show', compact('asignacion'));
     }
 
     /**
@@ -128,7 +128,7 @@ class AsignacionDocenteController extends Controller
     public function edit($id)
     {
         // Vista manejada en el modal del index
-        return redirect()->route('admin.asignaciones.index');
+        return redirect()->route('admin.Asignaciones.index');
     }
 
     /**
@@ -172,7 +172,7 @@ class AsignacionDocenteController extends Controller
                 ->exists();
 
             if ($existeAsignacion) {
-                return redirect()->route('admin.asignaciones.index')
+                return redirect()->route('admin.Asignaciones.index')
                     ->with('mensaje', 'Esta asignación ya existe.')
                     ->with('icono', 'warning');
             }
@@ -186,7 +186,7 @@ class AsignacionDocenteController extends Controller
                     ->exists();
 
                 if ($tieneTutor) {
-                    return redirect()->route('admin.asignaciones.index')
+                    return redirect()->route('admin.Asignaciones.index')
                         ->with('mensaje', 'Este grado ya tiene un tutor de aula asignado para esta gestión.')
                         ->with('icono', 'error');
                 }
@@ -199,12 +199,12 @@ class AsignacionDocenteController extends Controller
             $asignacion->es_tutor_aula = $request->has('es_tutor_aula') ? true : false;
             $asignacion->save();
 
-            return redirect()->route('admin.asignaciones.index')
+            return redirect()->route('admin.Asignaciones.index')
                 ->with('mensaje', 'Asignación actualizada correctamente')
                 ->with('icono', 'success');
 
         } catch (\Exception $e) {
-            return redirect()->route('admin.asignaciones.index')
+            return redirect()->route('admin.Asignaciones.index')
                 ->with('mensaje', 'Error al actualizar la asignación: ' . $e->getMessage())
                 ->with('icono', 'error');
         }
@@ -219,12 +219,12 @@ class AsignacionDocenteController extends Controller
             $asignacion = DocenteCurso::findOrFail($id);
             $asignacion->delete();
 
-            return redirect()->route('admin.asignaciones.index')
+            return redirect()->route('admin.Asignaciones.index')
                 ->with('mensaje', 'Asignación eliminada correctamente')
                 ->with('icono', 'success');
 
         } catch (\Exception $e) {
-            return redirect()->route('admin.asignaciones.index')
+            return redirect()->route('admin.Asignaciones.index')
                 ->with('mensaje', 'Error al eliminar la asignación: ' . $e->getMessage())
                 ->with('icono', 'error');
         }
