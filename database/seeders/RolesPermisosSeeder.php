@@ -530,11 +530,12 @@ class RolesPermisosSeeder extends Seeder
         */
 
         // Usuario (tabla users)
-        $adminUser = User::firstOrCreate(
-            ['email' => 'admin@colegioadonai.edu.pe'],
+        $adminUser = User::updateOrCreate(
+            ['email' => 'admin@adonai.edu.pe'],
             [
                 'name'     => 'Administrador General',
-                'password' => Hash::make('Admin123*'), // cámbiala luego en producción
+                // 🔐 Siempre reescribimos la contraseña con el algoritmo actual (bcrypt)
+                'password' => Hash::make('Admin123'),
             ]
         );
 
