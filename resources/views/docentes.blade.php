@@ -36,14 +36,6 @@
                         <img src="{{ $imagenUrl }}"
                              alt="{{ $docente->persona->nombres }} {{ $docente->persona->apellidos }}"
                              onerror="handleImageError(this)">
-                        
-                        <div class="teacher-overlay">
-                            <button class="btn-contact"
-                                    data-email="{{ $docente->persona->user->email ?? 'info@colegioadonai.edu.pe' }}"
-                                    data-name="{{ $docente->persona->nombres }} {{ $docente->persona->apellidos }}">
-                                <i class="bi bi-envelope-fill"></i> Contactar
-                            </button>
-                        </div>
                     </div>
                     <div class="teacher-info">
                         <h4 class="teacher-name">{{ $docente->persona->nombres }} {{ $docente->persona->apellidos }}</h4>
@@ -78,11 +70,6 @@
                         <img src="{{ asset('img/profesor-default.jpg') }}" 
                              alt="Docente"
                              onerror="handleImageError(this)">
-                        <div class="teacher-overlay">
-                            <button class="btn-contact" data-email="contacto@colegioadonai.edu.pe">
-                                <i class="bi bi-envelope-fill"></i> Contactar
-                            </button>
-                        </div>
                     </div>
                     <div class="teacher-info">
                         <h4 class="teacher-name">Nuestro Equipo</h4>
@@ -104,30 +91,6 @@
         </div>
     </section>
 
-    <div id="contact-modal" class="modal" aria-hidden="true">
-        <div class="modal-backdrop"></div>
-        <div class="modal-panel">
-            <button class="modal-close">
-                <i class="bi bi-x-lg"></i>
-            </button>
-            <div class="modal-content">
-                <div class="modal-icon">
-                    <i class="bi bi-envelope-heart-fill"></i>
-                </div>
-                <h3 class="modal-title">Contactar Docente</h3>
-                <p class="modal-email" id="teacher-email"></p>
-                <p class="modal-text">Puedes enviar un correo directamente o copiar la dirección para usarla en tu cliente de correo preferido.</p>
-                <div class="modal-actions">
-                    <a id="email-link" class="btn btn-primary" href="">
-                        <i class="bi bi-send-fill"></i> Enviar Correo
-                    </a>
-                    <button class="btn btn-secondary" id="copy-email">
-                        <i class="bi bi-clipboard-fill"></i> Copiar Email
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
     <script>
         function handleImageError(img) {
             if (img.dataset.errorHandled) {
@@ -139,48 +102,28 @@
             img.src = '/img/profesor-default.jpg';
         }
 
+        // ✅ ANIMACIÓN PARA QUE LAS TARJETAS APAREZCAN
         document.addEventListener('DOMContentLoaded', function() {
-            const contactButtons = document.querySelectorAll('.btn-contact');
-            const modal = document.getElementById('contact-modal');
-            const teacherEmail = document.getElementById('teacher-email');
-            const emailLink = document.getElementById('email-link');
-            const copyButton = document.getElementById('copy-email');
-            const closeButton = document.querySelector('.modal-close');
-            const backdrop = document.querySelector('.modal-backdrop');
+            // Observador de intersección para animar las tarjetas
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
 
-            contactButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const email = this.getAttribute('data-email');
-                    const name = this.getAttribute('data-name') || 'Docente';
-                    teacherEmail.textContent = email;
-                    emailLink.href = `mailto:${email}?subject=Consulta para ${name}`;
-                    modal.style.display = 'block';
-                    modal.setAttribute('aria-hidden', 'false');
-                    document.body.style.overflow = 'hidden';
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('fade-in');
+                        }, index * 100); // Delay escalonado
+                        observer.unobserve(entry.target);
+                    }
                 });
-            });
+            }, observerOptions);
 
-            copyButton.addEventListener('click', function() {
-                const email = teacherEmail.textContent;
-                navigator.clipboard.writeText(email).then(() => {
-                    const original = copyButton.innerHTML;
-                    copyButton.innerHTML = '<i class="bi bi-check-lg"></i> ¡Copiado!';
-                    setTimeout(() => copyButton.innerHTML = original, 2000);
-                });
-            });
-
-            function closeModal() {
-                modal.style.display = 'none';
-                modal.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = 'auto';
-            }
-
-            closeButton.addEventListener('click', closeModal);
-            backdrop.addEventListener('click', closeModal);
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
-                    closeModal();
-                }
+            // Observar todas las tarjetas de docentes
+            document.querySelectorAll('.teacher-card').forEach(card => {
+                observer.observe(card);
             });
         });
     </script>

@@ -291,8 +291,12 @@ function abrirModal(taller = null) {
         document.getElementById('instructor').value = taller.instructor || '';
         document.getElementById('categoria').value = taller.categoria || '';
 
-        document.getElementById('duracion_inicio').value = taller.duracion_inicio || '';
-        document.getElementById('duracion_fin').value = taller.duracion_fin || '';
+        document.getElementById('duracion_inicio').value =
+    taller.duracion_inicio ? taller.duracion_inicio.substring(0, 10) : '';
+
+document.getElementById('duracion_fin').value =
+    taller.duracion_fin ? taller.duracion_fin.substring(0, 10) : '';
+
 
         document.getElementById('horario_inicio').value = taller.horario_inicio || '';
         document.getElementById('horario_fin').value = taller.horario_fin || '';
