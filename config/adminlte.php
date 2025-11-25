@@ -466,33 +466,6 @@ return [
             'role' => 'Tutor',
         ],
 
-        // ==========================================
-        // MENÚ PARA ESTUDIANTE
-        // ==========================================
-        [
-            'text' => 'Dashboard Estudiante',
-            'icon' => 'fas fa-home',
-            'url'  => 'estudiante/dashboard',
-            'role' => 'Estudiante',
-        ],
-        [
-            'text' => 'Mis Notas',
-            'icon' => 'fas fa-star',
-            'url'  => 'estudiante/mis-notas',
-            'role' => 'Estudiante',
-        ],
-        [
-            'text' => 'Mis Asistencias',
-            'icon' => 'fas fa-clipboard-check',
-            'url'  => 'estudiante/mis-asistencias',
-            'role' => 'Estudiante',
-        ],
-        [
-            'text' => 'Mi Horario',
-            'icon' => 'fas fa-calendar-alt',
-            'url'  => 'estudiante/mi-horario',
-            'role' => 'Estudiante',
-        ],
     ],
 
     /*
@@ -501,18 +474,18 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    #'filters' => [
-    #    JeroenNoten\LaravelAdminLte\Menu\Filters\GateFilter::class,
-    #    JeroenNoten\LaravelAdminLte\Menu\Filters\HrefFilter::class,
-    #    JeroenNoten\LaravelAdminLte\Menu\Filters\SearchFilter::class,
-    #    JeroenNoten\LaravelAdminLte\Menu\Filters\ActiveFilter::class,
-    #    JeroenNoten\LaravelAdminLte\Menu\Filters\ClassesFilter::class,
-    #    JeroenNoten\LaravelAdminLte\Menu\Filters\LangFilter::class,
-    #    JeroenNoten\LaravelAdminLte\Menu\Filters\DataFilter::class,
+    'filters' => [
+        JeroenNoten\LaravelAdminLte\Menu\Filters\GateFilter::class,
+        JeroenNoten\LaravelAdminLte\Menu\Filters\HrefFilter::class,
+        JeroenNoten\LaravelAdminLte\Menu\Filters\SearchFilter::class,
+        JeroenNoten\LaravelAdminLte\Menu\Filters\ActiveFilter::class,
+        JeroenNoten\LaravelAdminLte\Menu\Filters\ClassesFilter::class,
+        JeroenNoten\LaravelAdminLte\Menu\Filters\LangFilter::class,
+        JeroenNoten\LaravelAdminLte\Menu\Filters\DataFilter::class,
 
         // ✅ FILTRO PERSONALIZADO PARA ROLES
-    #    App\Http\MenuFilter::class,
-    #],
+        App\Http\MenuFilter::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------
