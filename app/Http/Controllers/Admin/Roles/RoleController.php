@@ -57,7 +57,7 @@ class RoleController extends Controller
         // Estadísticas
         $estadisticas = Role::obtenerEstadisticas();
         
-        return view('admin.roles.index', compact(
+        return view('admin.Roles.index', compact(
             'roles',
             'permisosAgrupados',
             'usuarios',
@@ -70,7 +70,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        return redirect()->route('admin.roles.index');
+        return redirect()->route('admin.Roles.index');
     }
 
     /**
@@ -106,13 +106,13 @@ class RoleController extends Controller
             
             DB::commit();
             
-            return redirect()->route('admin.roles.index')
+            return redirect()->route('admin.Roles.index')
                 ->with('mensaje', 'Rol creado correctamente')
                 ->with('icono', 'success');
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('admin.roles.index')
+            return redirect()->route('admin.Roles.index')
                 ->with('mensaje', 'Error al crear el rol: ' . $e->getMessage())
                 ->with('icono', 'error');
         }
@@ -132,7 +132,7 @@ class RoleController extends Controller
         // Obtener todos los usuarios
         $todosLosUsuarios = User::with('persona')->get();
         
-        return view('admin.roles.show', compact('role', 'permisosAgrupados', 'todosLosUsuarios'));
+        return view('admin.Roles.show', compact('role', 'permisosAgrupados', 'todosLosUsuarios'));
     }
 
     /**
@@ -140,7 +140,7 @@ class RoleController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->route('admin.roles.index');
+        return redirect()->route('admin.Roles.index');
     }
 
     /**
@@ -186,13 +186,13 @@ class RoleController extends Controller
             
             DB::commit();
 
-            return redirect()->route('admin.roles.index')
+            return redirect()->route('admin.Roles.index')
                 ->with('mensaje', 'Rol actualizado correctamente')
                 ->with('icono', 'success');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('admin.roles.index')
+            return redirect()->route('admin.Roles.index')
                 ->with('mensaje', 'Error al actualizar el rol: ' . $e->getMessage())
                 ->with('icono', 'error');
         }
@@ -210,7 +210,7 @@ class RoleController extends Controller
             
             // Verificar si tiene usuarios asignados
             if ($role->users()->count() > 0) {
-                return redirect()->route('admin.roles.index')
+                return redirect()->route('admin.Roles.index')
                     ->with('mensaje', 'No se puede eliminar el rol porque tiene usuarios asignados')
                     ->with('icono', 'error');
             }
@@ -223,13 +223,13 @@ class RoleController extends Controller
             
             DB::commit();
 
-            return redirect()->route('admin.roles.index')
+            return redirect()->route('admin.Roles.index')
                 ->with('mensaje', 'Rol eliminado correctamente')
                 ->with('icono', 'success');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('admin.roles.index')
+            return redirect()->route('admin.Roles.index')
                 ->with('mensaje', 'Error al eliminar el rol: ' . $e->getMessage())
                 ->with('icono', 'error');
         }
