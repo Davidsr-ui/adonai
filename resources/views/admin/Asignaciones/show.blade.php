@@ -294,7 +294,7 @@
                     <div class="row mt-3">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <a href="{{ route('admin.asignaciones.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('admin.Asignaciones.index') }}" class="btn btn-secondary">
                                     <i class="fas fa-arrow-left"></i> Volver al Listado
                                 </a>
                                 <a href="{{ route('admin.docentes.show', $asignacion->docente->id) }}" class="btn btn-info">

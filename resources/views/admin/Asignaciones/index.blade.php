@@ -64,7 +64,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.asignaciones.show', $asignacion->id) }}" 
+                                        <a href="{{ route('admin.Asignaciones.show', $asignacion->id) }}" 
                                            class="btn btn-info btn-sm" 
                                            title="Ver detalles">
                                             <i class="fas fa-eye"></i>
@@ -99,7 +99,7 @@
                                                 <span>&times;</span>
                                             </button>
                                         </div>
-                                        <form action="{{ route('admin.asignaciones.update', $asignacion->id) }}" method="POST">
+                                        <form action="{{ route('admin.Asignaciones.update', $asignacion->id) }}" method="POST">
                                             @csrf
                                             @method('PUT')
                                             <div class="modal-body">
@@ -228,7 +228,7 @@
                                                 <span>&times;</span>
                                             </button>
                                         </div>
-                                        <form action="{{ route('admin.asignaciones.destroy', $asignacion->id) }}" method="POST">
+                                        <form action="{{ route('admin.Asignaciones.destroy', $asignacion->id) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
                                             <div class="modal-body">
@@ -276,7 +276,7 @@
                         <span>&times;</span>
                     </button>
                 </div>
-                <form action="{{ route('admin.asignaciones.store') }}" method="POST">
+                <form action="{{ route('admin.Asignaciones.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="row">
