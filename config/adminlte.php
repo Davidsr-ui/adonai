@@ -208,31 +208,7 @@ return [
             'icon' => 'fas fa-fw fa-tachometer-alt',
             'role' => 'Administrador',
         ],
-
-        [
-            'text' => 'Configuración',
-            'url' => 'admin/configuracion',
-            'icon' => 'fas fa-fw fa-cog',
-            'role' => 'Administrador',
-            'submenu' => [
-                [
-                    'text' => 'Todas las Configuraciones',
-                    'url' => 'admin/configuracion',
-                    'icon' => 'fas fa-list',
-                ],
-                [
-                    'text' => 'Configuración Global',
-                    'url' => 'admin/configuracion-global',
-                    'icon' => 'fas fa-globe',
-                ],
-                [
-                    'text' => 'Nueva Configuración',
-                    'url' => 'admin/configuracion/create',
-                    'icon' => 'fas fa-plus',
-                ],
-            ],
-        ],
-
+        
         [
             'text' => 'Gestiones',
             'url' => 'admin/gestiones',
