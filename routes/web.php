@@ -117,11 +117,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:administrador'
     Route::resource('grados', App\Http\Controllers\Admin\Academico\GradoController::class);
 
     // Asignaciones
-    Route::get('asignaciones', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'index'])->name('asignaciones.index');
-    Route::get('asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'show'])->name('asignaciones.show');
-    Route::post('asignaciones/create', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'store'])->name('asignaciones.store');
-    Route::put('asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'update'])->name('asignaciones.update');
-    Route::delete('asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'destroy'])->name('asignaciones.destroy');
+    Route::get('Asignaciones', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'index'])->name('Asignaciones.index');
+    Route::get('Asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'show'])->name('Asignaciones.show');
+    Route::post('Asignaciones/create', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'store'])->name('Asignaciones.store');
+    Route::put('Asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'update'])->name('Asignaciones.update');
+    Route::delete('Asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'destroy'])->name('Asignaciones.destroy');
 
     // Matrículas
     Route::get('matriculas', [App\Http\Controllers\Admin\Procesos\MatriculaController::class, 'index'])->name('matriculas.index');
