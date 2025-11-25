@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import react from '@vitejs/plugin-react';
 
 export default defineConfig({
     plugins: [
@@ -17,9 +16,9 @@ export default defineConfig({
 
                 // JS GENERAL Y DE PÁGINAS
                 'resources/js/bootstrap.js',
-                'resources/js/script.js', // base global
-                'resources/js/app.js',
-                'resources/js/app.jsx',
+                'resources/js/script.js',
+                'resources/js/app.js',      // <-- solo déjalo si este archivo EXISTE
+                // 'resources/js/app.jsx',  // <-- QUITADO
                 'resources/js/blog.js',
                 'resources/js/tour.js',
                 'resources/js/talleres.js',
@@ -31,36 +30,33 @@ export default defineConfig({
                 'app/**/*.php',
             ],
         }),
-        react(),
     ],
 
-    // COMPILACIÓN RÁPIDA Y LIMPIA
     build: {
-        minify: 'esbuild', // Compilador más veloz que terser
+        minify: 'esbuild',
         cssMinify: true,
         sourcemap: false,
         reportCompressedSize: false,
         chunkSizeWarningLimit: 800,
         rollupOptions: {
             output: {
+                // ya no tiene sentido separar vendor-react
                 manualChunks: {
-                    'vendor-react': ['react', 'react-dom'],
-                    'vendor-utils': ['axios']
+                    'vendor-utils': ['axios'],
                 },
                 entryFileNames: 'assets/[name].js',
                 chunkFileNames: 'assets/[name].js',
-                assetFileNames: 'assets/[name].[ext]'
-            }
-        }
+                assetFileNames: 'assets/[name].[ext]',
+            },
+        },
     },
 
-    // OPTIMIZACIÓN DE DEPENDENCIAS
     optimizeDeps: {
-        include: ['axios', 'react', 'react-dom'],
+        // React fuera de aquí también
+        include: ['axios'],
         force: false,
     },
 
-    // SERVIDOR LOCAL
     server: {
         host: 'localhost',
         port: 3000,
@@ -75,6 +71,6 @@ export default defineConfig({
     },
 
     css: {
-        devSourcemap: false, // Sin mapas para más rendimiento
+        devSourcemap: false,
     },
 });

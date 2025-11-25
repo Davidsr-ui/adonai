@@ -43,6 +43,7 @@ class DashboardController extends Controller
             'personas'    => $this->obtenerEstadisticasPersonas(),
             'estudiantes' => $this->obtenerEstadisticasEstudiantes(),
             'docentes'    => $this->obtenerEstadisticasDocentes(),
+            'tutores'     => $this->obtenerEstadisticasTutores(),   // 👈 AÑADIDO
             'academico'   => $this->obtenerEstadisticasAcademicas($gestionActiva),
             'registros'   => $this->obtenerEstadisticasRegistros($gestionActiva, $periodoActivo),
             'mensajeria'  => $this->obtenerEstadisticasMensajeria(),
@@ -150,6 +151,20 @@ class DashboardController extends Controller
             'contratados' => Docente::where('tipo_contrato', 'Contratado')->count(),
         ];
     }
+
+    /**
+     * Estadísticas de Tutores
+     */
+    private function obtenerEstadisticasTutores()
+    {
+        return [
+            'total'   => Tutor::count(),
+            'activos' => Tutor::whereHas('persona', function ($q) {
+                $q->where('estado', 'Activo');
+            })->count(),
+        ];
+    }
+
 
     /**
      * Estadísticas Académicas
