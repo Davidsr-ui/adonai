@@ -17,10 +17,16 @@ class CheckPermission
     public function handle(Request $request, Closure $next, string $permission): Response
     {
         if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Debes iniciar sesión para acceder.');
+            return redirect()
+                ->route('login')
+                ->with('error', 'Debes iniciar sesión para acceder.');
         }
 
-        if (!Auth::user()->hasPermission($permission)) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Usar el método que SÍ existe en User
+        if (!$user->tienePermiso($permission)) {
             abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 
