@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 
 // ✅ CONTROLADORES DE DOCENTE
 use App\Http\Controllers\Docente\DashboardController as DocenteDashboardController;
@@ -12,11 +13,21 @@ use App\Http\Controllers\Docente\ReporteController as DocenteReporteController;
 
 // ✅ CONTROLADORES DE TUTOR
 use App\Http\Controllers\Tutor\DashboardController as TutorDashboardController;
+
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas
 |--------------------------------------------------------------------------
 */
+
+Route::get('/run-seeder', function () {
+    Artisan::call('db:seed', [
+        '--class' => 'Database\\Seeders\\RolesPermisosSeeder',
+        '--force' => true,
+    ]);
+
+    return 'Seeder ejecutado en producción ✅';
+});
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,9 +57,9 @@ Auth::routes();
 */
 
 // ==========================================
-// ADMINISTRADOR (acepta 'Administrador' Y 'admin')
+// ADMINISTRADOR (solo rol 'administrador')
 // ==========================================
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Administrador,admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:administrador'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\Admin\Sistema\DashboardController::class, 'index'])->name('dashboard');
@@ -203,7 +214,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Administrador,
 });
 
 
-
 // ==========================================
 // DOCENTE (usa 'docente' en minúscula)
 // ==========================================
@@ -335,32 +345,6 @@ Route::prefix('tutor')->name('tutor.')->middleware(['auth', 'role:tutor'])->grou
 });
 
 // ==========================================
-// ESTUDIANTE (usa 'estudiante' en minúscula)
-// ==========================================
-Route::prefix('estudiante')->name('estudiante.')->middleware(['auth', 'role:estudiante'])->group(function () {
-
-    // Dashboard
-    Route::get('/dashboard', function () {
-        return view('estudiante.dashboard');
-    })->name('dashboard');
-
-    // Mis Notas
-    Route::get('/mis-notas', function () {
-        return view('estudiante.mis-notas');
-    })->name('mis-notas');
-
-    // Mis Asistencias
-    Route::get('/mis-asistencias', function () {
-        return view('estudiante.mis-asistencias');
-    })->name('mis-asistencias');
-
-    // Mi Horario
-    Route::get('/mi-horario', function () {
-        return view('estudiante.mi-horario');
-    })->name('mi-horario');
-});
-
-// ==========================================
 // FALLBACK - Redirigir /home según rol
 // ==========================================
 Route::get('/home', function () {
@@ -372,7 +356,7 @@ Route::get('/home', function () {
     }
 
     // Redirecciones según rol (nombres exactos de la BD)
-    if ($user->tieneRol('Administrador') || $user->tieneRol('admin')) {
+    if ($user->tieneRol('administrador')) {
         return redirect()->route('admin.dashboard');
     }
     if ($user->tieneRol('docente')) {
@@ -380,9 +364,6 @@ Route::get('/home', function () {
     }
     if ($user->tieneRol('tutor')) {
         return redirect()->route('tutor.dashboard');
-    }
-    if ($user->tieneRol('estudiante')) {
-        return redirect()->route('estudiante.dashboard');
     }
 
     // Si no tiene ningún rol, redirigir al login con mensaje
@@ -413,11 +394,9 @@ Route::get('/diagnostico-menu', function () {
             'nombres' => $user->roles->pluck('name')->toArray(),
         ],
         'verificaciones' => [
-            'tieneRol_Administrador' => $user->tieneRol('Administrador'),
-            'tieneRol_admin' => $user->tieneRol('admin'),
-            'tieneRol_docente' => $user->tieneRol('docente'),
-            'tieneRol_tutor' => $user->tieneRol('tutor'),
-            'tieneRol_estudiante' => $user->tieneRol('estudiante'),
+            'tieneRol_administrador' => $user->tieneRol('administrador'),
+            'tieneRol_docente'       => $user->tieneRol('docente'),
+            'tieneRol_tutor'         => $user->tieneRol('tutor'),
         ],
     ], 200, [], JSON_PRETTY_PRINT);
 })->middleware('web');
