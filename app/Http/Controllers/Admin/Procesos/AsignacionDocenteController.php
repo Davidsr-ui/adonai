@@ -41,7 +41,7 @@ class AsignacionDocenteController extends Controller
     public function create()
     {
         // Vista manejada en el modal del index
-        return redirect()->route('admin.Asignaciones.index');
+        return redirect()->route('admin.Asignaciones.index'); 
     }
 
     /**
