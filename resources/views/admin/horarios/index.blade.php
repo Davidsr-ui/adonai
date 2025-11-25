@@ -55,7 +55,7 @@
                                             <button type="button" class="btn btn-success btn-sm" 
                                                     data-toggle="modal"
                                                     data-target="#editHorarioModal{{ $horario->id }}">
-                                                <i class="fa fa-pencil"></i>
+                                                <i class="fas fa-edit"></i></i>
                                             </button>
                                             <button type="button" 
                                                     class="btn btn-danger btn-sm"

@@ -66,7 +66,7 @@
                                                 class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
                                             <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
                                                 data-target="#editDocenteModal{{ $docente->id }}"><i
-                                                    class="fa fa-pencil"></i></button>
+                                                    class="fas fa-edit"></i></button>
                                             <form action="{{ route('admin.docentes.destroy', $docente->id) }}"
                                                 method="post" onclick="preguntar{{ $docente->id }}(event)"
                                                 id="miFormulario{{ $docente->id }}">
