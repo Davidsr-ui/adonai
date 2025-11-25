@@ -13,33 +13,32 @@
             <div class="card">
                 <div class="card-header bg-warning">
                     <h3 class="card-title"><i class="fas fa-clipboard-check"></i> Control de Asistencias</h3>
+                    <div class="card-tools">
+                        @if($tutor->estudiantes->count() > 1)
+                            <select id="estudianteSelect" class="form-control form-control-sm" onchange="cambiarEstudiante()">
+                                @foreach($tutor->estudiantes as $est)
+                                    <option value="{{ $est->id }}" {{ $estudiante && $estudiante->id == $est->id ? 'selected' : '' }}>
+                                        {{ $est->persona->apellidos }} {{ $est->persona->nombres }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
                 </div>
                 <div class="card-body">
-                    @if(Auth::user()->persona && Auth::user()->persona->tutor)
-                        @php
-                            // Obtener los estudiantes del tutor
-                            $estudiantes = Auth::user()->persona->tutor->estudiantes;
-                            $estudiantesIds = $estudiantes->pluck('id');
-                            
-                            // Obtener las asistencias de esos estudiantes
-                            $asistencias = \App\Models\Asistencia::whereIn('estudiante_id', $estudiantesIds)
-                                ->with(['estudiante.persona', 'curso', 'docente.persona'])
-                                ->orderBy('fecha', 'desc')
-                                ->get();
-                        @endphp
-                        
-                        @if($asistencias->count() > 0)
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i>
-                                Puedes ver el historial de asistencias de tus estudiantes.
-                            </div>
+                    @if($estudiante)
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-user"></i> Estudiante:</strong> {{ $estudiante->persona->apellidos }} {{ $estudiante->persona->nombres }}<br>
+                            <strong><i class="fas fa-graduation-cap"></i> Grado:</strong> {{ $estudiante->grado->nombre ?? 'N/A' }}<br>
+                            <strong><i class="fas fa-layer-group"></i> Nivel:</strong> {{ $estudiante->grado->nivel->nombre ?? 'N/A' }}
+                        </div>
 
+                        @if($asistencias->count() > 0)
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped table-hover table-sm" id="tablaAsistencias">
                                     <thead class="bg-dark">
                                         <tr>
                                             <th>Fecha</th>
-                                            <th>Estudiante</th>
                                             <th>Curso</th>
                                             <th class="text-center">Estado</th>
                                             <th>Docente</th>
@@ -53,11 +52,6 @@
                                                     <strong>{{ $asistencia->fecha_formateada }}</strong>
                                                     <br>
                                                     <small class="text-muted">{{ $asistencia->dia_semana }}</small>
-                                                </td>
-                                                <td>
-                                                    <i class="fas fa-user-graduate"></i>
-                                                    <strong>{{ $asistencia->estudiante->persona->apellidos }}, 
-                                                    {{ $asistencia->estudiante->persona->nombres }}</strong>
                                                 </td>
                                                 <td>{{ $asistencia->curso->nombre }}</td>
                                                 <td class="text-center">
@@ -90,79 +84,13 @@
                                 </table>
                             </div>
 
-                            <!-- Estadísticas por Estudiante -->
-                            <div class="row mt-4">
-                                <div class="col-md-12">
-                                    <h5><b>Estadísticas por Estudiante</b></h5>
-                                    <hr>
-                                </div>
-                                @foreach($estudiantes as $estudiante)
-                                    @php
-                                        $asistenciasEstudiante = $asistencias->where('estudiante_id', $estudiante->id);
-                                        $totalAsistencias = $asistenciasEstudiante->count();
-                                        $presentes = $asistenciasEstudiante->where('estado', 'Presente')->count();
-                                        $ausentes = $asistenciasEstudiante->where('estado', 'Ausente')->count();
-                                        $tardanzas = $asistenciasEstudiante->where('estado', 'Tardanza')->count();
-                                        $porcentaje = $totalAsistencias > 0 ? round(($presentes / $totalAsistencias) * 100, 2) : 0;
-                                    @endphp
-                                    <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h5 class="card-title">
-                                                    <i class="fas fa-user-graduate"></i>
-                                                    {{ $estudiante->persona->apellidos }}, {{ $estudiante->persona->nombres }}
-                                                </h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <div class="col-3 text-center">
-                                                        <div class="text-success">
-                                                            <h3><i class="fas fa-check-circle"></i></h3>
-                                                            <h4>{{ $presentes }}</h4>
-                                                            <small>Presentes</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-3 text-center">
-                                                        <div class="text-danger">
-                                                            <h3><i class="fas fa-times-circle"></i></h3>
-                                                            <h4>{{ $ausentes }}</h4>
-                                                            <small>Ausentes</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-3 text-center">
-                                                        <div class="text-warning">
-                                                            <h3><i class="fas fa-clock"></i></h3>
-                                                            <h4>{{ $tardanzas }}</h4>
-                                                            <small>Tardanzas</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-3 text-center">
-                                                        <div class="text-info">
-                                                            <h3><i class="fas fa-percentage"></i></h3>
-                                                            <h4>{{ $porcentaje }}%</h4>
-                                                            <small>Asistencia</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="progress mt-3">
-                                                    <div class="progress-bar bg-{{ $porcentaje >= 85 ? 'success' : ($porcentaje >= 70 ? 'warning' : 'danger') }}" 
-                                                         style="width: {{ $porcentaje }}%">
-                                                        {{ $porcentaje }}%
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <!-- Estadísticas Generales -->
+                            <!-- Estadísticas del Estudiante -->
                             <div class="row mt-4">
                                 <div class="col-md-3">
                                     <div class="small-box bg-success">
                                         <div class="inner">
-                                            <h3>{{ $asistencias->where('estado', 'Presente')->count() }}</h3>
-                                            <p>Total Presentes</p>
+                                            <h3>{{ $presentes }}</h3>
+                                            <p>Presentes</p>
                                         </div>
                                         <div class="icon">
                                             <i class="fas fa-check"></i>
@@ -172,8 +100,8 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-danger">
                                         <div class="inner">
-                                            <h3>{{ $asistencias->where('estado', 'Ausente')->count() }}</h3>
-                                            <p>Total Ausentes</p>
+                                            <h3>{{ $ausentes }}</h3>
+                                            <p>Ausentes</p>
                                         </div>
                                         <div class="icon">
                                             <i class="fas fa-times"></i>
@@ -183,8 +111,8 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-warning">
                                         <div class="inner">
-                                            <h3>{{ $asistencias->where('estado', 'Tardanza')->count() }}</h3>
-                                            <p>Total Tardanzas</p>
+                                            <h3>{{ $tardanzas }}</h3>
+                                            <p>Tardanzas</p>
                                         </div>
                                         <div class="icon">
                                             <i class="fas fa-clock"></i>
@@ -194,25 +122,38 @@
                                 <div class="col-md-3">
                                     <div class="small-box bg-info">
                                         <div class="inner">
-                                            <h3>{{ $asistencias->count() }}</h3>
-                                            <p>Total Registros</p>
+                                            <h3>{{ number_format($porcentaje, 1) }}%</h3>
+                                            <p>% Asistencia</p>
                                         </div>
                                         <div class="icon">
-                                            <i class="fas fa-clipboard-list"></i>
+                                            <i class="fas fa-percentage"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar bg-{{ $porcentaje >= 85 ? 'success' : ($porcentaje >= 70 ? 'warning' : 'danger') }}" 
+                                     style="width: {{ $porcentaje }}%">
+                                    <strong>{{ number_format($porcentaje, 1) }}% de Asistencia</strong>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <a href="{{ route('tutor.dashboard') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
+                            </div>
                         @else
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                No hay registros de asistencias para tus estudiantes.
+                                No hay registros de asistencias para este estudiante.
                             </div>
                         @endif
                     @else
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle"></i>
-                            Tu perfil de tutor no está completo. Por favor contacta al administrador.
+                            No tienes estudiantes asignados.
                         </div>
                     @endif
                 </div>
@@ -231,6 +172,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
+        function cambiarEstudiante() {
+            const estudianteId = document.getElementById('estudianteSelect').value;
+            window.location.href = '{{ route("tutor.asistencias") }}?estudiante_id=' + estudianteId;
+        }
+
         $(document).ready(function() {
             $('#tablaAsistencias').DataTable({
                 language: {

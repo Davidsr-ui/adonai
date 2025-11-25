@@ -299,30 +299,23 @@ Route::prefix('tutor')->name('tutor.')->middleware(['auth', 'role:tutor'])->grou
     })->name('mis-estudiantes');
 
     // Notas de mis Estudiantes (solo lectura)
-    Route::get('/notas', function () {
-        return view('tutor.notas');
-    })->name('notas');
+    Route::get('/notas', [App\Http\Controllers\Tutor\TutorAcademicoController::class, 'notas'])->name('notas');
 
     // Asistencias de mis Estudiantes (solo lectura)
-    Route::get('/asistencias', function () {
-        return view('tutor.asistencias');
-    })->name('asistencias');
+    Route::get('/asistencias', [App\Http\Controllers\Tutor\TutorAcademicoController::class, 'asistencias'])->name('asistencias');
 
     // ==========================================
     // COMPORTAMIENTOS (solo lectura)
     // ==========================================
-    Route::get('/comportamientos', function () {
-        return view('tutor.comportamientos');
-    })->name('comportamientos');
+    Route::get('/comportamientos', [App\Http\Controllers\Tutor\TutorAcademicoController::class, 'comportamientos'])->name('comportamientos');
 
     // ==========================================
-    // REPORTES (solo lectura)
+    // REPORTES (con controlador - vista completa)
     // ==========================================
-    Route::get('/reportes', function () {
-        return view('tutor.reportes');
-    })->name('reportes');
 
-    Route::get('/reportes/{id}/descargar-pdf', [TutorDashboardController::class, 'descargarPdf'])->name('reportes.descargar-pdf');
+    Route::get('/reportes', [App\Http\Controllers\Tutor\ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/{id}', [App\Http\Controllers\Tutor\ReporteController::class, 'show'])->name('reportes.show');
+    Route::get('/reportes/{id}/descargar-pdf', [App\Http\Controllers\Tutor\ReporteController::class, 'descargarPdf'])->name('reportes.descargar-pdf');
 
     // ==========================================
     // 🆕 NUEVAS FUNCIONALIDADES

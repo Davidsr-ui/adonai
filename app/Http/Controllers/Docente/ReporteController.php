@@ -8,46 +8,50 @@ use App\Models\Estudiante;
 use App\Models\Docente;
 use App\Models\Periodo;
 use App\Models\Gestion;
+use App\Models\Comportamiento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ReporteController extends Controller
 {
+    /**
+     * Obtener docente autenticado
+     */
+    private function getDocente()
+    {
+        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
+            abort(403, 'Tu perfil de docente no está completo');
+        }
+        return Auth::user()->persona->docente;
+    }
+
     /**
      * Mostrar listado de reportes del docente
      */
     public function index(Request $request)
     {
-        // Verificar perfil de docente
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return redirect()->route('docente.dashboard')
-                ->with('mensaje', 'Tu perfil de docente no está completo')
-                ->with('icono', 'error');
-        }
+        $docente = $this->getDocente();
 
-        $docente = Auth::user()->persona->docente;
+        // ✅ CORRECCIÓN: Obtener IDs de cursos sin ambigüedad
+        $cursosIds = DB::table('docente_curso')
+            ->where('docente_id', $docente->id)
+            ->pluck('curso_id');
 
-        // Obtener cursos del docente
-        $cursos = $docente->cursos()->get();
-        $cursosIds = $cursos->pluck('id');
-
-        // Obtener estudiantes matriculados en los cursos del docente
+        // Obtener SOLO estudiantes matriculados en los cursos del docente
         $estudiantes = Estudiante::whereHas('matriculas', function ($query) use ($cursosIds) {
             $query->whereIn('curso_id', $cursosIds)
                   ->where('estado', 'Matriculado');
         })->with('persona')->get();
 
-        // Obtener periodos
         $periodos = Periodo::orderBy('numero')->get();
-
-        // Obtener gestiones
         $gestiones = Gestion::orderBy('año', 'desc')->get();
 
-        // Obtener solo docente autenticado
+        // SOLO el docente autenticado
         $docentes = Docente::where('id', $docente->id)->with('persona')->get();
 
-        // Filtrar reportes del docente
+        // Filtrar SOLO reportes del docente
         $query = Reporte::where('docente_id', $docente->id)
             ->with(['estudiante.persona', 'periodo', 'gestion', 'docente.persona']);
 
@@ -74,8 +78,8 @@ class ReporteController extends Controller
 
         $reportes = $query->orderBy('created_at', 'desc')->get();
 
-        // Reutilizar la vista de admin (ya adaptada con $routePrefix)
-        return view('admin.reportes.index', compact(
+        // ✅ USAR VISTA DE DOCENTE
+        return view('docente.reportes.index', compact(
             'reportes',
             'estudiantes',
             'periodos',
@@ -85,51 +89,71 @@ class ReporteController extends Controller
     }
 
     /**
-     * Guardar nuevo reporte
+     * ✅ GUARDAR NUEVO REPORTE - CON CÁLCULO AUTOMÁTICO
      */
     public function store(Request $request)
     {
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
+        $docente = $this->getDocente();
 
-        $docente = Auth::user()->persona->docente;
-
-        // Validación con los campos REALES de la vista
+        // Validación
         $request->validate([
             'estudiante_id_create' => 'required|exists:estudiantes,id',
-            'docente_id_create' => 'required|exists:docentes,id',
             'tipo_create' => 'required|in:Bimestral,Trimestral,Anual',
             'periodo_id_create' => 'required|exists:periodos,id',
             'gestion_id_create' => 'required|exists:gestions,id',
-            'promedio_general_create' => 'nullable|numeric|min:0|max:20',
-            'porcentaje_asistencia_create' => 'nullable|numeric|min:0|max:100',
             'comentario_final_create' => 'nullable|string|max:2000',
-            'archivo_pdf_create' => 'nullable|file|mimes:pdf|max:5120', // 5MB
+            'archivo_pdf_create' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        // Verificar que el docente seleccionado sea el mismo autenticado
-        if ($request->docente_id_create != $docente->id) {
-            return back()->with('mensaje', 'No puedes crear reportes para otro docente')
-                        ->with('icono', 'error');
-        }
+        // ✅ CORRECCIÓN: Obtener cursos sin ambigüedad
+        $cursosDocente = DB::table('docente_curso')
+            ->where('docente_id', $docente->id)
+            ->pluck('curso_id');
+        
+        // Obtener matrículas del estudiante SOLO en cursos del docente
+        $matriculasIds = DB::table('matriculas')
+            ->where('estudiante_id', $request->estudiante_id_create)
+            ->where('gestion_id', $request->gestion_id_create)
+            ->whereIn('curso_id', $cursosDocente)
+            ->pluck('id');
+
+        // ✅ CALCULAR PROMEDIO (solo de los cursos del docente)
+        $promedioNotas = DB::table('notas')
+            ->where('periodo_id', $request->periodo_id_create)
+            ->whereIn('matricula_id', $matriculasIds)
+            ->avg('nota_final');
+
+        // ✅ CALCULAR ASISTENCIA (solo de los cursos del docente)
+        $totalAsistencias = DB::table('asistencias')
+            ->where('estudiante_id', $request->estudiante_id_create)
+            ->whereIn('curso_id', $cursosDocente)
+            ->count();
+
+        $asistenciasPresentes = DB::table('asistencias')
+            ->where('estudiante_id', $request->estudiante_id_create)
+            ->where('estado', 'Presente')
+            ->whereIn('curso_id', $cursosDocente)
+            ->count();
+
+        $porcentajeAsistencia = $totalAsistencias > 0 
+            ? round(($asistenciasPresentes / $totalAsistencias) * 100, 2) 
+            : 0;
 
         // Preparar datos
         $data = [
             'estudiante_id' => $request->estudiante_id_create,
-            'docente_id' => $request->docente_id_create,
+            'docente_id' => $docente->id,
             'tipo' => $request->tipo_create,
             'periodo_id' => $request->periodo_id_create,
             'gestion_id' => $request->gestion_id_create,
-            'promedio_general' => $request->promedio_general_create,
-            'porcentaje_asistencia' => $request->porcentaje_asistencia_create,
+            'promedio_general' => $promedioNotas ? round($promedioNotas, 2) : null,
+            'porcentaje_asistencia' => $porcentajeAsistencia,
             'comentario_final' => $request->comentario_final_create,
             'visible_tutor' => $request->has('visible_tutor_create'),
             'fecha_generacion' => now(),
         ];
 
-        // Manejar archivo PDF si se sube
+        // Manejar archivo PDF
         if ($request->hasFile('archivo_pdf_create')) {
             $archivo = $request->file('archivo_pdf_create');
             $nombreArchivo = 'reporte_' . time() . '_' . $archivo->getClientOriginalName();
@@ -140,33 +164,25 @@ class ReporteController extends Controller
         Reporte::create($data);
 
         return redirect()->route('docente.reportes.index')
-            ->with('mensaje', 'Reporte creado correctamente')
+            ->with('mensaje', 'Reporte creado correctamente con cálculos automáticos')
             ->with('icono', 'success');
     }
 
     /**
-     * Actualizar reporte
+     * ✅ ACTUALIZAR REPORTE
      */
     public function update(Request $request, $id)
     {
         $reporte = Reporte::findOrFail($id);
-
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
+        $docente = $this->getDocente();
 
         if ($reporte->docente_id != $docente->id) {
             return back()->with('mensaje', 'No puedes modificar este reporte')
                         ->with('icono', 'error');
         }
 
-        // Validación con los campos REALES de la vista (SIN sufijo _create)
         $request->validate([
             'estudiante_id' => 'required|exists:estudiantes,id',
-            'docente_id' => 'required|exists:docentes,id',
             'tipo' => 'required|in:Bimestral,Trimestral,Anual',
             'periodo_id' => 'required|exists:periodos,id',
             'gestion_id' => 'required|exists:gestions,id',
@@ -176,10 +192,8 @@ class ReporteController extends Controller
             'archivo_pdf' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        // Preparar datos
         $data = [
             'estudiante_id' => $request->estudiante_id,
-            'docente_id' => $request->docente_id,
             'tipo' => $request->tipo,
             'periodo_id' => $request->periodo_id,
             'gestion_id' => $request->gestion_id,
@@ -189,14 +203,12 @@ class ReporteController extends Controller
             'visible_tutor' => $request->has('visible_tutor'),
         ];
 
-        // Manejar archivo PDF si se sube uno nuevo
+        // Manejar archivo PDF
         if ($request->hasFile('archivo_pdf')) {
-            // Eliminar archivo anterior si existe
             if ($reporte->archivo_pdf && Storage::disk('public')->exists($reporte->archivo_pdf)) {
                 Storage::disk('public')->delete($reporte->archivo_pdf);
             }
 
-            // Guardar nuevo archivo
             $archivo = $request->file('archivo_pdf');
             $nombreArchivo = 'reporte_' . time() . '_' . $archivo->getClientOriginalName();
             $ruta = $archivo->storeAs('reportes', $nombreArchivo, 'public');
@@ -216,20 +228,13 @@ class ReporteController extends Controller
     public function destroy($id)
     {
         $reporte = Reporte::findOrFail($id);
-
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
+        $docente = $this->getDocente();
 
         if ($reporte->docente_id != $docente->id) {
             return back()->with('mensaje', 'No puedes eliminar este reporte')
                         ->with('icono', 'error');
         }
 
-        // Eliminar archivo PDF si existe
         if ($reporte->archivo_pdf && Storage::disk('public')->exists($reporte->archivo_pdf)) {
             Storage::disk('public')->delete($reporte->archivo_pdf);
         }
@@ -242,7 +247,7 @@ class ReporteController extends Controller
     }
 
     /**
-     * Ver detalle - CORREGIDO: Usa vista de docente
+     * ✅ VER DETALLE - SOLO NOTAS/ASISTENCIAS/COMPORTAMIENTOS DE SUS CURSOS
      */
     public function show($id)
     {
@@ -254,26 +259,27 @@ class ReporteController extends Controller
             'docente.persona'
         ])->findOrFail($id);
 
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
+        $docente = $this->getDocente();
 
         if ($reporte->docente_id != $docente->id) {
             return back()->with('mensaje', 'No puedes ver este reporte')
                         ->with('icono', 'error');
         }
 
-        // Obtener IDs de matrículas del estudiante en el periodo del reporte
-        $matriculasIds = \DB::table('matriculas')
+        // ✅ CORRECCIÓN: Obtener cursos sin ambigüedad
+        $cursosDocente = DB::table('docente_curso')
+            ->where('docente_id', $docente->id)
+            ->pluck('curso_id');
+
+        // Obtener matrículas del estudiante SOLO en cursos del docente
+        $matriculasIds = DB::table('matriculas')
             ->where('estudiante_id', $reporte->estudiante_id)
             ->where('gestion_id', $reporte->gestion_id)
+            ->whereIn('curso_id', $cursosDocente)
             ->pluck('id');
 
-        // Obtener notas del periodo
-        $notas = \DB::table('notas as n')
+        // ✅ NOTAS: Solo de los cursos del docente
+        $notas = DB::table('notas as n')
             ->join('matriculas as m', 'n.matricula_id', '=', 'm.id')
             ->join('cursos as c', 'm.curso_id', '=', 'c.id')
             ->where('n.periodo_id', $reporte->periodo_id)
@@ -285,7 +291,6 @@ class ReporteController extends Controller
             )
             ->get()
             ->map(function($nota) {
-                // Agregar propiedades computadas que la vista espera
                 $nota->tipo_evaluacion_badge = match($nota->tipo_evaluacion) {
                     'Parcial' => 'info',
                     'Final' => 'primary',
@@ -298,7 +303,6 @@ class ReporteController extends Controller
                 $nota->estado_nota_badge = $nota->nota_final >= 11 ? 'success' : 'danger';
                 $nota->estado_nota_texto = $nota->nota_final >= 11 ? 'Aprobado' : 'Desaprobado';
                 
-                // Crear objeto matricula para compatibilidad con la vista
                 $nota->matricula = (object)[
                     'curso' => (object)['nombre' => $nota->curso_nombre]
                 ];
@@ -306,19 +310,14 @@ class ReporteController extends Controller
                 return $nota;
             });
 
-        // Obtener asistencias del estudiante en el periodo
-        $asistencias = \DB::table('asistencias')
+        // ✅ ASISTENCIAS: Solo de los cursos del docente
+        $asistencias = DB::table('asistencias')
             ->where('estudiante_id', $reporte->estudiante_id)
-            ->whereIn('curso_id', function($query) use ($matriculasIds) {
-                $query->select('curso_id')
-                      ->from('matriculas')
-                      ->whereIn('id', $matriculasIds);
-            })
+            ->whereIn('curso_id', $cursosDocente)
             ->get();
 
-        // Obtener comportamientos del periodo
-        $comportamientos = \DB::table('comportamientos')
-            ->where('estudiante_id', $reporte->estudiante_id)
+        // ✅ COMPORTAMIENTOS: Solo registrados por ESTE docente
+        $comportamientos = Comportamiento::where('estudiante_id', $reporte->estudiante_id)
             ->where('docente_id', $docente->id)
             ->whereBetween('fecha', [
                 $reporte->periodo->fecha_inicio,
@@ -326,7 +325,6 @@ class ReporteController extends Controller
             ])
             ->get()
             ->map(function($comp) {
-                // Agregar propiedades computadas que la vista espera
                 $comp->tipo_badge = match($comp->tipo) {
                     'Positivo' => 'success',
                     'Negativo' => 'danger',
@@ -341,12 +339,11 @@ class ReporteController extends Controller
                     default => 'fa-circle'
                 };
                 
-                $comp->fecha_formateada = \Carbon\Carbon::parse($comp->fecha)->format('d/m/Y');
+                $comp->fecha_formateada = $comp->fecha->format('d/m/Y');
                 
                 return $comp;
             });
 
-        // ✅ CAMBIO: Usar vista de docente en lugar de admin
         return view('docente.reportes.show', compact('reporte', 'notas', 'asistencias', 'comportamientos'));
     }
 
@@ -356,13 +353,7 @@ class ReporteController extends Controller
     public function publicar($id)
     {
         $reporte = Reporte::findOrFail($id);
-
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
+        $docente = $this->getDocente();
 
         if ($reporte->docente_id != $docente->id) {
             return back()->with('mensaje', 'No puedes publicar este reporte')
@@ -371,7 +362,7 @@ class ReporteController extends Controller
 
         $reporte->update([
             'visible_tutor' => true,
-            'fecha_generacion' => now(),
+            'fecha_publicacion' => now(),
         ]);
 
         return back()->with('mensaje', 'Reporte publicado para tutores')
@@ -384,13 +375,7 @@ class ReporteController extends Controller
     public function despublicar($id)
     {
         $reporte = Reporte::findOrFail($id);
-
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
+        $docente = $this->getDocente();
 
         if ($reporte->docente_id != $docente->id) {
             return back()->with('mensaje', 'No puedes despublicar este reporte')
@@ -399,6 +384,7 @@ class ReporteController extends Controller
 
         $reporte->update([
             'visible_tutor' => false,
+            'fecha_publicacion' => null,
         ]);
 
         return back()->with('mensaje', 'Reporte despublicado')
@@ -411,13 +397,7 @@ class ReporteController extends Controller
     public function descargarPdf($id)
     {
         $reporte = Reporte::findOrFail($id);
-
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
+        $docente = $this->getDocente();
 
         if ($reporte->docente_id != $docente->id) {
             return back()->with('mensaje', 'No puedes descargar este reporte')
@@ -433,53 +413,45 @@ class ReporteController extends Controller
     }
 
     /**
-     * Calcular datos automáticamente
+     * ✅ RECALCULAR DATOS - Solo de sus cursos
      */
     public function calcularDatos($id)
     {
         $reporte = Reporte::findOrFail($id);
-
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
+        $docente = $this->getDocente();
 
         if ($reporte->docente_id != $docente->id) {
             return back()->with('mensaje', 'No puedes calcular datos de este reporte')
                         ->with('icono', 'error');
         }
 
-        // Calcular promedio de notas
-        $matriculasIds = \DB::table('matriculas')
+        // ✅ CORRECCIÓN: Obtener cursos sin ambigüedad
+        $cursosDocente = DB::table('docente_curso')
+            ->where('docente_id', $docente->id)
+            ->pluck('curso_id');
+
+        // Calcular promedio de notas (solo cursos del docente)
+        $matriculasIds = DB::table('matriculas')
             ->where('estudiante_id', $reporte->estudiante_id)
             ->where('gestion_id', $reporte->gestion_id)
+            ->whereIn('curso_id', $cursosDocente)
             ->pluck('id');
 
-        $promedioNotas = \DB::table('notas')
+        $promedioNotas = DB::table('notas')
             ->where('periodo_id', $reporte->periodo_id)
             ->whereIn('matricula_id', $matriculasIds)
             ->avg('nota_final');
 
-        // Calcular porcentaje de asistencia
-        $totalAsistencias = \DB::table('asistencias')
+        // Calcular porcentaje de asistencia (solo cursos del docente)
+        $totalAsistencias = DB::table('asistencias')
             ->where('estudiante_id', $reporte->estudiante_id)
-            ->whereIn('curso_id', function($query) use ($matriculasIds) {
-                $query->select('curso_id')
-                      ->from('matriculas')
-                      ->whereIn('id', $matriculasIds);
-            })
+            ->whereIn('curso_id', $cursosDocente)
             ->count();
 
-        $asistenciasPresentes = \DB::table('asistencias')
+        $asistenciasPresentes = DB::table('asistencias')
             ->where('estudiante_id', $reporte->estudiante_id)
             ->where('estado', 'Presente')
-            ->whereIn('curso_id', function($query) use ($matriculasIds) {
-                $query->select('curso_id')
-                      ->from('matriculas')
-                      ->whereIn('id', $matriculasIds);
-            })
+            ->whereIn('curso_id', $cursosDocente)
             ->count();
 
         $porcentajeAsistencia = $totalAsistencias > 0 
@@ -487,11 +459,11 @@ class ReporteController extends Controller
             : 0;
 
         $reporte->update([
-            'promedio_general' => round($promedioNotas, 2),
+            'promedio_general' => $promedioNotas ? round($promedioNotas, 2) : null,
             'porcentaje_asistencia' => $porcentajeAsistencia,
         ]);
 
-        return back()->with('mensaje', 'Datos calculados correctamente')
+        return back()->with('mensaje', 'Datos recalculados correctamente (solo de tus cursos)')
                     ->with('icono', 'success');
     }
 }

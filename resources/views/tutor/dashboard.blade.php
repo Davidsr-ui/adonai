@@ -32,7 +32,7 @@
     @else
         <!-- Estadísticas Principales -->
         <div class="row">
-            <div class="col-lg-3 col-6">
+            <div class="col-lg-6 col-md-6">
                 <div class="small-box bg-info">
                     <div class="inner">
                         <h3>{{ $estudiantes->count() }}</h3>
@@ -47,47 +47,17 @@
                 </div>
             </div>
 
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3>{{ $notasAprobadas }}</h3>
-                        <p>Notas Aprobadas</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <a href="{{ route('tutor.notas') }}" class="small-box-footer">
-                        Ver notas <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-6">
+            <div class="col-lg-6 col-md-6">
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3>{{ $notasDesaprobadas }}</h3>
-                        <p>Necesitan Atención</p>
+                        <h3>{{ $totalReportes }}</h3>
+                        <p>Reportes Disponibles</p>
                     </div>
                     <div class="icon">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="fas fa-file-alt"></i>
                     </div>
-                    <a href="{{ route('tutor.notas') }}" class="small-box-footer">
-                        Ver detalles <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3>{{ $ausentes }}</h3>
-                        <p>Inasistencias (30 días)</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-calendar-times"></i>
-                    </div>
-                    <a href="{{ route('tutor.asistencias') }}" class="small-box-footer">
-                        Ver asistencias <i class="fas fa-arrow-circle-right"></i>
+                    <a href="{{ route('tutor.reportes.index') }}" class="small-box-footer">
+                        Ver reportes <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
             </div>
@@ -100,6 +70,9 @@
                 <div class="card card-warning">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Alertas Importantes</h3>
+                        <div class="card-tools">
+                            <span class="badge badge-warning">{{ count($alertas) }}</span>
+                        </div>
                     </div>
                     <div class="card-body">
                         @foreach($alertas as $alerta)
@@ -120,6 +93,9 @@
                 <div class="card card-primary">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-users"></i> Mis Estudiantes</h3>
+                        <div class="card-tools">
+                            <span class="badge badge-light">{{ $estudiantes->count() }}</span>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if($estudiantes->count() > 0)
@@ -133,7 +109,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($estudiantes->take(5) as $estudiante)
+                                        @foreach($estudiantes as $estudiante)
                                             <tr>
                                                 <td>
                                                     <strong>{{ $estudiante->persona->apellidos }}, {{ $estudiante->persona->nombres }}</strong>
@@ -153,9 +129,6 @@
                                     </tbody>
                                 </table>
                             </div>
-                            @if($estudiantes->count() > 5)
-                                <small class="text-muted">Mostrando 5 de {{ $estudiantes->count() }} estudiantes</small>
-                            @endif
                         @else
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle"></i>
@@ -208,17 +181,17 @@
                                 </a>
                             </div>
                             <div class="col-6 mb-3">
-                                <a href="{{ route('tutor.reportes') }}" class="btn btn-secondary btn-block btn-lg">
+                                <a href="{{ route('tutor.reportes.index') }}" class="btn btn-secondary btn-block btn-lg">
                                     <i class="fas fa-chart-line fa-2x"></i>
                                     <br>
                                     <small>Reportes</small>
                                 </a>
                             </div>
                             <div class="col-6 mb-3">
-                                <a href="{{ route('tutor.mensajeria') }}" class="btn btn-primary btn-block btn-lg">
-                                    <i class="fas fa-envelope fa-2x"></i>
+                                <a href="{{ route('tutor.horarios') }}" class="btn btn-primary btn-block btn-lg">
+                                    <i class="fas fa-calendar-alt fa-2x"></i>
                                     <br>
-                                    <small>Mensajería</small>
+                                    <small>Horarios</small>
                                 </a>
                             </div>
                         </div>
@@ -227,153 +200,15 @@
             </div>
         </div>
 
-        <!-- Estadísticas Detalladas -->
-        <div class="row">
-            <!-- Asistencias -->
-            <div class="col-md-4">
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-calendar-check"></i> Asistencias (30 días)</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-6 text-center mb-3">
-                                <div class="info-box bg-success">
-                                    <span class="info-box-icon"><i class="fas fa-check"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Presentes</span>
-                                        <span class="info-box-number">{{ $presentes }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 text-center mb-3">
-                                <div class="info-box bg-danger">
-                                    <span class="info-box-icon"><i class="fas fa-times"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Ausentes</span>
-                                        <span class="info-box-number">{{ $ausentes }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 text-center mb-3">
-                                <div class="info-box bg-warning">
-                                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Tardanzas</span>
-                                        <span class="info-box-number">{{ $tardanzas }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 text-center mb-3">
-                                <div class="info-box bg-info">
-                                    <span class="info-box-icon"><i class="fas fa-percentage"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">% Asistencia</span>
-                                        <span class="info-box-number">{{ number_format($porcentajeAsistencia, 1) }}%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notas -->
-            <div class="col-md-4">
-                <div class="card card-warning">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-star"></i> Calificaciones</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-12 text-center mb-3">
-                                <h3 class="text-primary">
-                                    <i class="fas fa-chart-line"></i>
-                                    Promedio: <strong>{{ number_format($promedioGeneral, 2) }}</strong>
-                                </h3>
-                            </div>
-                            <div class="col-6 text-center mb-3">
-                                <div class="info-box bg-success">
-                                    <span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Aprobadas</span>
-                                        <span class="info-box-number">{{ $notasAprobadas }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 text-center mb-3">
-                                <div class="info-box bg-danger">
-                                    <span class="info-box-icon"><i class="fas fa-thumbs-down"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Desaprobadas</span>
-                                        <span class="info-box-number">{{ $notasDesaprobadas }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 text-center">
-                                <small class="text-muted">Total de notas: {{ $totalNotas }}</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Comportamientos -->
-            <div class="col-md-4">
-                <div class="card card-purple">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-user-check"></i> Comportamientos</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-4 text-center mb-3">
-                                <div class="info-box bg-success">
-                                    <span class="info-box-icon"><i class="fas fa-smile"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Positivos</span>
-                                        <span class="info-box-number">{{ $comportamientosPositivos }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-4 text-center mb-3">
-                                <div class="info-box bg-danger">
-                                    <span class="info-box-icon"><i class="fas fa-frown"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Negativos</span>
-                                        <span class="info-box-number">{{ $comportamientosNegativos }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-4 text-center mb-3">
-                                <div class="info-box bg-secondary">
-                                    <span class="info-box-icon"><i class="fas fa-meh"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Neutros</span>
-                                        <span class="info-box-number">{{ $comportamientosNeutrales }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 text-center">
-                                <div class="info-box bg-info">
-                                    <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Reportes Disponibles</span>
-                                        <span class="info-box-number">{{ $totalReportes }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notificaciones y Mensajes de Docentes -->
+        <!-- Notificaciones Recientes -->
         <div class="row">
             <div class="col-md-6">
                 <div class="card card-warning">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-bell"></i> Últimos Comportamientos Notificados</h3>
+                        <div class="card-tools">
+                            <span class="badge badge-warning">{{ $ultimosComportamientos->count() }}</span>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if($ultimosComportamientos->count() > 0)
@@ -421,6 +256,9 @@
                 <div class="card card-primary">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-file-alt"></i> Últimos Reportes Académicos</h3>
+                        <div class="card-tools">
+                            <span class="badge badge-light">{{ $ultimosReportes->count() }}</span>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if($ultimosReportes->count() > 0)
@@ -432,6 +270,7 @@
                                             <th>Periodo</th>
                                             <th>Tipo</th>
                                             <th>Promedio</th>
+                                            <th>Acción</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -459,6 +298,13 @@
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
+                                            <td>
+                                                <a href="{{ route('tutor.reportes.show', $reporte->id) }}" 
+                                                   class="btn btn-xs btn-primary" 
+                                                   title="Ver reporte">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -472,7 +318,7 @@
                         @endif
                     </div>
                     <div class="card-footer">
-                        <a href="{{ route('tutor.reportes') }}" class="btn btn-primary btn-block">
+                        <a href="{{ route('tutor.reportes.index') }}" class="btn btn-primary btn-block">
                             <i class="fas fa-eye"></i> Ver Todos los Reportes
                         </a>
                     </div>
@@ -495,10 +341,6 @@
         .btn-purple:hover {
             background-color: #5a32a3;
             border-color: #5a32a3;
-            color: white;
-        }
-        .card-purple .card-header {
-            background-color: #6f42c1;
             color: white;
         }
         .timeline {
