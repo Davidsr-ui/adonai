@@ -1,28 +1,30 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('content_header')
-    <h1><b>Listado de niveles</b></h1>
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-layer-group text-primary"></i>
+        <span class="fw-bold fs-4">Gestión de Niveles</span>
+    </div>
 @stop
 
 @section('content')
 
 <div class="row">
     <div class="col-md-10">
-        <div class="card card-outline card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Niveles registrados</h3>
+        <div class="card shadow-sm border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Niveles registrados</h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ModalCreate">
-                        <i class="fas fa-plus"></i> Crear nuevo nivel
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ModalCreate">
+                        <i class="fas fa-plus me-1"></i> Crear nuevo nivel
                     </button>
 
-                    <!-- Modal Create -->
                     <div class="modal fade" id="ModalCreate" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header" style="background-color: #007bff; color: white;">
                                     <h5 class="modal-title" id="exampleModalLabel">Registro de un nuevo nivel</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
@@ -88,7 +90,7 @@
 
                                         <div class="row">
                                             <div class="col-md-12 d-flex justify-content-end">
-                                                <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">Cancelar</button>
+                                                <button type="button" class="btn btn-secondary mr-2" data-bs-dismiss="modal">Cancelar</button>
                                                 <button type="submit" class="btn btn-primary">
                                                     <i class="fas fa-save"></i> Guardar
                                                 </button>
@@ -130,7 +132,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#ModalUpdate{{ $nivel->id }}">
+                                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#ModalUpdate{{ $nivel->id }}">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
                                         
@@ -149,13 +151,12 @@
                                         </form>
                                     </div>
 
-                                    <!-- Modal Update -->
                                     <div class="modal fade" id="ModalUpdate{{ $nivel->id }}" tabindex="-1" aria-labelledby="ModalUpdateLabel{{ $nivel->id }}" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
                                                 <div class="modal-header" style="background-color: #28a745; color: white;">
                                                     <h5 class="modal-title" id="ModalUpdateLabel{{ $nivel->id }}">Actualizar nivel</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
@@ -225,7 +226,7 @@
                                                         <hr>
 
                                                         <div class="d-flex justify-content-end">
-                                                            <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">Cancelar</button>
+                                                            <button type="button" class="btn btn-secondary mr-2" data-bs-dismiss="modal">Cancelar</button>
                                                             <button type="submit" class="btn btn-success">
                                                                 <i class="fas fa-sync-alt"></i> Actualizar
                                                             </button>

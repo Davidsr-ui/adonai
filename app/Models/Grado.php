@@ -37,6 +37,13 @@ class Grado extends Model
         return $this->belongsTo(Turno::class);
     }
 
+    // ⭐ NUEVA RELACIÓN ⭐
+    // Un grado tiene muchos cursos propios
+    public function cursos()
+    {
+        return $this->hasMany(Curso::class);
+    }
+
     public function estudiantes()
     {
         return $this->hasMany(Estudiante::class);

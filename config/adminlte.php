@@ -206,146 +206,148 @@ return [
             'text' => 'Dashboard',
             'url' => 'admin/dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
         
         [
             'text' => 'Gestiones',
             'url' => 'admin/gestiones',
             'icon' => 'fas fa-fw fa-tasks',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Periodos',
             'url' => 'admin/periodos',
             'icon' => 'fas fa-fw fa-calendar-alt',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Niveles',
             'url' => 'admin/niveles',
             'icon' => 'fas fa-fw fa-layer-group',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Turnos',
             'url' => 'admin/turnos',
             'icon' => 'fas fa-fw fa-clock',
-            'role' => 'Administrador',
-        ],
-
-        [
-            'text' => 'Horarios',
-            'url' => 'admin/horarios',
-            'icon' => 'fas fa-fw fa-calendar-check',
-            'role' => 'Administrador',
-        ],
-
-        [
-            'text' => 'Docentes',
-            'url' => 'admin/docentes',
-            'icon' => 'fas fa-fw fa-chalkboard-teacher',
-            'role' => 'Administrador',
-        ],
-
-        [
-            'text' => 'Tutores',
-            'url' => 'admin/tutores',
-            'icon' => 'fas fa-fw fa-user-tie',
-            'role' => 'Administrador',
-        ],
-
-        [
-            'text' => 'Estudiantes',
-            'url' => 'admin/estudiantes',
-            'icon' => 'fas fa-fw fa-user-graduate',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Cursos',
             'url' => 'admin/cursos',
             'icon' => 'fas fa-fw fa-book',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Grados',
             'url' => 'admin/grados',
             'icon' => 'fas fa-fw fa-layer-group',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
-            'text' => 'Blog',
-            'url'  => 'admin/blog',
-            'icon' => 'fas fa-fw fa-newspaper',
-            'role' => 'Administrador',
-        ],
-        [
-            'text' => 'Talleres',
-            'url' => 'admin/talleres',
-            'icon' => 'fas fa-fw fa-paint-brush',
-            'role' => 'Administrador',
-        ],
-
-        [
-            'text' => 'Asignación Docentes',
-            'url' => 'admin/asignaciones',
-            'icon' => 'fas fa-fw fa-chalkboard-teacher',
-            'role' => 'Administrador',
+            'text' => 'Estudiantes',
+            'url' => 'admin/estudiantes',
+            'icon' => 'fas fa-fw fa-user-graduate',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Matrículas',
             'url' => 'admin/matriculas',
             'icon' => 'fas fa-fw fa-file-signature',
-            'role' => 'Administrador',
+            'role' => 'admin',
+        ],
+
+        [
+            'text' => 'Tutores',
+            'url' => 'admin/tutores',
+            'icon' => 'fas fa-fw fa-user-tie',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Tutor-Estudiante',
             'url' => 'admin/tutor-estudiante',
             'icon' => 'fas fa-fw fa-user-friends',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
+        [
+            'text' => 'Docentes',
+            'url' => 'admin/docentes',
+            'icon' => 'fas fa-fw fa-chalkboard-teacher',
+            'role' => 'admin',
+        ],
+
+        [
+            'text' => 'Asignación Docentes',
+            'url' => 'admin/asignaciones',
+            'icon' => 'fas fa-fw fa-chalkboard-teacher',
+            'role' => 'admin',
+        ],
+
+        [
+            'text' => 'Horarios',
+            'url' => 'admin/horarios',
+            'icon' => 'fas fa-fw fa-calendar-check',
+            'role' => 'admin',
+        ],
+
+        [
+            'text' => 'Blog',
+            'url'  => 'admin/blog',
+            'icon' => 'fas fa-fw fa-newspaper',
+            'role' => 'admin',
+        ],
+        [
+            'text' => 'Talleres',
+            'url' => 'admin/talleres',
+            'icon' => 'fas fa-fw fa-paint-brush',
+            'role' => 'admin',
+        ],
+
+
+/*
         [
             'text' => 'Comportamientos',
             'url' => 'admin/comportamientos',
             'icon' => 'fas fa-fw fa-user-check',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
-            'text' => 'Administradores',
+            'text' => 'admines',
             'url' => 'admin/administradores',
             'icon' => 'fas fa-fw fa-user-tie',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Permisos',
             'url' => 'admin/permissions',
             'icon' => 'fas fa-fw fa-key',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         [
             'text' => 'Roles',
             'url' => 'admin/roles',
             'icon' => 'fas fa-fw fa-user-tag',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
-
+*/
         [
             'text' => 'Usuarios',
             'url' => 'admin/usuarios',
             'icon' => 'fas fa-fw fa-users',
-            'role' => 'Administrador',
+            'role' => 'admin',
         ],
 
         // ==========================================
@@ -355,56 +357,56 @@ return [
             'text' => 'Dashboard Docente',
             'icon' => 'fas fa-home',
             'url'  => 'docente/dashboard',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         [
             'text' => 'Mis Cursos',
             'icon' => 'fas fa-book',
             'url'  => 'docente/mis-cursos',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         [
             'text' => 'Mis Estudiantes',
             'icon' => 'fas fa-users',
             'url'  => 'docente/estudiantes',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         [
             'text' => 'Registrar Asistencias',
             'icon' => 'fas fa-clipboard-check',
             'url'  => 'docente/asistencias',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         [
             'text' => 'Registrar Notas',
             'icon' => 'fas fa-star',
             'url'  => 'docente/notas',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         [
             'text' => 'Comportamientos',
             'icon' => 'fas fa-user-check',
             'url'  => 'docente/comportamientos',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         [
             'text' => 'Reportes Académicos',
             'icon' => 'fas fa-file-alt',
             'url'  => 'docente/reportes',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         // 🆕 NUEVAS OPCIONES DOCENTE
         [
             'text' => 'Mis Alumnos',
             'icon' => 'fas fa-user-graduate',
             'url'  => 'docente/mis-alumnos',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
         [
             'text' => 'Mensajería',
             'icon' => 'fas fa-envelope',
             'url'  => 'docente/mensajeria',
-            'role' => 'Docente',
+            'role' => 'docente',
         ],
 
         // ==========================================
@@ -414,56 +416,56 @@ return [
             'text' => 'Dashboard Tutor',
             'icon' => 'fas fa-home',
             'url'  => 'tutor/dashboard',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
         [
             'text' => 'Mis Estudiantes',
             'icon' => 'fas fa-user-graduate',
             'url'  => 'tutor/mis-estudiantes',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
         [
             'text' => 'Ver Notas',
             'icon' => 'fas fa-star',
             'url'  => 'tutor/notas',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
         [
             'text' => 'Ver Asistencias',
             'icon' => 'fas fa-clipboard-check',
             'url'  => 'tutor/asistencias',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
         [
             'text' => 'Ver Comportamientos',
             'icon' => 'fas fa-user-check',
             'url'  => 'tutor/comportamientos',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
         [
             'text' => 'Reportes Académicos',
             'route' => 'tutor.reportes.index',  // ✅ Así debe estar
             'icon' => 'fas fa-file-alt',
-            'role' => 'Tutor', 
+            'role' => 'tutor', 
         ],
         // 🆕 NUEVAS OPCIONES TUTOR
         [
             'text' => 'Horario de Clases',
             'icon' => 'fas fa-calendar-week',
             'url'  => 'tutor/horarios',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
         [
             'text' => 'Cursos Matriculados',
             'icon' => 'fas fa-book-open',
             'url'  => 'tutor/cursos-matriculados',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
         [
             'text' => 'Mensajería',
             'icon' => 'fas fa-envelope',
             'url'  => 'tutor/mensajeria',
-            'role' => 'Tutor',
+            'role' => 'tutor',
         ],
 
     ],

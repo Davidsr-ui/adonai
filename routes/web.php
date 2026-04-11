@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\Admin\ImportController;
 
 // ✅ CONTROLADORES DE DOCENTE
 use App\Http\Controllers\Docente\DashboardController as DocenteDashboardController;
@@ -19,15 +20,6 @@ use App\Http\Controllers\Tutor\DashboardController as TutorDashboardController;
 | Rutas Públicas
 |--------------------------------------------------------------------------
 */
-
-Route::get('/run-seeder', function () {
-    Artisan::call('db:seed', [
-        '--class' => 'Database\\Seeders\\RolesPermisosSeeder',
-        '--force' => true,
-    ]);
-
-    return 'Seeder ejecutado en producción ✅';
-});
 
 Route::get('/', function () {
     return view('welcome');
@@ -112,16 +104,23 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:administrador'
     // Estudiantes
     Route::resource('estudiantes', App\Http\Controllers\Admin\Roles\EstudianteController::class);
 
+    // ✅ PEGA ESTA LÍNEA EXACTAMENTE AQUÍ ABAJO 👇
+    Route::post('estudiantes/importar', [App\Http\Controllers\Admin\Roles\EstudianteController::class, 'importarExcel'])->name('estudiantes.importar');
+
+    // ✅ RUTAS DE IMPORTACIÓN (Las ponemos aquí porque afectan a estudiantes)
+    Route::get('importar-estudiantes', [ImportController::class, 'index'])->name('importar.index');
+    Route::post('importar-estudiantes', [ImportController::class, 'importar'])->name('importar.proceso');
+
     // Cursos y Grados
     Route::resource('cursos', App\Http\Controllers\Admin\Academico\CursoController::class);
     Route::resource('grados', App\Http\Controllers\Admin\Academico\GradoController::class);
 
     // Asignaciones
-    Route::get('Asignaciones', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'index'])->name('Asignaciones.index');
-    Route::get('Asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'show'])->name('Asignaciones.show');
-    Route::post('Asignaciones/create', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'store'])->name('Asignaciones.store');
-    Route::put('Asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'update'])->name('Asignaciones.update');
-    Route::delete('Asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'destroy'])->name('Asignaciones.destroy');
+    Route::get('asignaciones', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'index'])->name('asignaciones.index');
+    Route::get('asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'show'])->name('asignaciones.show');
+    Route::post('asignaciones/create', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'store'])->name('asignaciones.store');
+    Route::put('asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'update'])->name('asignaciones.update');
+    Route::delete('asignaciones/{id}', [App\Http\Controllers\Admin\Procesos\AsignacionDocenteController::class, 'destroy'])->name('asignaciones.destroy');
 
     // Matrículas
     Route::get('matriculas', [App\Http\Controllers\Admin\Procesos\MatriculaController::class, 'index'])->name('matriculas.index');
@@ -129,6 +128,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:administrador'
     Route::post('matriculas/create', [App\Http\Controllers\Admin\Procesos\MatriculaController::class, 'store'])->name('matriculas.store');
     Route::put('matriculas/{id}', [App\Http\Controllers\Admin\Procesos\MatriculaController::class, 'update'])->name('matriculas.update');
     Route::delete('matriculas/{id}', [App\Http\Controllers\Admin\Procesos\MatriculaController::class, 'destroy'])->name('matriculas.destroy');
+    
 
     // Tutor-Estudiante
     Route::get('tutor-estudiante', [App\Http\Controllers\Admin\Registros\TutorEstudianteController::class, 'index'])->name('tutor-estudiante.index');
@@ -373,30 +373,6 @@ Route::get('/home', function () {
 })->middleware('auth')->name('home');
 
 
-// ==========================================
-// DIAGNÓSTICO (BORRAR DESPUÉS DE VERIFICAR)
-// ==========================================
-Route::get('/diagnostico-menu', function () {
-    if (!Auth::check()) {
-        return 'Usuario no autenticado. Por favor inicia sesión primero.';
-    }
 
-    $user = Auth::user();
-
-    return response()->json([
-        'usuario' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ],
-        'roles' => [
-            'count' => $user->roles->count(),
-            'nombres' => $user->roles->pluck('name')->toArray(),
-        ],
-        'verificaciones' => [
-            'tieneRol_administrador' => $user->tieneRol('administrador'),
-            'tieneRol_docente'       => $user->tieneRol('docente'),
-            'tieneRol_tutor'         => $user->tieneRol('tutor'),
-        ],
-    ], 200, [], JSON_PRETTY_PRINT);
-})->middleware('web');
+// Toggle dark/light mode
+Route::get('/admin/theme/toggle', function () { $current = session('theme', 'light'); session(['theme' => $current === 'dark' ? 'light' : 'dark']); return back(); })->middleware('auth')->name('admin.theme.toggle');

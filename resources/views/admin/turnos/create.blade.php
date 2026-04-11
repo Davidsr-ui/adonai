@@ -1,15 +1,18 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('content_header')
-    <h1><b>Creación de un nuevo turno</b></h1>
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-clock text-primary"></i>
+        <span class="fw-bold fs-4">Creación de un nuevo turno</span>
+    </div>
 @stop
 
 @section('content')
 <div class="row">
     <div class="col-md-6">
-        <div class="card card-primary">
+        <div class="card shadow-sm border-0">
             <div class="card-header">
-                <h3 class="card-title">Llene los datos del turno</h3>
+                <h3 class="card-title mb-0">Llene los datos del turno</h3>
             </div>
             <div class="card-body">
                 {{-- ✅ CORREGIDO: Envía a /admin/turnos en lugar de /admin/turnos/create --}}

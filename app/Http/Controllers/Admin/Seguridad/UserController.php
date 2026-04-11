@@ -29,8 +29,8 @@ class UserController extends Controller
                   ->orWhere('email', 'like', "%{$buscar}%")
                   ->orWhereHas('persona', function($q2) use ($buscar) {
                       $q2->where('nombres', 'like', "%{$buscar}%")
-                         ->orWhere('apellidos', 'like', "%{$buscar}%")
-                         ->orWhere('dni', 'like', "%{$buscar}%");
+                          ->orWhere('apellidos', 'like', "%{$buscar}%")
+                          ->orWhere('dni', 'like', "%{$buscar}%");
                   });
             });
         }
@@ -76,17 +76,39 @@ class UserController extends Controller
         
         // Obtener personas sin usuario (SOLO docentes, tutores y administradores - SIN estudiantes)
         $personasSinUsuario = Persona::whereNull('user_id')
-                                     ->where('estado', 'Activo')
-                                     ->where(function($query) {
-                                         $query->whereHas('docente')
-                                               ->orWhereHas('tutor')
-                                               ->orWhereHas('administrador');
-                                     })
-                                     ->orderBy('apellidos')
-                                     ->get();
+                             ->where('estado', 'Activo')
+                             ->where(function($query) {
+                                 $query->whereHas('docente')
+                                       ->orWhereHas('tutor')
+                                       ->orWhereHas('administrador');
+                             })
+                             ->orderBy('apellidos')
+                             ->get();
         
-        // Estadísticas
-        $estadisticas = User::obtenerEstadisticas();
+        // --- CORRECCIÓN FINAL DE ESTADÍSTICAS ---
+        $totalUsuarios = User::count();
+        $usuariosActivos = User::whereHas('persona', function($q) { 
+            $q->where('estado', 'Activo'); 
+        })->count();
+        $usuariosVerificados = User::whereNotNull('email_verified_at')->count();
+        $usuariosConPersona = User::has('persona')->count(); // Agregado para prevenir el siguiente error
+
+        $estadisticas = [
+            // Nombres exactos que pide tu vista (index.blade.php)
+            'total'       => $totalUsuarios,
+            'activos'     => $usuariosActivos,
+            'verificados' => $usuariosVerificados, // Esto soluciona tu error actual (línea 36)
+            'con_persona' => $usuariosConPersona,  // Esto previene el error en la línea 47
+
+            // Nombres antiguos (por compatibilidad)
+            'total_usuarios'       => $totalUsuarios,
+            'usuarios_activos'     => $usuariosActivos,
+            'usuarios_verificados' => $usuariosVerificados,
+            'nuevos_este_mes'      => User::whereMonth('created_at', now()->month)
+                                         ->whereYear('created_at', now()->year)
+                                         ->count()
+        ];
+        // ----------------------------------------
         
         return view('admin.usuarios.index', compact(
             'usuarios',
@@ -174,20 +196,20 @@ class UserController extends Controller
     public function show(string $id)
     {
         $usuario = User::with(['persona', 'roles.permissions'])
-                       ->findOrFail($id);
+                        ->findOrFail($id);
         
         $todosLosRoles = Role::all();
         
         // Obtener personas sin usuario (SOLO docentes, tutores y administradores - SIN estudiantes)
         $personasSinUsuario = Persona::whereNull('user_id')
-                                     ->where('estado', 'Activo')
-                                     ->where(function($query) {
-                                         $query->whereHas('docente')
-                                               ->orWhereHas('tutor')
-                                               ->orWhereHas('administrador');
-                                     })
-                                     ->orderBy('apellidos')
-                                     ->get();
+                             ->where('estado', 'Activo')
+                             ->where(function($query) {
+                                 $query->whereHas('docente')
+                                       ->orWhereHas('tutor')
+                                       ->orWhereHas('administrador');
+                             })
+                             ->orderBy('apellidos')
+                             ->get();
 
         // Si el usuario actual tiene persona, añadirla al listado para poder mantenerla
         if ($usuario->persona) {

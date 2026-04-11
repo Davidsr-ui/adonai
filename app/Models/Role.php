@@ -3,52 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Role as SpatieRole; // <--- CAMBIO IMPORTANTE
 use Illuminate\Support\Facades\DB;
 
-
-
-class Role extends Model
+class Role extends SpatieRole // <--- EXTENDEMOS DE SPATIE
 {
     use HasFactory;
 
-    protected $table = 'roles';
+    // Spatie ya define la tabla y el guard_name internamente.
+    // Solo definimos lo extra que necesitemos.
 
     protected $fillable = [
         'name',
         'display_name',
         'description',
+        'guard_name', // Agregado por seguridad
     ];
 
-    // =========================================
-    // RELACIONES
-    // =========================================
-
-    /**
-     * Relación con usuarios (N:N)
-     */
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'role_user')
-            ->withTimestamps();
-    }
-
-    /**
-     * Relación con permisos (N:N)
-     */
-    public function permissions()
-    {
-        return $this->belongsToMany(Permission::class, 'permission_role')
-            ->withTimestamps();
-    }
+    // NOTA: He eliminado las funciones users() y permissions() 
+    // porque Spatie ya las trae integradas y causaban conflicto.
 
     // =========================================
-    // SCOPES
+    // SCOPES (Tus filtros personalizados)
     // =========================================
 
-    /**
-     * Scope para buscar roles
-     */
     public function scopeBuscar($query, $termino)
     {
         return $query->where('name', 'like', "%{$termino}%")
@@ -56,204 +34,65 @@ class Role extends Model
             ->orWhere('description', 'like', "%{$termino}%");
     }
 
-    /**
-     * Scope para roles con usuarios
-     */
     public function scopeConUsuarios($query)
     {
         return $query->has('users');
     }
 
-    /**
-     * Scope para roles sin usuarios
-     */
     public function scopeSinUsuarios($query)
     {
         return $query->doesntHave('users');
     }
 
     // =========================================
-    // ACCESSORS
+    // ACCESSORS (Tus estilos visuales)
     // =========================================
 
-    /**
-     * Obtener cantidad de usuarios
-     */
     public function getCantidadUsuariosAttribute()
     {
         return $this->users()->count();
     }
 
-    /**
-     * Obtener cantidad de permisos
-     */
     public function getCantidadPermisosAttribute()
     {
         return $this->permissions()->count();
     }
 
-    /**
-     * Badge de color
-     */
     public function getBadgeColorAttribute()
     {
-        $colors = [
-            'Administrador' => 'danger',
-            'Director' => 'warning',
-            'Docente' => 'success',
-            'Estudiante' => 'primary',
-            'Tutor' => 'info',
-        ];
+        // Convertimos a minúsculas para comparar mejor si usas 'admin' o 'Administrador'
+        $name = strtolower($this->name);
+        
+        if (str_contains($name, 'admin')) return 'danger';
+        if (str_contains($name, 'director')) return 'warning';
+        if (str_contains($name, 'docente')) return 'success';
+        if (str_contains($name, 'estudiante')) return 'primary';
+        if (str_contains($name, 'tutor')) return 'info';
 
-        return $colors[$this->display_name] ?? 'secondary';
+        return 'secondary';
     }
 
-    /**
-     * Icono del rol
-     */
     public function getIconoAttribute()
     {
-        $icons = [
-            'Administrador' => 'fa-user-shield',
-            'Director' => 'fa-user-tie',
-            'Docente' => 'fa-chalkboard-teacher',
-            'Estudiante' => 'fa-user-graduate',
-            'Tutor' => 'fa-users',
-        ];
+        $name = strtolower($this->name);
 
-        return $icons[$this->display_name] ?? 'fa-user-tag';
+        if (str_contains($name, 'admin')) return 'fa-user-shield';
+        if (str_contains($name, 'director')) return 'fa-user-tie';
+        if (str_contains($name, 'docente')) return 'fa-chalkboard-teacher';
+        if (str_contains($name, 'estudiante')) return 'fa-user-graduate';
+        if (str_contains($name, 'tutor')) return 'fa-users';
+
+        return 'fa-user-tag';
     }
 
     // =========================================
-    // MÉTODOS
+    // MÉTODOS DE AYUDA (Wrappers para Spatie)
     // =========================================
-
-    /**
-     * Verificar si tiene usuarios asignados
-     */
-    public function tieneUsuarios()
-    {
-        return $this->users()->count() > 0;
-    }
-
-    /**
-     * Verificar si tiene permisos asignados
-     */
-    public function tienePermisos()
-    {
-        return $this->permissions()->count() > 0;
-    }
-
-    /**
-     * Asignar permiso al rol
-     */
-    public function asignarPermiso($permisoId)
-    {
-        if (!$this->permissions()->where('permission_id', $permisoId)->exists()) {
-            $this->permissions()->attach($permisoId);
-        }
-    }
-
-    /**
-     * Remover permiso del rol
-     */
-    public function removerPermiso($permisoId)
-    {
-        $this->permissions()->detach($permisoId);
-    }
-
-    /**
-     * Sincronizar permisos
-     */
-    public function sincronizarPermisos($permisosIds)
-    {
-        $this->permissions()->sync($permisosIds);
-    }
-
-    /**
-     * Asignar usuario al rol
-     */
-    public function asignarUsuario($userId)
-    {
-        if (!$this->users()->where('user_id', $userId)->exists()) {
-            $this->users()->attach($userId);
-        }
-    }
-
-    /**
-     * Remover usuario del rol
-     */
-    public function removerUsuario($userId)
-    {
-        $this->users()->detach($userId);
-    }
-
-    /**
-     * Sincronizar usuarios
-     */
-    public function sincronizarUsuarios($usersIds)
-    {
-        $this->users()->sync($usersIds);
-    }
-
-    /**
-     * Verificar si el rol tiene un permiso específico
-     */
+    
+    // Spatie usa 'hasPermissionTo', pero mantenemos tu nombre 'tienePermiso'
+    // para que no rompa tu código antiguo si lo usas en vistas.
     public function tienePermiso($permisoName)
     {
-        return $this->permissions()->where('name', $permisoName)->exists();
-    }
-
-    /**
-     * Obtener nombres de permisos
-     */
-    public function getNombresPermisos()
-    {
-        return $this->permissions()->pluck('display_name')->toArray();
-    }
-
-    // =========================================
-    // MÉTODOS ESTÁTICOS
-    // =========================================
-
-    /**
-     * Obtener estadísticas
-     */
-    public static function obtenerEstadisticas()
-    {
-        return [
-            'total' => self::count(),
-            'con_usuarios' => self::has('users')->count(),
-            'sin_usuarios' => self::doesntHave('users')->count(),
-            'con_permisos' => self::has('permissions')->count(),
-            'sin_permisos' => self::doesntHave('permissions')->count(),
-            'total_usuarios_asignados' => DB::table('role_user')->distinct('user_id')->count('user_id'),
-            'total_permisos_asignados' => DB::table('permission_role')->distinct('permission_id')->count('permission_id'),
-        ];
-    }
-    /**
-     * Buscar rol por nombre
-     */
-    public static function buscarPorNombre($nombre)
-    {
-        return self::where('name', $nombre)->first();
-    }
-
-    /**
-     * Obtener rol por display name
-     */
-    public static function porDisplayName($displayName)
-    {
-        return self::where('display_name', $displayName)->first();
-    }
-
-    /**
-     * Obtener roles con sus permisos agrupados por módulo
-     */
-    public static function obtenerConPermisosAgrupados()
-    {
-        return self::with(['permissions' => function ($query) {
-            $query->orderBy('module')->orderBy('display_name');
-        }])->get();
+        return $this->hasPermissionTo($permisoName);
     }
 }

@@ -11,8 +11,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            RolesPermisosSeeder::class,
-        ]);
+        // Solo llamamos al maestro que acabas de configurar
+        $this->call(RolesPermisosSeeder::class);
     }
 }

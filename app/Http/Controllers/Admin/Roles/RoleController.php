@@ -47,15 +47,31 @@ class RoleController extends Controller
         
         $roles = $query->orderBy('created_at', 'desc')->get();
         
-        // Obtener todos los permisos agrupados por módulo
-        // ✅ CORREGIDO: Usar obtenerAgrupadosPorModulo() en lugar de obtenerPorModuloAgrupado()
-        $permisosAgrupados = Permission::obtenerAgrupadosPorModulo();
+        // 1. Obtener todos los permisos agrupados por módulo
+        $permisosAgrupados = Permission::all()->groupBy('module');
         
-        // Obtener todos los usuarios
+        // 2. Obtener todos los usuarios
         $usuarios = User::all();
         
-        // Estadísticas
-        $estadisticas = Role::obtenerEstadisticas();
+        // 3. Estadísticas: Calculamos los valores una vez
+        $totalRoles = Role::count();
+        $totalAsignacionesUsuarios = DB::table('model_has_roles')->count();
+        $totalAsignacionesPermisos = DB::table('role_has_permissions')->count();
+        $rolesConUsuarios = Role::has('users')->count();
+        $rolesConPermisos = Role::has('permissions')->count();
+
+        // 4. PREPARAMOS EL ARRAY PARA CUBRIR TODOS LOS CASOS POSIBLES
+        $estadisticas = [
+            // Nombres que pide tu vista actual (error actual)
+            'total' => $totalRoles,
+            'con_usuarios' => $rolesConUsuarios, 
+            'con_permisos' => $rolesConPermisos,
+
+            // Nombres que pedía en el error anterior (por compatibilidad)
+            'total_roles' => $totalRoles,
+            'total_usuarios_asignados' => $totalAsignacionesUsuarios,
+            'total_permisos_asignados' => $totalAsignacionesPermisos,
+        ];
         
         return view('admin.Roles.index', compact(
             'roles',
@@ -97,11 +113,11 @@ class RoleController extends Controller
             $role->name = $request->name_create;
             $role->display_name = $request->display_name_create;
             $role->description = $request->description_create;
+            $role->guard_name = 'web';
             $role->save();
             
-            // Asignar permisos si se seleccionaron
             if ($request->has('permissions_create')) {
-                $role->permissions()->attach($request->permissions_create);
+                $role->permissions()->sync($request->permissions_create);
             }
             
             DB::commit();
@@ -123,14 +139,15 @@ class RoleController extends Controller
      */
     public function show(string $id)
     {
-        $role = Role::with(['users.persona', 'permissions'])->findOrFail($id);
+        $role = Role::with(['users', 'permissions'])->findOrFail($id);
         
-        // Obtener todos los permisos agrupados por módulo
-        // ✅ CORREGIDO: Usar obtenerAgrupadosPorModulo() en lugar de obtenerPorModuloAgrupado()
-        $permisosAgrupados = Permission::obtenerAgrupadosPorModulo();
+        $permisosAgrupados = Permission::all()->groupBy('module');
         
-        // Obtener todos los usuarios
-        $todosLosUsuarios = User::with('persona')->get();
+        if (method_exists(new User(), 'persona')) {
+            $todosLosUsuarios = User::with('persona')->get();
+        } else {
+            $todosLosUsuarios = User::all();
+        }
         
         return view('admin.Roles.show', compact('role', 'permisosAgrupados', 'todosLosUsuarios'));
     }
@@ -177,11 +194,10 @@ class RoleController extends Controller
             $role->description = $request->description;
             $role->save();
             
-            // Sincronizar permisos
             if ($request->has('permissions')) {
                 $role->permissions()->sync($request->permissions);
             } else {
-                $role->permissions()->sync([]);
+                $role->permissions()->detach();
             }
             
             DB::commit();
@@ -208,17 +224,13 @@ class RoleController extends Controller
             
             $role = Role::findOrFail($id);
             
-            // Verificar si tiene usuarios asignados
             if ($role->users()->count() > 0) {
                 return redirect()->route('admin.Roles.index')
                     ->with('mensaje', 'No se puede eliminar el rol porque tiene usuarios asignados')
                     ->with('icono', 'error');
             }
             
-            // Desasociar todos los permisos
             $role->permissions()->detach();
-            
-            // Eliminar el rol
             $role->delete();
             
             DB::commit();
@@ -246,7 +258,9 @@ class RoleController extends Controller
 
         try {
             $role = Role::findOrFail($id);
-            $role->asignarPermiso($request->permission_id);
+            $permission = Permission::findOrFail($request->permission_id);
+            
+            $role->givePermissionTo($permission);
 
             return redirect()->back()
                 ->with('mensaje', 'Permiso asignado correctamente')
@@ -270,7 +284,9 @@ class RoleController extends Controller
 
         try {
             $role = Role::findOrFail($id);
-            $role->removerPermiso($request->permission_id);
+            $permission = Permission::findOrFail($request->permission_id);
+            
+            $role->revokePermissionTo($permission);
 
             return redirect()->back()
                 ->with('mensaje', 'Permiso removido correctamente')
@@ -294,7 +310,8 @@ class RoleController extends Controller
 
         try {
             $role = Role::findOrFail($id);
-            $role->asignarUsuario($request->user_id);
+            $user = User::findOrFail($request->user_id);
+            $user->assignRole($role);
 
             return redirect()->back()
                 ->with('mensaje', 'Usuario asignado correctamente')
@@ -318,7 +335,8 @@ class RoleController extends Controller
 
         try {
             $role = Role::findOrFail($id);
-            $role->removerUsuario($request->user_id);
+            $user = User::findOrFail($request->user_id);
+            $user->removeRole($role);
 
             return redirect()->back()
                 ->with('mensaje', 'Usuario removido correctamente')
