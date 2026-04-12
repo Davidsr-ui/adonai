@@ -1,20 +1,23 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('title', 'Gestión de Turnos')
 
 @section('content_header')
-    <h1><b>Listado de Turnos</b></h1>
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-clock text-primary"></i>
+        <span class="fw-bold fs-4">Gestión de Turnos</span>
+    </div>
 @stop
 
 @section('content')
 
 <div class="row">
     <div class="col-md-12">
-        <div class="card card-outline card-primary">
+        <div class="card shadow-sm border-0">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title">Turnos registrados</h3>
+                <h3 class="card-title mb-0">Turnos registrados</h3>
                 <a href="{{ url('/admin/turnos/create') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Crear nuevo turno
+                    <i class="fas fa-plus me-1"></i> Crear nuevo turno
                 </a>
             </div>
 

@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('content_header')
     <h1><b>Gestión de Reportes Académicos</b></h1>

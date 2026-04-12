@@ -1,19 +1,22 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('content_header')
-    <h1><b>Listado de periodos académicos</b></h1>
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-calendar-alt text-primary"></i>
+        <span class="fw-bold fs-4">Gestión de Periodos Académicos</span>
+    </div>
 @stop
 
 @section('content')
 
 <div class="row">
     <div class="col-md-12">
-        <div class="card card-outline card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Periodos registrados</h3>
+        <div class="card shadow-sm border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Periodos registrados</h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ModalCreatePeriodo">
-                        <i class="fas fa-plus"></i> Crear nuevo periodo
+                        <i class="fas fa-plus me-1"></i> Crear nuevo periodo
                     </button>
 
                     <!-- Modal Create -->

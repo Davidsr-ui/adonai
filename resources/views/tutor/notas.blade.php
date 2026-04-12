@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('title', 'Notas de Mis Estudiantes')
 

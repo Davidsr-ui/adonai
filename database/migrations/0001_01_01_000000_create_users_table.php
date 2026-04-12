@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            // CORRECCIÓN: Agregamos la columna estado que faltaba
+            $table->string('estado')->default('Activo'); 
+            
             $table->rememberToken();
             $table->timestamps();
         });

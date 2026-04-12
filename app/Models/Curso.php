@@ -13,6 +13,7 @@ class Curso extends Model
     
     protected $fillable = [
         'nivel_id',
+        'grado_id', // <--- NUEVO: Agregado para permitir asignación masiva
         'nombre',
         'codigo',
         'horas_semanales',
@@ -24,12 +25,20 @@ class Curso extends Model
         'creditos' => 'integer',
         'horas_semanales' => 'integer',
         'nivel_id' => 'integer',
+        'grado_id' => 'integer', // <--- NUEVO
     ];
 
     // Relación con nivel
     public function nivel()
     {
         return $this->belongsTo(Nivel::class);
+    }
+
+    // ⭐ NUEVA RELACIÓN ⭐
+    // Un curso pertenece a un grado específico
+    public function grado()
+    {
+        return $this->belongsTo(Grado::class);
     }
 
     // Relación muchos a muchos con docentes (tabla pivote: docente_curso)
@@ -40,13 +49,11 @@ class Curso extends Model
                     ->withTimestamps();
     }
 
-    // ⭐ NUEVA RELACIÓN - SOLUCIONA EL ERROR ⭐
     // Relación con asignaciones (1:N) - Tabla: docente_curso
     public function asignaciones()
     {
         return $this->hasMany(DocenteCurso::class, 'curso_id');
     }
-
 
     // Relación con horarios
     public function horarios()
@@ -90,10 +97,11 @@ class Curso extends Model
         return $this->codigo ? "{$this->codigo} - {$this->nombre}" : $this->nombre;
     }
 
-    // Accessor para obtener el nombre con nivel
+    // Accessor para obtener el nombre con nivel y grado
     public function getNombreConNivelAttribute()
     {
-        $nivel = $this->nivel ? $this->nivel->nombre : 'Sin nivel';
-        return "{$this->nombre} ({$nivel})";
+        // Modificado para mostrar mejor info si hay grado
+        $info = $this->grado ? $this->grado->nombre_completo : ($this->nivel ? $this->nivel->nombre : 'Sin asignación');
+        return "{$this->nombre} ({$info})";
     }
 }

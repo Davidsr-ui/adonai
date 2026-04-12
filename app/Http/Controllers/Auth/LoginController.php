@@ -5,35 +5,13 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
-
     use AuthenticatesUsers;
 
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
     protected $redirectTo = '/home';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
@@ -41,46 +19,35 @@ class LoginController extends Controller
     }
 
     /**
-     * Redireccionar después del login según el rol del usuario
+     * Lógica limpia de redirección post-login
      */
     protected function authenticated(Request $request, $user)
     {
-        // Verificar el rol y redirigir (usando nombres exactos de la BD)
-        // Administrador: acepta AMBOS roles (Administrador y admin)
-        if ($user->tieneRol('Administrador') || $user->tieneRol('admin')) {
-            return redirect()->route('admin.dashboard')
-                ->with('mensaje', '¡Bienvenido Administrador!')
-                ->with('icono', 'success');
+        // 1. Validar si el usuario está activo (Opcional, pero recomendado)
+        // if ($user->persona && $user->persona->estado === 'Inactivo') {
+        //     Auth::logout();
+        //     return redirect('/login')->withErrors(['email' => 'Tu cuenta está desactivada.']);
+        // }
+
+        // 2. Redirección por ROL (Usamos siempre minúsculas para evitar errores)
+        if ($user->tieneRol('administrador') || $user->tieneRol('admin')) {
+            return redirect()->route('admin.dashboard');
         }
 
         if ($user->tieneRol('docente')) {
-            return redirect()->route('docente.dashboard')
-                ->with('mensaje', '¡Bienvenido Docente!')
-                ->with('icono', 'success');
+            return redirect()->route('docente.dashboard');
         }
 
         if ($user->tieneRol('tutor')) {
-            return redirect()->route('tutor.dashboard')
-                ->with('mensaje', '¡Bienvenido Tutor!')
-                ->with('icono', 'success');
+            return redirect()->route('tutor.dashboard');
         }
 
-        if ($user->tieneRol('estudiante')) {
-            return redirect()->route('estudiante.dashboard')
-                ->with('mensaje', '¡Bienvenido Estudiante!')
-                ->with('icono', 'success');
-        }
+        // 🚨 NOTA: Eliminamos la verificación de 'estudiante' porque
+        // definimos que ellos NO tienen acceso al sistema.
 
-        // Si no tiene rol específico, redirigir a /home
-        // El fallback de /home se encargará de manejar el caso sin rol
+        // 3. Fallback: Si tiene usuario pero no rol (caso raro)
         return redirect()->route('home');
     }
-
-    /**
-     * Get the login username to be used by the controller.
-     *
-     * @return string
-     */
     public function username()
     {
         return 'email';

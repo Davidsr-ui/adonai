@@ -1,120 +1,150 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('title', 'Blog - Publicaciones')
 
+@section('content_header')
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-newspaper text-primary"></i>
+        <span class="fw-bold fs-4">Gestión del Blog</span>
+    </div>
+@stop
+
 @section('content')
 
-<div class="pagetitle">
-    <h1>Gestión del Blog</h1>
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Inicio</a></li>
-            <li class="breadcrumb-item active">Blog</li>
-        </ol>
-    </nav>
-</div>
-
-<section class="section dashboard">
-
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <div class="card">
+    <div class="card shadow-sm border-0">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title m-0">Lista de Publicaciones</h5>
-
-            {{-- BOTÓN NUEVA PUBLICACIÓN --}}
+            <h3 class="card-title mb-0">Lista de Publicaciones</h3>
             <a href="{{ route('admin.blog.create') }}" class="btn btn-primary btn-sm">
-                <i class="fa fa-plus"></i> Nueva Publicación
+                <i class="fas fa-plus me-1"></i> Nueva Publicación
             </a>
         </div>
 
-        <div class="card-body">
-
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Portada</th>
-                        <th>Título</th>
-                        <th>Categoría</th>
-                        <th>Fecha</th>
-                        <th>Autor</th>
-                        <th style="width: 130px;">Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($posts as $post)
+        <div class="card-body p-3">
+            <div class="table-responsive">
+                <table id="blogTable" class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-
-                            {{-- PORTADA --}}
+                            <th>Portada</th>
+                            <th>Título</th>
+                            <th>Categoría</th>
+                            <th>Fecha</th>
+                            <th>Autor</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($posts as $post)
+                        <tr>
                             <td>
                                 @if($post->portada)
                                     <img src="{{ asset('storage/' . $post->portada) }}"
-                                         width="70"
-                                         class="rounded shadow-sm">
+                                         class="rounded"
+                                         style="width:50px; height:50px; object-fit:cover;">
                                 @else
-                                    <span class="text-muted">Sin imagen</span>
+                                    <div class="bg-light d-flex align-items-center justify-content-center rounded"
+                                         style="width:50px; height:50px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
                                 @endif
                             </td>
 
-                            {{-- TÍTULO --}}
-                            <td>{{ $post->titulo }}</td>
+                            <td>
+                                <div class="fw-semibold">{{ $post->titulo }}</div>
+                            </td>
 
-                            {{-- CATEGORÍA --}}
                             <td>
                                 <span class="badge bg-info text-dark">
                                     {{ $post->categoria }}
                                 </span>
                             </td>
 
-                            {{-- FECHA --}}
-                            <td>{{ $post->fecha->format('d/m/Y') }}</td>
+                            <td class="text-muted small">
+                                {{ $post->fecha->format('d/m/Y') }}
+                            </td>
 
-                            {{-- AUTOR --}}
-                            <td>{{ $post->autor ?? '—' }}</td>
+                            <td class="text-muted">
+                                {{ $post->autor ?? '—' }}
+                            </td>
 
-                            {{-- ACCIONES --}}
-                            <td class="text-center">
-
-                                {{-- EDITAR --}}
+                            <td class="text-end">
                                 <a href="{{ route('admin.blog.edit', $post->id) }}"
-                                   class="btn btn-warning btn-sm"
-                                   title="Editar">
-                                    <i class="fa fa-edit"></i>
+                                   class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
                                 </a>
 
-                                {{-- ELIMINAR --}}
                                 <form action="{{ route('admin.blog.destroy', $post->id) }}"
                                       method="POST"
                                       class="d-inline"
-                                      onsubmit="return confirm('¿Seguro que deseas eliminar esta publicación?');">
+                                      onsubmit="return confirm('¿Eliminar publicación?');">
                                     @csrf
                                     @method('DELETE')
 
-                                    <button class="btn btn-danger btn-sm" title="Eliminar">
-                                        <i class="fa fa-trash"></i>
+                                    <button class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
-
-                            </td>
-
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">
-                                No hay publicaciones registradas todavía.
                             </td>
                         </tr>
-                    @endforelse
-                </tbody>
-
-            </table>
-
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-</section>
+@stop
 
-@endsection
+@section('css')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+
+<style>
+    #blogTable {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    #blogTable thead {
+        background-color: #f8f9fa;
+    }
+
+    #blogTable tbody tr:hover {
+        background-color: #f1f3f5;
+        transition: 0.2s;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        border-radius: 8px;
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+    }
+</style>
+@stop
+
+@section('js')
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#blogTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
+            emptyTable: `
+                <div style="padding:40px; text-align:center;">
+                    <i class="fas fa-newspaper" style="font-size:40px; opacity:0.3;"></i>
+                    <div style="margin-top:10px; font-weight:600;">
+                        No hay publicaciones
+                    </div>
+                    <div style="font-size:13px; color:gray;">
+                        Empieza creando una 
+                    </div>
+                </div>
+            `
+        },
+        responsive: true,
+        autoWidth: false,
+        order: [[3, 'desc']]
+    });
+});
+</script>
+@stop

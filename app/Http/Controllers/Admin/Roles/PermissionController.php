@@ -8,6 +8,7 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str; // Necesario para crearCRUD
 
 class PermissionController extends Controller
 {
@@ -42,17 +43,23 @@ class PermissionController extends Controller
         
         $permisos = $query->orderBy('module')->orderBy('display_name')->get();
         
-        // Obtener módulos únicos
-        $modulos = Permission::obtenerModulos();
+        // --- CORRECCIONES PARA EVITAR ERRORES ---
+
+        // 1. Obtener módulos únicos (Reemplaza a obtenerModulos)
+        $modulos = Permission::select('module')->distinct()->whereNotNull('module')->pluck('module');
         
-        // Obtener todos los roles para asignación
+        // 2. Obtener todos los roles para asignación
         $roles = Role::all();
         
-        // Estadísticas
-        $estadisticas = Permission::obtenerEstadisticas();
+        // 3. Estadísticas (Reemplaza a obtenerEstadisticas)
+        $estadisticas = [
+            'total' => Permission::count(),
+            'asignados' => Permission::has('roles')->count(),
+            'sin_asignar' => Permission::doesntHave('roles')->count(),
+        ];
         
-        // Permisos agrupados por módulo
-        $permisosAgrupados = Permission::obtenerPorModuloAgrupado();
+        // 4. Permisos agrupados por módulo (Reemplaza a obtenerPorModuloAgrupado)
+        $permisosAgrupados = Permission::all()->groupBy('module');
         
         return view('admin.permissions.index', compact(
             'permisos', 
@@ -98,11 +105,13 @@ class PermissionController extends Controller
             $permission->display_name = $request->display_name_create;
             $permission->description = $request->description_create;
             $permission->module = $request->module_create;
+            $permission->guard_name = 'web'; // Aseguramos el guard
             $permission->save();
             
             // Asignar a roles si se seleccionaron
             if ($request->has('roles_create')) {
-                $permission->roles()->attach($request->roles_create);
+                // syncRoles espera nombres, mejor usamos sync normal con IDs
+                $permission->roles()->sync($request->roles_create);
             }
             
             DB::commit();
@@ -181,7 +190,7 @@ class PermissionController extends Controller
             if ($request->has('roles')) {
                 $permission->roles()->sync($request->roles);
             } else {
-                $permission->roles()->sync([]);
+                $permission->roles()->detach();
             }
             
             DB::commit();
@@ -239,7 +248,9 @@ class PermissionController extends Controller
 
         try {
             $permission = Permission::findOrFail($id);
-            $permission->asignarARol($request->role_id);
+            // CORREGIDO: Usar método estándar de Eloquent
+            $role = Role::findOrFail($request->role_id);
+            $role->givePermissionTo($permission);
 
             return redirect()->back()
                 ->with('mensaje', 'Permiso asignado al rol correctamente')
@@ -263,7 +274,9 @@ class PermissionController extends Controller
 
         try {
             $permission = Permission::findOrFail($id);
-            $permission->removerDeRol($request->role_id);
+            // CORREGIDO: Usar método estándar de Eloquent
+            $role = Role::findOrFail($request->role_id);
+            $role->revokePermissionTo($permission);
 
             return redirect()->back()
                 ->with('mensaje', 'Permiso removido del rol correctamente')
@@ -289,12 +302,37 @@ class PermissionController extends Controller
         try {
             DB::beginTransaction();
             
-            $permisos = Permission::crearPermisoCRUD($request->modulo, $request->entidad);
+            // CORREGIDO: Lógica implementada directamente aquí en lugar de llamar al modelo
+            $acciones = [
+                'index' => 'Ver lista de',
+                'create' => 'Crear',
+                'edit' => 'Editar',
+                'destroy' => 'Eliminar'
+            ];
+            
+            $permisosCreados = [];
+            $entidadLower = Str::lower($request->entidad);
+            $modulo = $request->modulo;
+
+            foreach ($acciones as $accion => $descripcion) {
+                $nombrePermiso = "{$request->entidad}.{$accion}";
+                
+                // Verificar si existe, si no, crearlo
+                $permiso = Permission::firstOrCreate(
+                    ['name' => $nombrePermiso],
+                    [
+                        'display_name' => "{$descripcion} {$entidadLower}",
+                        'module' => $modulo,
+                        'guard_name' => 'web'
+                    ]
+                );
+                $permisosCreados[] = $permiso;
+            }
             
             DB::commit();
 
             return redirect()->route('admin.permissions.index')
-                ->with('mensaje', 'Permisos CRUD creados correctamente: ' . count($permisos) . ' permisos')
+                ->with('mensaje', 'Permisos CRUD creados correctamente: ' . count($permisosCreados) . ' permisos')
                 ->with('icono', 'success');
 
         } catch (\Exception $e) {
@@ -305,4 +343,3 @@ class PermissionController extends Controller
         }
     }
 }
- 

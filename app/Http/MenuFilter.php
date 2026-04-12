@@ -3,68 +3,48 @@
 namespace App\Http;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use JeroenNoten\LaravelAdminLte\Menu\Filters\FilterInterface;
 
 class MenuFilter implements FilterInterface
 {
     public function transform($item)
     {
-        // Si el usuario no está autenticado, ocultar todo
+        // 1. Si no hay usuario logueado, ocultar todo
         if (!Auth::check()) {
             return false;
         }
 
-        // Si es un separador/título de menú tipo string, lo dejamos tal cual
+        // 2. Si es un título o separador, mostrarlo tal cual
         if (is_string($item)) {
             return $item;
         }
 
         $user = Auth::user();
 
-        try {
-            // ✅ 1. Verificar permisos (campo 'can' en el item)
-            if (isset($item['can'])) {
-                $permissions = is_array($item['can']) ? $item['can'] : [$item['can']];
+        // ❌ HE ELIMINADO EL BLOQUE "SI ES ADMIN MUESTRA TODO".
+        // Ahora obligamos a que el menú respete estrictamente los roles definidos.
 
-                $hasPermission = false;
-                foreach ($permissions as $permission) {
-                    if (method_exists($user, 'tienePermiso') && $user->tienePermiso($permission)) {
-                        $hasPermission = true;
-                        break;
-                    }
-                }
-
-                if (!$hasPermission) {
-                    return false;
-                }
+        // 3. Verificar Permisos (campo 'can')
+        // Este sí respeta al Admin gracias al AppServiceProvider (Gate::before)
+        if (isset($item['can'])) {
+            if (!$user->can($item['can'])) {
+                return false;
             }
-
-            // ✅ 2. Verificar roles (campo 'role' en el item)
-            if (isset($item['role'])) {
-                $roles = is_array($item['role']) ? $item['role'] : [$item['role']];
-
-                $hasRole = false;
-                foreach ($roles as $role) {
-                    if (method_exists($user, 'tieneRol') && $user->tieneRol($role)) {
-                        $hasRole = true;
-                        break;
-                    }
-                }
-
-                if (!$hasRole) {
-                    return false;
-                }
-            }
-
-            // Si pasa las validaciones, se muestra el item
-            return $item;
-
-        } catch (\Exception $e) {
-            // Log del error pero no detener la aplicación
-            Log::error('MenuFilter Error: ' . $e->getMessage());
-            // En caso de error, mostrar el item igual (para no romper el panel)
-            return $item;
         }
+
+        // 4. Verificar Roles (campo 'role')
+        // AQUÍ ESTÁ LA CORRECCIÓN:
+        // Si el menú dice 'role' => 'docente', el Admin NO lo verá
+        // a menos que también tenga el rol de 'docente' asignado.
+        if (isset($item['role'])) {
+            $roles = is_array($item['role']) ? $item['role'] : [$item['role']];
+
+            if (!$user->hasAnyRole($roles)) {
+                return false;
+            }
+        }
+
+        // Si pasa los filtros, mostrar el ítem
+        return $item;
     }
 }

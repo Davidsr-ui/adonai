@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
 
 @section('content_header')
     <h1><b>Cursos Matriculados</b></h1>

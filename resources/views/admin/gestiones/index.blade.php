@@ -1,64 +1,87 @@
-@extends('adminlte::page')
+﻿@extends('layouts.admin')
+
+@section('title', 'Gestión de Gestiones')
 
 @section('content_header')
-    <h1><b>Listado de Gestiones Educativas Adonai</b></h1>
-    <hr>
-    <a href="{{url('/admin/gestiones/create')}}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Crear nueva gestión
-    </a>
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-calendar-alt text-primary"></i>
+        <span class="fw-bold fs-4">Gestión de Gestiones Educativas</span>
+    </div>
 @stop
 
 @section('content')
+<div class="row mb-4">
+    <div class="col-md-12">
+        <a href="{{url('/admin/gestiones/create')}}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Crear nueva gestión
+        </a>
+    </div>
+</div>
+
 <div class="row">
     @foreach ($gestiones as $gestion)
-    <div class="col-md-3 col-sm-6 col-12">
-        <div class="info-box zoomP">
-            <img src="{{ asset('img/calendario.gif') }}" width="70px" alt="">
-            <div class="info-box-content">
-                <span class="info-box-text"><b>{{ $gestion->nombre }}</b></span>
-                
-                @if($gestion->año)
-                    <span class="info-box-number" style="color: rgb(10, 6, 248); font-size: 20pt">
-                        {{ $gestion->año }}
-                    </span>
-                @endif
-                
-                <small class="text-muted">
-                    <i class="fas fa-calendar"></i> 
-                    {{ $gestion->fecha_inicio?->format('d/m/Y') }} - 
-                    {{ $gestion->fecha_fin?->format('d/m/Y') }}
-                </small>
-                
-                <div class="mt-2">
-                    @if($gestion->estado == 'Activo')
-                        <span class="badge badge-success">{{ $gestion->estado }}</span>
-                    @elseif($gestion->estado == 'Finalizado')
-                        <span class="badge badge-secondary">{{ $gestion->estado }}</span>
-                    @else
-                        <span class="badge badge-warning">{{ $gestion->estado }}</span>
+    <div class="col-md-4 col-lg-3 col-sm-6 col-12">
+        <div class="card shadow-sm border-0 mb-4 h-100">
+            <div class="card-body p-0">
+                <div class="text-center py-3 bg-light rounded-top">
+                    <img src="{{ asset('img/calendario.gif') }}" width="60px" alt="" class="mb-2">
+                    <h5 class="fw-bold mb-1">{{ $gestion->nombre }}</h5>
+                    
+                    @if($gestion->año)
+                        <h2 class="fw-bold mb-2" style="color: #1a56db;">{{ $gestion->año }}</h2>
                     @endif
+                    
+                    <div class="mb-2">
+                        @if($gestion->estado == 'Activo')
+                            <span class="badge bg-success px-3 py-2">
+                                <i class="fas fa-check-circle me-1"></i> {{ $gestion->estado }}
+                            </span>
+                        @elseif($gestion->estado == 'Finalizado')
+                            <span class="badge bg-secondary px-3 py-2">
+                                <i class="fas fa-check-double me-1"></i> {{ $gestion->estado }}
+                            </span>
+                        @else
+                            <span class="badge bg-warning text-dark px-3 py-2">
+                                <i class="fas fa-clock me-1"></i> {{ $gestion->estado }}
+                            </span>
+                        @endif
+                    </div>
                 </div>
                 
-                <div class="d-flex gap-2 mt-2">
-                    <a href="{{url('/admin/gestiones/'.$gestion->id.'/edit')}}" 
-                       class="btn btn-success btn-sm" title="Editar">
-                        <i class="fas fa-pencil-alt"></i> Editar
-                    </a>
+                <div class="p-3">
+                    <div class="d-flex align-items-center text-muted mb-3">
+                        <i class="fas fa-calendar-week me-2"></i>
+                        <small>
+                            <strong>Inicio:</strong> {{ $gestion->fecha_inicio?->format('d/m/Y') }}
+                        </small>
+                    </div>
+                    <div class="d-flex align-items-center text-muted mb-3">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        <small>
+                            <strong>Fin:</strong> {{ $gestion->fecha_fin?->format('d/m/Y') }}
+                        </small>
+                    </div>
                     
-                    {{-- ✅ FORMULARIO CORREGIDO --}}
-                    <form action="{{ url('/admin/gestiones/'.$gestion->id)}}" 
-                          method="POST" 
-                          id="deleteForm{{$gestion->id}}" 
-                          style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="button" 
-                                class="btn btn-danger btn-sm" 
-                                onclick="confirmarEliminacion({{$gestion->id}})"
-                                title="Eliminar">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </form>
+                    <hr class="my-2">
+                    
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{{url('/admin/gestiones/'.$gestion->id.'/edit')}}" 
+                           class="btn btn-outline-success btn-sm flex-grow-1">
+                            <i class="fas fa-pencil-alt me-1"></i> Editar
+                        </a>
+                        
+                        <form action="{{ url('/admin/gestiones/'.$gestion->id)}}" 
+                              method="POST" 
+                              id="deleteForm{{$gestion->id}}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" 
+                                    class="btn btn-outline-danger btn-sm" 
+                                    onclick="confirmarEliminacion({{$gestion->id}})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -69,42 +92,65 @@
 
 @section('css')
 <style>
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .bg-light {
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%) !important;
+    }
+    
+    .btn-outline-success:hover {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+    
     .gap-2 {
         gap: 0.5rem;
     }
-    .zoomP {
-        transition: transform 0.3s;
-    }
-    .zoomP:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    
+    .badge {
+        font-weight: 500;
+        font-size: 0.85rem;
     }
 </style>
 @stop
 
 @section('js')
-{{-- ✅ SCRIPT CORREGIDO - UNA SOLA FUNCIÓN --}}
 <script>
     function confirmarEliminacion(id) {
         Swal.fire({
             title: '¿Deseas eliminar esta gestión educativa?',
             text: "Esta acción no se puede deshacer",
-            icon: 'question',
+            icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            confirmButtonColor: '#a5161d',
-            cancelButtonText: 'Cancelar',
-            cancelButtonColor: '#6c757d'
+            confirmButtonText: '<i class="fas fa-trash me-1"></i> Eliminar',
+            confirmButtonColor: '#dc3545',
+            cancelButtonText: '<i class="fas fa-times me-1"></i> Cancelar',
+            cancelButtonColor: '#6c757d',
+            reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
-                // ✅ Enviar el formulario
                 document.getElementById('deleteForm' + id).submit();
             }
         });
     }
 </script>
 
-{{-- Mensajes de éxito/error --}}
 @if(session('mensaje'))
 <script>
     Swal.fire({
