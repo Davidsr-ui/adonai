@@ -1,0 +1,543 @@
+﻿@extends('layouts.admin')
+
+@section('title', 'Dashboard Docente')
+
+@section('content_header')
+    <h1><b>Panel del Docente</b></h1>
+    <hr>
+@stop
+
+@section('content')
+    <!-- Mensaje de Bienvenida -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-welcome">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <div>
+                    <strong>Bienvenido, {{ Auth::user()->nombre_completo }}</strong>
+                    <p>Desde este panel puedes gestionar tus cursos, registrar asistencias y calificaciones de tus estudiantes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if(!Auth::user()->persona || !Auth::user()->persona->docente)
+        <div class="row">
+            <div class="col-md-12">
+                <div class="d-alert-warn">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Perfil Incompleto</strong>
+                        <p>Tu perfil de docente no está completo o no está asociado correctamente.</p>
+                        <p>Por favor, contacta al administrador para completar tu perfil.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
+        <!-- Estadísticas Principales -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="d-kpi-box d-kpi-box--sky">
+                    <div class="d-kpi-box__inner">
+                        <h3>{{ $asignaciones->count() }}</h3>
+                        <p>Asignaciones Totales</p>
+                    </div>
+                    <div class="d-kpi-box__icon"><i class="fas fa-book"></i></div>
+                    <a href="{{ route('docente.mis-cursos') }}" class="d-kpi-box__footer">
+                        Ver cursos <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="d-kpi-box d-kpi-box--green">
+                    <div class="d-kpi-box__inner">
+                        <h3>{{ $estudiantes->count() }}</h3>
+                        <p>Estudiantes Activos</p>
+                    </div>
+                    <div class="d-kpi-box__icon"><i class="fas fa-user-graduate"></i></div>
+                    <a href="{{ route('docente.mis-alumnos') }}" class="d-kpi-box__footer">
+                        Ver mis alumnos <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="d-kpi-box d-kpi-box--amber">
+                    <div class="d-kpi-box__inner">
+                        <h3>{{ $totalAsistencias }}</h3>
+                        <p>Asistencias (7 días)</p>
+                    </div>
+                    <div class="d-kpi-box__icon"><i class="fas fa-clipboard-check"></i></div>
+                    <a href="{{ route('docente.asistencias.index') }}" class="d-kpi-box__footer">
+                        Registrar asistencias <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="d-kpi-box d-kpi-box--rose">
+                    <div class="d-kpi-box__inner">
+                        <h3>{{ $notasRegistradas }}</h3>
+                        <p>Notas Registradas</p>
+                    </div>
+                    <div class="d-kpi-box__icon"><i class="fas fa-star"></i></div>
+                    <a href="{{ route('docente.notas.index') }}" class="d-kpi-box__footer">
+                        Registrar notas <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segunda fila de estadísticas -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="d-stat-box d-stat-box--green">
+                    <span class="d-stat-box__icon"><i class="fas fa-check"></i></span>
+                    <div class="d-stat-box__content">
+                        <span class="d-stat-box__text">Presentes</span>
+                        <span class="d-stat-box__number">{{ $presentes }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="d-stat-box d-stat-box--rose">
+                    <span class="d-stat-box__icon"><i class="fas fa-times"></i></span>
+                    <div class="d-stat-box__content">
+                        <span class="d-stat-box__text">Ausentes</span>
+                        <span class="d-stat-box__number">{{ $ausentes }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="d-stat-box d-stat-box--sky">
+                    <span class="d-stat-box__icon"><i class="fas fa-smile"></i></span>
+                    <div class="d-stat-box__content">
+                        <span class="d-stat-box__text">Comportamientos +</span>
+                        <span class="d-stat-box__number">{{ $comportamientosPositivos }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="d-stat-box d-stat-box--amber">
+                    <span class="d-stat-box__icon"><i class="fas fa-frown"></i></span>
+                    <div class="d-stat-box__content">
+                        <span class="d-stat-box__text">Comportamientos -</span>
+                        <span class="d-stat-box__number">{{ $comportamientosNegativos }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Mis Cursos -->
+            <div class="col-md-6">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--sky">
+                        <div class="d-card__title"><i class="fas fa-book"></i> Mis Cursos y Grados Asignados</div>
+                    </div>
+                    <div class="d-card__body">
+                        @if($asignaciones->count() > 0)
+                            <ul class="d-list">
+                                @foreach($asignaciones->take(5) as $asignacion)
+                                    <li class="d-list__item">
+                                        <div>
+                                            <strong>{{ $asignacion->curso->nombre }}</strong>
+                                            <br>
+                                            <small class="d-muted">
+                                                <i class="fas fa-users"></i> {{ $asignacion->grado->nombre_completo }}
+                                            </small>
+                                        </div>
+                                        <div style="text-align:right">
+                                            <span class="d-badge d-badge--sky">
+                                                {{ $asignacion->curso->creditos }} créditos
+                                            </span>
+                                            @if($asignacion->es_tutor_aula)
+                                                <br>
+                                                <span class="d-badge d-badge--green" style="margin-top:4px">
+                                                    <i class="fas fa-star"></i> Tutor
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            @if($asignaciones->count() > 5)
+                                <small class="d-muted">Mostrando 5 de {{ $asignaciones->count() }} asignaciones</small>
+                            @endif
+                        @else
+                            <div class="d-empty">
+                                <i class="fas fa-info-circle"></i>
+                                No tienes cursos asignados aún.
+                            </div>
+                        @endif
+                    </div>
+                    <div class="d-card__footer">
+                        <a href="{{ route('docente.mis-cursos') }}" class="d-btn d-btn--sky d-btn--block">
+                            <i class="fas fa-eye"></i> Ver Todos Mis Cursos
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accesos Rápidos -->
+            <div class="col-md-6">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--sky">
+                        <div class="d-card__title"><i class="fas fa-bolt"></i> Accesos Rápidos</div>
+                    </div>
+                    <div class="d-card__body">
+                        <div class="d-quick-grid">
+                            <a href="{{ route('docente.mis-alumnos') }}" class="d-quick d-quick--sky">
+                                <i class="fas fa-users fa-2x"></i><span>Mis Alumnos</span>
+                            </a>
+                            <a href="{{ route('docente.asistencias.index') }}" class="d-quick d-quick--amber">
+                                <i class="fas fa-clipboard-check fa-2x"></i><span>Asistencias</span>
+                            </a>
+                            <a href="{{ route('docente.notas.index') }}" class="d-quick d-quick--rose">
+                                <i class="fas fa-star fa-2x"></i><span>Notas</span>
+                            </a>
+                            <a href="{{ route('docente.comportamientos.index') }}" class="d-quick d-quick--violet">
+                                <i class="fas fa-user-check fa-2x"></i><span>Comportamientos</span>
+                            </a>
+                            <a href="{{ route('docente.reportes.index') }}" class="d-quick d-quick--slate">
+                                <i class="fas fa-file-alt fa-2x"></i><span>Reportes</span>
+                            </a>
+                            <a href="{{ route('docente.mensajeria') }}" class="d-quick d-quick--green">
+                                <i class="fas fa-envelope fa-2x"></i><span>Mensajería</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Adicionales -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--sky">
+                        <div class="d-card__title"><i class="fas fa-chart-bar"></i> Estadísticas de Notas</div>
+                    </div>
+                    <div class="d-card__body">
+                        <div class="row">
+                            <div class="col-6 text-center">
+                                <div class="d-stat-box d-stat-box--sky">
+                                    <span class="d-stat-box__icon"><i class="fas fa-clipboard-list"></i></span>
+                                    <div class="d-stat-box__content">
+                                        <span class="d-stat-box__text">Total</span>
+                                        <span class="d-stat-box__number">{{ $notasRegistradas }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="d-stat-box d-stat-box--green">
+                                    <span class="d-stat-box__icon"><i class="fas fa-eye"></i></span>
+                                    <div class="d-stat-box__content">
+                                        <span class="d-stat-box__text">Publicadas</span>
+                                        <span class="d-stat-box__number">{{ $notasPublicadas }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--amber">
+                        <div class="d-card__title"><i class="fas fa-user-check"></i> Comportamientos</div>
+                    </div>
+                    <div class="d-card__body">
+                        <div class="row">
+                            <div class="col-12 text-center" style="margin-bottom:8px">
+                                <span class="d-muted">Total: <strong>{{ $comportamientosPositivos + $comportamientosNegativos }}</strong></span>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="d-stat-box d-stat-box--green">
+                                    <span class="d-stat-box__icon"><i class="fas fa-smile"></i></span>
+                                    <div class="d-stat-box__content">
+                                        <span class="d-stat-box__text">Positivos</span>
+                                        <span class="d-stat-box__number">{{ $comportamientosPositivos }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="d-stat-box d-stat-box--rose">
+                                    <span class="d-stat-box__icon"><i class="fas fa-frown"></i></span>
+                                    <div class="d-stat-box__content">
+                                        <span class="d-stat-box__text">Negativos</span>
+                                        <span class="d-stat-box__number">{{ $comportamientosNegativos }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--sky">
+                        <div class="d-card__title"><i class="fas fa-file-alt"></i> Reportes Académicos</div>
+                    </div>
+                    <div class="d-card__body">
+                        <div class="row">
+                            <div class="col-6 text-center">
+                                <div class="d-stat-box d-stat-box--slate">
+                                    <span class="d-stat-box__icon"><i class="fas fa-list"></i></span>
+                                    <div class="d-stat-box__content">
+                                        <span class="d-stat-box__text">Total</span>
+                                        <span class="d-stat-box__number">{{ $reportes->count() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="d-stat-box d-stat-box--green">
+                                    <span class="d-stat-box__icon"><i class="fas fa-check"></i></span>
+                                    <div class="d-stat-box__content">
+                                        <span class="d-stat-box__text">Publicados</span>
+                                        <span class="d-stat-box__number">{{ $reportesPublicados }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas Actividades -->
+        <div class="row">
+            <!-- Últimas Asistencias -->
+            <div class="col-md-6">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--amber">
+                        <div class="d-card__title"><i class="fas fa-clipboard-check"></i> Últimas Asistencias Registradas</div>
+                    </div>
+                    <div class="d-card__body" style="padding:0">
+                        @if($ultimasAsistencias && $ultimasAsistencias->count() > 0)
+                            <ul class="d-list">
+                                @foreach($ultimasAsistencias as $asistencia)
+                                    <li class="d-list__item">
+                                        <div>
+                                            <strong>{{ $asistencia->estudiante->persona->apellidos }}, {{ $asistencia->estudiante->persona->nombres }}</strong>
+                                            <br>
+                                            <small class="d-muted">{{ $asistencia->curso->nombre }}</small>
+                                        </div>
+                                        <div style="text-align:right">
+                                            <span class="d-badge d-badge--{{ $asistencia->estado_badge }}">
+                                                {{ $asistencia->estado }}
+                                            </span>
+                                            <br>
+                                            <small class="d-muted">{{ $asistencia->fecha_formateada }}</small>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="d-empty" style="padding:20px">
+                                <i class="fas fa-info-circle"></i>
+                                No has registrado asistencias recientemente.
+                            </div>
+                        @endif
+                    </div>
+                    <div class="d-card__footer">
+                        <a href="{{ route('docente.asistencias.index') }}" class="d-btn d-btn--amber d-btn--block">
+                            <i class="fas fa-plus"></i> Registrar Asistencias
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimas Notas -->
+            <div class="col-md-6">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--rose">
+                        <div class="d-card__title"><i class="fas fa-star"></i> Últimas Notas Registradas</div>
+                    </div>
+                    <div class="d-card__body" style="padding:0">
+                        @if($ultimasNotas && $ultimasNotas->count() > 0)
+                            <ul class="d-list">
+                                @foreach($ultimasNotas as $nota)
+                                    <li class="d-list__item">
+                                        <div>
+                                            <strong>{{ $nota->matricula->estudiante->persona->apellidos }}, {{ $nota->matricula->estudiante->persona->nombres }}</strong>
+                                            <br>
+                                            <small class="d-muted">{{ $nota->matricula->curso->nombre }}</small>
+                                        </div>
+                                        <div style="text-align:right">
+                                            <span class="d-score d-score--{{ $nota->nota_final >= 14 ? 'green' : ($nota->nota_final >= 11 ? 'sky' : 'rose') }}">
+                                                {{ $nota->nota_final }}
+                                            </span>
+                                            <br>
+                                            <small class="d-muted">{{ $nota->tipo_evaluacion }}</small>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="d-empty" style="padding:20px">
+                                <i class="fas fa-info-circle"></i>
+                                No has registrado notas recientemente.
+                            </div>
+                        @endif
+                    </div>
+                    <div class="d-card__footer">
+                        <a href="{{ route('docente.notas.index') }}" class="d-btn d-btn--rose d-btn--block">
+                            <i class="fas fa-plus"></i> Registrar Notas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Gestión Actual -->
+        @if($gestionActual)
+        <div class="row">
+            <div class="col-md-12">
+                <div class="d-card">
+                    <div class="d-card__header d-card__header--sky">
+                        <div class="d-card__title"><i class="fas fa-calendar-alt"></i> Gestión y Periodo Actual</div>
+                    </div>
+                    <div class="d-card__body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><strong>Gestión Actual:</strong></h5>
+                                <p class="d-muted">
+                                    <i class="fas fa-calendar"></i> {{ $gestionActual->nombre }}
+                                    <span class="d-badge d-badge--green">Activo</span>
+                                </p>
+                            </div>
+                            @if($periodoActual)
+                            <div class="col-md-6">
+                                <h5><strong>Periodo Actual:</strong></h5>
+                                <p class="d-muted">
+                                    <i class="fas fa-calendar-week"></i> {{ $periodoActual->nombre }}
+                                    <span class="d-badge d-badge--sky">Activo</span>
+                                </p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+    @endif
+@stop
+
+@section('css')
+<style>
+/* ── Bienvenida ── */
+.d-welcome{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;background:#e0f2fe;border:1px solid #bae6fd;border-radius:10px;margin-bottom:4px;color:#0369a1}
+.d-welcome i{font-size:1.3rem;margin-top:2px;flex-shrink:0}
+.d-welcome strong{display:block;margin-bottom:3px;font-size:.92rem}
+.d-welcome p{margin:0;font-size:.8rem;opacity:.85}
+
+/* ── Alert ── */
+.d-alert-warn{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;background:#fef3c7;border:1px solid #fde68a;border-radius:10px;color:#b45309;margin-bottom:16px}
+.d-alert-warn i{font-size:1.2rem;flex-shrink:0;margin-top:2px}
+.d-alert-warn strong{display:block;margin-bottom:4px}
+.d-alert-warn p{margin:0 0 4px;font-size:.82rem}
+
+/* ── KPI Boxes ── */
+.d-kpi-box{position:relative;border-radius:12px;overflow:hidden;margin-bottom:16px;color:#fff}
+.d-kpi-box__inner{padding:16px 18px 8px}
+.d-kpi-box__inner h3{font-size:2rem;font-weight:800;margin:0}
+.d-kpi-box__inner p{margin:0;font-size:.82rem;opacity:.9}
+.d-kpi-box__icon{position:absolute;top:12px;right:16px;font-size:3rem;opacity:.2}
+.d-kpi-box__footer{display:block;padding:8px 18px;font-size:.76rem;font-weight:600;color:rgba(255,255,255,.85);text-decoration:none;border-top:1px solid rgba(255,255,255,.2);transition:background .15s}
+.d-kpi-box__footer:hover{background:rgba(0,0,0,.1);color:#fff}
+.d-kpi-box--sky   {background:linear-gradient(135deg,#0ea5e9,#0284c7)}
+.d-kpi-box--green {background:linear-gradient(135deg,#059669,#047857)}
+.d-kpi-box--amber {background:linear-gradient(135deg,#d97706,#b45309)}
+.d-kpi-box--rose  {background:linear-gradient(135deg,#e11d48,#be123c)}
+
+/* ── Stat Boxes ── */
+.d-stat-box{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;margin-bottom:12px;border:1px solid transparent}
+.d-stat-box__icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;color:#fff}
+.d-stat-box__content{display:flex;flex-direction:column}
+.d-stat-box__text{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.d-stat-box__number{font-size:1.4rem;font-weight:800;line-height:1}
+.d-stat-box--sky   {background:#e0f2fe;border-color:#bae6fd;color:#0369a1} .d-stat-box--sky   .d-stat-box__icon{background:#0ea5e9}
+.d-stat-box--green {background:#d1fae5;border-color:#a7f3d0;color:#065f46} .d-stat-box--green .d-stat-box__icon{background:#059669}
+.d-stat-box--rose  {background:#ffe4e6;border-color:#fecdd3;color:#9f1239} .d-stat-box--rose  .d-stat-box__icon{background:#e11d48}
+.d-stat-box--amber {background:#fef3c7;border-color:#fde68a;color:#92400e} .d-stat-box--amber .d-stat-box__icon{background:#d97706}
+.d-stat-box--slate {background:#f1f5f9;border-color:#e2e8f0;color:#334155} .d-stat-box--slate .d-stat-box__icon{background:#64748b}
+.d-stat-box--violet{background:#ede9fe;border-color:#ddd6fe;color:#4c1d95} .d-stat-box--violet.d-stat-box__icon{background:#7c3aed}
+
+/* ── Cards ── */
+.d-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.d-card__header{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #f3f4f6}
+.d-card__title{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:700;color:#111827}
+.d-card__header--sky   {background:#e0f2fe;border-bottom-color:#bae6fd} .d-card__header--sky   .d-card__title{color:#0369a1}
+.d-card__header--green {background:#d1fae5;border-bottom-color:#a7f3d0} .d-card__header--green .d-card__title{color:#065f46}
+.d-card__header--amber {background:#fef3c7;border-bottom-color:#fde68a} .d-card__header--amber .d-card__title{color:#92400e}
+.d-card__header--rose  {background:#ffe4e6;border-bottom-color:#fecdd3} .d-card__header--rose  .d-card__title{color:#9f1239}
+.d-card__body{padding:16px}
+.d-card__footer{padding:12px 16px;border-top:1px solid #f3f4f6;background:#fafafa}
+
+/* ── List ── */
+.d-list{list-style:none;margin:0;padding:0}
+.d-list__item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 18px;border-bottom:1px solid #f9fafb;transition:background .15s}
+.d-list__item:last-child{border-bottom:none}
+.d-list__item:hover{background:#f0f9ff}
+.d-list__item strong{font-size:.83rem;color:#111827}
+
+/* ── Badges ── */
+.d-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:600}
+.d-badge--sky   {background:#e0f2fe;color:#0369a1}
+.d-badge--green {background:#d1fae5;color:#065f46}
+.d-badge--amber {background:#fef3c7;color:#92400e}
+.d-badge--rose  {background:#ffe4e6;color:#9f1239}
+.d-badge--success{background:#d1fae5;color:#065f46}
+.d-badge--warning{background:#fef3c7;color:#92400e}
+.d-badge--danger {background:#ffe4e6;color:#9f1239}
+.d-badge--info   {background:#e0f2fe;color:#0369a1}
+
+/* ── Score ── */
+.d-score{display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:4px 10px;border-radius:7px;font-size:.9rem;font-weight:800}
+.d-score--green{background:#d1fae5;color:#065f46}
+.d-score--sky  {background:#e0f2fe;color:#0369a1}
+.d-score--rose {background:#ffe4e6;color:#9f1239}
+
+/* ── Quick Grid ── */
+.d-quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.d-quick{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:11px;text-decoration:none;font-size:.75rem;font-weight:700;transition:all .2s;text-align:center;border:2px solid transparent}
+.d-quick:hover{border-color:currentColor;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.d-quick--sky   {background:#e0f2fe;color:#0369a1}
+.d-quick--amber {background:#fef3c7;color:#92400e}
+.d-quick--rose  {background:#ffe4e6;color:#9f1239}
+.d-quick--violet{background:#ede9fe;color:#4c1d95}
+.d-quick--slate {background:#f1f5f9;color:#334155}
+.d-quick--green {background:#d1fae5;color:#065f46}
+
+/* ── Buttons ── */
+.d-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .2s}
+.d-btn--block{width:100%}
+.d-btn--sky  {background:#0ea5e9;color:#fff} .d-btn--sky:hover  {background:#0284c7;color:#fff}
+.d-btn--amber{background:#d97706;color:#fff} .d-btn--amber:hover{background:#b45309;color:#fff}
+.d-btn--rose {background:#e11d48;color:#fff} .d-btn--rose:hover {background:#be123c;color:#fff}
+
+/* ── Misc ── */
+.d-muted{color:#9ca3af;font-size:.78rem}
+.d-empty{padding:16px;color:#9ca3af;font-size:.83rem}
+.badge-lg{font-size:1.2rem;padding:.5rem .8rem}
+</style>
+@stop
+
+@section('js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            @if(session('mensaje'))
+                Swal.fire({
+                    icon: '{{ session('icono') }}',
+                    title: '{{ session('mensaje') }}',
+                    showConfirmButton: true,
+                    timer: 3000
+                });
+            @endif
+        });
+    </script>
+@stop

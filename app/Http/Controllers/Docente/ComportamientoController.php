@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Docente;
 
 use App\Http\Controllers\Controller;
@@ -66,8 +65,7 @@ class ComportamientoController extends Controller
 
         $comportamientos = $query->orderBy('fecha', 'desc')->get();
 
-        // Reutilizar la vista de admin (ya adaptada con $routePrefix)
-        return view('admin.comportamientos.index', compact(
+        return view('docente.comportamientos.index', compact(
             'comportamientos',
             'estudiantes',
             'cursos',
@@ -129,7 +127,7 @@ class ComportamientoController extends Controller
     }
 
     /**
-     * Actualizar comportamiento - CORREGIDO
+     * Actualizar comportamiento
      */
     public function update(Request $request, $id)
     {
@@ -155,7 +153,6 @@ class ComportamientoController extends Controller
             'sancion' => 'nullable|string|max:500',
         ]);
 
-        // Preparar datos para actualizar
         $data = [
             'estudiante_id' => $request->estudiante_id,
             'fecha' => $request->fecha,
@@ -164,10 +161,8 @@ class ComportamientoController extends Controller
             'sancion' => $request->sancion,
         ];
 
-        // Manejar notificación al tutor
         if ($request->has('notificado_tutor')) {
             $data['notificado_tutor'] = true;
-            // Solo actualizar fecha si no estaba notificado antes
             if (!$comportamiento->notificado_tutor) {
                 $data['fecha_notificacion'] = now();
             }
@@ -210,7 +205,7 @@ class ComportamientoController extends Controller
     }
 
     /**
-     * Ver detalle - USA VISTA DE DOCENTE
+     * Ver detalle
      */
     public function show($id)
     {
@@ -233,7 +228,6 @@ class ComportamientoController extends Controller
                         ->with('icono', 'error');
         }
 
-        // Resumen de comportamientos del estudiante
         $resumen = [
             'total' => Comportamiento::where('estudiante_id', $comportamiento->estudiante_id)->count(),
             'positivos' => Comportamiento::where('estudiante_id', $comportamiento->estudiante_id)->where('tipo', 'Positivo')->count(),
@@ -243,14 +237,12 @@ class ComportamientoController extends Controller
             'notificados' => Comportamiento::where('estudiante_id', $comportamiento->estudiante_id)->where('notificado_tutor', true)->count(),
         ];
 
-        // Últimos comportamientos del estudiante
         $ultimosComportamientos = Comportamiento::where('estudiante_id', $comportamiento->estudiante_id)
             ->with(['docente.persona'])
             ->orderBy('fecha', 'desc')
             ->limit(10)
             ->get();
 
-        // ✅ USA VISTA DE DOCENTE
         return view('docente.comportamientos.show', compact('comportamiento', 'resumen', 'ultimosComportamientos'));
     }
 
