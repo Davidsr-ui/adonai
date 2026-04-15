@@ -7,65 +7,73 @@
 <div style="padding:0 28px 32px">
 
     {{-- Filtros --}}
-    <details class="d-filter-box" style="margin-bottom:18px">
-        <summary class="d-filter-box__toggle"><i class="fas fa-filter"></i> Filtros de Búsqueda</summary>
-        <div style="padding:16px 0 0">
-            <form action="{{ route('docente.asistencias.index') }}" method="GET">
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-                    <div class="d-form-group">
-                        <label class="d-label">Fecha</label>
-                        <input type="date" name="fecha" class="d-input" value="{{ request('fecha') }}">
-                    </div>
-                    <div class="d-form-group">
-                        <label class="d-label">Estudiante</label>
-                        <select name="estudiante_id" class="d-select">
-                            <option value="">Todos</option>
-                            @foreach($estudiantes as $e)
-                            <option value="{{ $e->id }}" {{ request('estudiante_id')==$e->id?'selected':'' }}>{{ $e->persona->apellidos }}, {{ $e->persona->nombres }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-form-group">
-                        <label class="d-label">Curso</label>
-                        <select name="curso_id" class="d-select">
-                            <option value="">Todos</option>
-                            @foreach($cursos as $c)
-                            <option value="{{ $c->id }}" {{ request('curso_id')==$c->id?'selected':'' }}>{{ $c->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-form-group">
-                        <label class="d-label">Estado</label>
-                        <select name="estado" class="d-select">
-                            <option value="">Todos</option>
-                            @foreach(['Presente','Ausente','Tardanza','Justificado'] as $s)
-                            <option value="{{ $s }}" {{ request('estado')==$s?'selected':'' }}>{{ $s }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div style="margin-top:12px;display:flex;gap:8px">
-                    <button type="submit" class="d-btn d-btn--sky"><i class="fas fa-search"></i> Buscar</button>
-                    <a href="{{ route('docente.asistencias.index') }}" class="d-btn d-btn--ghost"><i class="fas fa-eraser"></i> Limpiar</a>
-                </div>
-            </form>
-        </div>
-    </details>
+    <div class="d-filters-card" style="margin:16px 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <form method="GET" action="{{ route('docente.asistencias.index') }}" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+            <div style="flex:1;min-width:130px">
+                <label style="font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Fecha</label>
+                <input type="date" name="fecha" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 10px;color:var(--text);width:100%;font-size:.8rem" value="{{ request('fecha') }}">
+            </div>
+            <div style="flex:2;min-width:180px">
+                <label style="font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Estudiante</label>
+                <select name="estudiante_id" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 10px;color:var(--text);width:100%;font-size:.8rem">
+                    <option value="">Todos</option>
+                    @foreach($estudiantes as $e)
+                    <option value="{{ $e->id }}" {{ request('estudiante_id')==$e->id?'selected':'' }}>{{ $e->persona->apellidos }}, {{ $e->persona->nombres }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div style="flex:1.5;min-width:140px">
+                <label style="font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Curso</label>
+                <select name="curso_id" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 10px;color:var(--text);width:100%;font-size:.8rem">
+                    <option value="">Todos</option>
+                    @foreach($cursos as $c)
+                    <option value="{{ $c->id }}" {{ request('curso_id')==$c->id?'selected':'' }}>{{ $c->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div style="flex:1;min-width:120px">
+                <label style="font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Estado</label>
+                <select name="estado" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 10px;color:var(--text);width:100%;font-size:.8rem">
+                    <option value="">Todos</option>
+                    @foreach(['Presente','Ausente','Tardanza','Justificado'] as $s)
+                    <option value="{{ $s }}" {{ request('estado')==$s?'selected':'' }}>{{ $s }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <button type="submit" class="d-btn d-btn--sky" style="background:var(--brand);border:none;border-radius:30px;padding:5px 14px;color:#fff;font-weight:600;cursor:pointer;font-size:.75rem">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <a href="{{ route('docente.asistencias.index') }}" class="d-btn" style="background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 12px;color:var(--text);font-weight:500;font-size:.7rem;text-decoration:none">
+                    <i class="fas fa-eraser"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
 
     {{-- Tabla --}}
-    <div class="d-card">
-        <div class="d-card__hdr">
+    <div class="d-card" style="margin-top:20px">
+        <div class="d-card__hdr d-flex justify-content-between align-items-center">
             <div class="d-card__title"><span class="d-card__ico d-card__ico--amber"><i class="fas fa-clipboard-check"></i></span>Asistencias Registradas</div>
-            <div style="display:flex;gap:8px">
-                <button class="d-btn d-btn--sky" data-toggle="modal" data-target="#createAsistenciaModal"><i class="fas fa-plus"></i> Registrar</button>
-                <button class="d-btn d-btn--green" data-toggle="modal" data-target="#registroMasivoModal"><i class="fas fa-users"></i> Masivo</button>
+            <div style="display: flex; justify-content: flex-end; width: 100%;">
+                <a href="{{ route('docente.asistencias.create') }}" class="d-btn d-btn--sky" style="background:var(--brand);border:none;border-radius:30px;padding:5px 14px;color:#fff;font-weight:600;font-size:.75rem">
+                    <i class="fas fa-plus"></i> Registrar Asistencias
+                </a>
             </div>
         </div>
-        <div style="padding:0;overflow-x:auto">
+        <div style="overflow-x:auto">
             <table id="asistenciasTable" class="d-table">
-                <thead><tr>
-                    <th>ID</th><th>Fecha</th><th>Estudiante</th><th>Curso</th><th>Docente</th><th>Estado</th><th style="text-align:center">Acc.</th>
-                </tr></thead>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Estudiante</th>
+                        <th>Curso</th>
+                        <th>Docente</th>
+                        <th>Estado</th>
+                        <th style="text-align:center">Acciones</th>
+                    </tr>
+                </thead>
                 <tbody>
                     @foreach($asistencias as $a)
                     <tr>
@@ -75,108 +83,23 @@
                             <div style="font-size:.7rem;color:var(--muted)">{{ $a->dia_semana }}</div>
                         </td>
                         <td>
-                            <div style="font-weight:600;font-size:.82rem">{{ $a->estudiante->persona->apellidos }}, {{ $a->estudiante->persona->nombres }}</div>
-                            <div class="d-mono" style="font-size:.7rem;color:var(--muted)">{{ $a->estudiante->codigo_estudiante }}</div>
+                            <div class="d-av" style="display:inline-flex;margin-right:8px">{{ strtoupper(substr($a->estudiante->persona->apellidos,0,1)) }}</div>
+                            <div style="display:inline-block">
+                                <div style="font-weight:600;font-size:.82rem">{{ $a->estudiante->persona->apellidos }}, {{ $a->estudiante->persona->nombres }}</div>
+                                <div class="d-mono" style="font-size:.7rem;color:var(--muted)">{{ $a->estudiante->codigo_estudiante }}</div>
+                            </div>
                         </td>
                         <td style="font-size:.82rem">{{ $a->curso->nombre }}</td>
-                        <td style="font-size:.8rem;color:var(--muted)">
-                            @if($a->docente) {{ $a->docente->persona->apellidos }}, {{ $a->docente->persona->nombres }} @else — @endif
-                        </td>
+                        <td style="font-size:.8rem;color:var(--muted)">@if($a->docente) {{ $a->docente->persona->apellidos }}, {{ $a->docente->persona->nombres }} @else — @endif</td>
                         <td><span class="d-badge d-badge--{{ $a->estado_badge }}">{{ $a->estado }}</span></td>
                         <td style="text-align:center">
-                            <div style="display:flex;gap:5px;justify-content:center">
-                                <a href="{{ route('docente.asistencias.show',$a->id) }}" class="d-btn-icon d-btn-icon--sky"><i class="fas fa-eye"></i></a>
-                                <button class="d-btn-icon d-btn-icon--green" data-toggle="modal" data-target="#editAsistenciaModal{{ $a->id }}"><i class="fas fa-edit"></i></button>
-                                <button class="d-btn-icon d-btn-icon--rose" data-toggle="modal" data-target="#deleteAsistenciaModal{{ $a->id }}"><i class="fas fa-trash"></i></button>
+                            <div style="display:flex;gap:6px;justify-content:center">
+                                <a href="{{ route('docente.asistencias.show', $a->id) }}" class="d-btn-icon d-btn-icon--sky" title="Ver detalle"><i class="fas fa-eye"></i></a>
+                                <button type="button" class="d-btn-icon d-btn-icon--green open-edit-modal" data-id="{{ $a->id }}" title="Editar"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="d-btn-icon d-btn-icon--rose open-delete-modal" data-id="{{ $a->id }}" title="Eliminar"><i class="fas fa-trash"></i></button>
                             </div>
-                        </td>
+                         </div>
                     </tr>
-
-                    {{-- Modal Editar --}}
-                    <div class="modal fade" id="editAsistenciaModal{{ $a->id }}" tabindex="-1">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content d-modal-content">
-                                <div class="modal-header d-modal-hdr">
-                                    <h5 class="d-modal-title"><i class="fas fa-edit" style="color:var(--green)"></i> Editar Asistencia</h5>
-                                    <button type="button" class="close d-modal-close" data-dismiss="modal">&times;</button>
-                                </div>
-                                <form action="{{ route('docente.asistencias.update',$a->id) }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <div class="modal-body d-modal-body">
-                                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-                                            <div class="d-form-group">
-                                                <label class="d-label">Estudiante <b class="d-req">*</b></label>
-                                                <select name="estudiante_id" class="d-select" required>
-                                                    <option value="">— Seleccione —</option>
-                                                    @foreach($estudiantes as $e)
-                                                    <option value="{{ $e->id }}" {{ old('estudiante_id',$a->estudiante_id)==$e->id?'selected':'' }}>{{ $e->persona->apellidos }}, {{ $e->persona->nombres }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="d-form-group">
-                                                <label class="d-label">Curso <b class="d-req">*</b></label>
-                                                <select name="curso_id" class="d-select" required>
-                                                    <option value="">— Seleccione —</option>
-                                                    @foreach($cursos as $c)
-                                                    <option value="{{ $c->id }}" {{ old('curso_id',$a->curso_id)==$c->id?'selected':'' }}>{{ $c->nombre }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="d-form-group">
-                                                <label class="d-label">Fecha <b class="d-req">*</b></label>
-                                                <input type="date" name="fecha" class="d-input" value="{{ old('fecha',$a->fecha->format('Y-m-d')) }}" required>
-                                            </div>
-                                            <div class="d-form-group">
-                                                <label class="d-label">Estado <b class="d-req">*</b></label>
-                                                <select name="estado" class="d-select" required>
-                                                    @foreach(['Presente','Ausente','Tardanza','Justificado'] as $s)
-                                                    <option value="{{ $s }}" {{ old('estado',$a->estado)==$s?'selected':'' }}>{{ $s }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="d-form-group" style="margin-top:12px">
-                                            <label class="d-label">Observaciones</label>
-                                            <textarea name="observaciones" class="d-textarea" rows="2" maxlength="500">{{ old('observaciones',$a->observaciones) }}</textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer d-modal-ftr">
-                                        <button type="button" class="d-btn d-btn--ghost" data-dismiss="modal">Cancelar</button>
-                                        <button type="submit" class="d-btn d-btn--green"><i class="fas fa-save"></i> Actualizar</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Modal Eliminar --}}
-                    <div class="modal fade" id="deleteAsistenciaModal{{ $a->id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content d-modal-content">
-                                <div class="modal-header d-modal-hdr">
-                                    <h5 class="d-modal-title"><i class="fas fa-exclamation-triangle" style="color:var(--rose)"></i> Confirmar Eliminación</h5>
-                                    <button type="button" class="close d-modal-close" data-dismiss="modal">&times;</button>
-                                </div>
-                                <form action="{{ route('docente.asistencias.destroy',$a->id) }}" method="POST">
-                                    @csrf @method('DELETE')
-                                    <div class="modal-body d-modal-body">
-                                        <p style="font-size:.84rem;color:var(--text)">¿Eliminar este registro de asistencia?</p>
-                                        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:.8rem;line-height:1.8;color:var(--muted)">
-                                            <strong style="color:var(--text)">{{ $a->estudiante->persona->nombres }} {{ $a->estudiante->persona->apellidos }}</strong><br>
-                                            {{ $a->curso->nombre }} · {{ $a->fecha_formateada }} · {{ $a->estado }}
-                                        </div>
-                                        <div style="margin-top:12px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:10px;padding:10px 14px;font-size:.78rem;color:var(--rose)">
-                                            <i class="fas fa-exclamation-circle"></i> Esta acción no se puede deshacer.
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer d-modal-ftr">
-                                        <button type="button" class="d-btn d-btn--ghost" data-dismiss="modal">Cancelar</button>
-                                        <button type="submit" class="d-btn d-btn--rose"><i class="fas fa-trash"></i> Eliminar</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
                     @endforeach
                 </tbody>
             </table>
@@ -184,152 +107,388 @@
     </div>
 </div>
 
-{{-- Modal Crear --}}
-<div class="modal fade" id="createAsistenciaModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content d-modal-content">
-            <div class="modal-header d-modal-hdr">
-                <h5 class="d-modal-title"><i class="fas fa-plus" style="color:var(--brand)"></i> Registrar Asistencia</h5>
-                <button type="button" class="close d-modal-close" data-dismiss="modal">&times;</button>
-            </div>
-            <form action="{{ route('docente.asistencias.store') }}" method="POST">
-                @csrf
-                <div class="modal-body d-modal-body">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-                        <div class="d-form-group">
-                            <label class="d-label">Estudiante <b class="d-req">*</b></label>
-                            <select name="estudiante_id_create" class="d-select" required>
-                                <option value="">— Seleccione —</option>
-                                @foreach($estudiantes as $e)
-                                <option value="{{ $e->id }}">{{ $e->persona->apellidos }}, {{ $e->persona->nombres }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="d-form-group">
-                            <label class="d-label">Curso <b class="d-req">*</b></label>
-                            <select name="curso_id_create" class="d-select" required>
-                                <option value="">— Seleccione —</option>
-                                @foreach($cursos as $c)
-                                <option value="{{ $c->id }}">{{ $c->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="d-form-group">
-                            <label class="d-label">Fecha <b class="d-req">*</b></label>
-                            <input type="date" name="fecha_create" class="d-input" value="{{ date('Y-m-d') }}" required>
-                        </div>
-                        <div class="d-form-group">
-                            <label class="d-label">Estado <b class="d-req">*</b></label>
-                            <select name="estado_create" class="d-select" required>
-                                <option value="Presente">Presente</option>
-                                <option value="Ausente">Ausente</option>
-                                <option value="Tardanza">Tardanza</option>
-                                <option value="Justificado">Justificado</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="d-form-group" style="margin-top:12px">
-                        <label class="d-label">Observaciones</label>
-                        <textarea name="observaciones_create" class="d-textarea" rows="2" maxlength="500"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer d-modal-ftr">
-                    <button type="button" class="d-btn d-btn--ghost" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="d-btn d-btn--sky"><i class="fas fa-save"></i> Guardar</button>
-                </div>
-            </form>
+{{-- MODAL EDITAR (único, se llena dinámicamente) --}}
+<div id="editModal" class="modal-custom" style="display:none;">
+    <div class="modal-custom-overlay"></div>
+    <div class="modal-custom-container">
+        <div class="modal-custom-header">
+            <h5>Editar Asistencia <span id="editAsistenciaId"></span></h5>
+            <button type="button" class="close-modal">&times;</button>
         </div>
-    </div>
-</div>
-
-{{-- Modal Masivo --}}
-<div class="modal fade" id="registroMasivoModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content d-modal-content">
-            <div class="modal-header d-modal-hdr">
-                <h5 class="d-modal-title"><i class="fas fa-users" style="color:var(--green)"></i> Registro Masivo</h5>
-                <button type="button" class="close d-modal-close" data-dismiss="modal">&times;</button>
-            </div>
-            <form action="{{ route('docente.asistencias.registro-masivo') }}" method="POST">
-                @csrf
-                <div class="modal-body d-modal-body">
-                    <div style="background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.2);border-radius:10px;padding:12px 14px;font-size:.8rem;color:var(--brand);margin-bottom:16px">
-                        <i class="fas fa-info-circle"></i> Se registrarán todos los estudiantes del curso como <strong>Presentes</strong>.
-                    </div>
-                    <div class="d-form-group" style="margin-bottom:12px">
-                        <label class="d-label">Curso <b class="d-req">*</b></label>
-                        <select name="curso_id" class="d-select" required>
-                            <option value="">— Seleccione un curso —</option>
-                            @foreach($cursos as $c)
-                            <option value="{{ $c->id }}">{{ $c->nombre }}</option>
+        <form id="editForm" method="POST" action="">
+            @csrf
+            @method('PUT')
+            <div class="modal-custom-body">
+                <div style="display:flex;flex-wrap:wrap;gap:16px">
+                    <div style="flex:1">
+                        <label>Estudiante</label>
+                        <select name="estudiante_id" id="edit_estudiante_id" class="d-select" required style="width:100%">
+                            @foreach($estudiantes as $e)
+                                <option value="{{ $e->id }}">{{ $e->persona->apellidos }}, {{ $e->persona->nombres }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="d-form-group">
-                        <label class="d-label">Fecha <b class="d-req">*</b></label>
-                        <input type="date" name="fecha" class="d-input" value="{{ date('Y-m-d') }}" required>
+                    <div style="flex:1">
+                        <label>Curso</label>
+                        <select name="curso_id" id="edit_curso_id" class="d-select" required style="width:100%">
+                            @foreach($cursos as $c)
+                                <option value="{{ $c->id }}">{{ $c->nombre }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
-                <div class="modal-footer d-modal-ftr">
-                    <button type="button" class="d-btn d-btn--ghost" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="d-btn d-btn--green"><i class="fas fa-check"></i> Registrar Masivo</button>
+                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px">
+                    <div style="flex:1">
+                        <label>Fecha</label>
+                        <input type="date" name="fecha" id="edit_fecha" class="d-input" required style="width:100%">
+                    </div>
+                    <div style="flex:1">
+                        <label>Estado</label>
+                        <select name="estado" id="edit_estado" class="d-select" required style="width:100%">
+                            <option value="Presente">Presente</option>
+                            <option value="Ausente">Ausente</option>
+                            <option value="Tardanza">Tardanza</option>
+                            <option value="Justificado">Justificado</option>
+                        </select>
+                    </div>
                 </div>
-            </form>
-        </div>
+                <div style="margin-top:12px">
+                    <label>Observaciones</label>
+                    <textarea name="observaciones" id="edit_observaciones" class="d-input" rows="2" style="width:100%"></textarea>
+                </div>
+            </div>
+            <div class="modal-custom-footer">
+                <button type="button" class="d-btn close-modal" style="background:var(--surface2);border:1px solid var(--border)">Cancelar</button>
+                <button type="submit" class="d-btn d-btn--sky" style="background:var(--brand);color:#fff">Actualizar Asistencia</button>
+            </div>
+        </form>
     </div>
 </div>
+
+{{-- MODAL ELIMINAR (único) --}}
+<div id="deleteModal" class="modal-custom" style="display:none;">
+    <div class="modal-custom-overlay"></div>
+    <div class="modal-custom-container" style="max-width:450px;">
+        <div class="modal-custom-header">
+            <h5>Confirmar eliminación</h5>
+            <button type="button" class="close-modal">&times;</button>
+        </div>
+        <form id="deleteForm" method="POST" action="">
+            @csrf
+            @method('DELETE')
+            <div class="modal-custom-body">
+                <p>¿Estás seguro de eliminar esta asistencia?</p>
+                <p class="text-muted" style="color:var(--muted);font-size:.75rem">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-custom-footer">
+                <button type="button" class="d-btn close-modal" style="background:var(--surface2);border:1px solid var(--border)">Cancelar</button>
+                <button type="submit" class="d-btn" style="background:var(--rose);color:#fff">Sí, eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @section('css')
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-.d-filter-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px}
-.d-filter-box__toggle{font-size:.82rem;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;list-style:none}
-.d-filter-box__toggle::-webkit-details-marker{display:none}
-.d-filter-box__toggle i{color:var(--brand)}
-.d-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.d-table thead tr{border-bottom:2px solid var(--border)}
-.d-table thead th{padding:11px 14px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);white-space:nowrap}
-.d-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
-.d-table tbody tr:hover{background:var(--surface2)}
-.d-table tbody td{padding:11px 14px;color:var(--text)}
-.d-mono{font-family:monospace;font-size:.79rem}
-.d-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:.79rem;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .2s}
-.d-btn--sky{background:var(--brand);color:#fff}.d-btn--sky:hover{background:var(--brand-d);color:#fff}
-.d-btn--green{background:var(--green);color:#fff}.d-btn--green:hover{filter:brightness(1.1);color:#fff}
-.d-btn--ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.d-btn--rose{background:var(--rose);color:#fff}.d-btn--rose:hover{filter:brightness(1.1)}
-.d-btn-icon{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;border:none;cursor:pointer;transition:all .2s;text-decoration:none}
-.d-btn-icon--sky{background:rgba(14,165,233,.1);color:var(--brand)}.d-btn-icon--sky:hover{background:var(--brand);color:#fff}
-.d-btn-icon--green{background:rgba(16,185,129,.1);color:var(--green)}.d-btn-icon--green:hover{background:var(--green);color:#fff}
-.d-btn-icon--rose{background:rgba(244,63,94,.1);color:var(--rose)}.d-btn-icon--rose:hover{background:var(--rose);color:#fff}
-.d-modal-content{border-radius:16px;border:1px solid var(--border);background:var(--surface)}
-.d-modal-hdr{border-bottom:1px solid var(--border);padding:18px 24px;background:none}
-.d-modal-title{margin:0;font-size:.92rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
-.d-modal-close{color:var(--muted)}
-.d-modal-body{padding:20px 24px}
-.d-modal-ftr{border-top:1px solid var(--border);padding:14px 24px;gap:8px}
-.d-form-group{display:flex;flex-direction:column;gap:5px}
-.d-label{font-size:.73rem;font-weight:600;color:var(--text)}
-.d-req{color:var(--rose)}
-.d-input,.d-select,.d-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.82rem;color:var(--text);outline:none;transition:border .2s;font-family:var(--ff)}
-.d-input:focus,.d-select:focus,.d-textarea:focus{border-color:var(--brand)}
-.d-textarea{resize:vertical}
+    .d-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .82rem;
+    }
+    .d-table thead tr {
+        border-bottom: 2px solid var(--border);
+    }
+    .d-table thead th {
+        padding: 11px 14px;
+        font-size: .67rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--muted);
+        white-space: nowrap;
+    }
+    .d-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background .15s;
+    }
+    .d-table tbody tr:hover {
+        background: var(--surface2);
+    }
+    .d-table tbody td {
+        padding: 11px 14px;
+        color: var(--text);
+    }
+    .d-av {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: rgba(14,165,233,.12);
+        color: var(--brand);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: .8rem;
+        flex-shrink: 0;
+    }
+    .d-mono {
+        font-family: monospace;
+        font-size: .79rem;
+        color: var(--muted);
+    }
+    .d-btn-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .75rem;
+        border: none;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+    }
+    .d-btn-icon--sky {
+        background: rgba(14,165,233,.1);
+        color: var(--brand);
+    }
+    .d-btn-icon--sky:hover {
+        background: var(--brand);
+        color: #fff;
+    }
+    .d-btn-icon--green {
+        background: rgba(16,185,129,.1);
+        color: var(--green);
+    }
+    .d-btn-icon--green:hover {
+        background: var(--green);
+        color: #fff;
+    }
+    .d-btn-icon--rose {
+        background: rgba(244,63,94,.1);
+        color: var(--rose);
+    }
+    .d-btn-icon--rose:hover {
+        background: var(--rose);
+        color: #fff;
+    }
+    .d-badge--sky { background: rgba(14,165,233,.1); color: var(--brand); }
+    .d-badge--green { background: rgba(16,185,129,.1); color: var(--green); }
+    .d-badge--amber { background: rgba(245,158,11,.1); color: var(--amber); }
+    .d-badge--rose { background: rgba(244,63,94,.1); color: var(--rose); }
+    .d-badge--slate { background: rgba(100,116,139,.1); color: var(--slate); }
+    .d-select, .d-input {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
+        color: var(--text);
+        font-size: .8rem;
+        transition: all .2s;
+    }
+    .d-select:focus, .d-input:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 2px rgba(14,165,233,.2);
+    }
+    .d-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: .75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+    }
+    .d-btn--sky { background: var(--brand); color: #fff; }
+    .d-btn--sky:hover { background: var(--brand-d); transform: translateY(-1px); }
+    .d-btn--ghost { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+    .d-btn--ghost:hover { background: var(--border); }
+    .d-btn--green { background: var(--green); color: #fff; }
+    .d-btn--green:hover { filter: brightness(1.1); }
+    .d-btn--rose { background: var(--rose); color: #fff; }
+    .d-btn--rose:hover { filter: brightness(1.1); }
+
+    /* Modales personalizados */
+    .modal-custom {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-custom-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+    }
+    .modal-custom-container {
+        position: relative;
+        background: var(--surface);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        width: 90%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-lg);
+        z-index: 1001;
+    }
+    .modal-custom-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        font-weight: 800;
+    }
+    .modal-custom-body {
+        padding: 20px;
+    }
+    .modal-custom-footer {
+        padding: 12px 20px;
+        border-top: 1px solid var(--border);
+        background: var(--surface2);
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--muted);
+        transition: color .2s;
+    }
+    .close-modal:hover {
+        color: var(--text);
+    }
+
+    /* DataTables sin Bootstrap */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        margin: 12px 0;
+        font-size: 0.8rem;
+        color: var(--text2);
+    }
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 5px 8px;
+        margin: 0 5px;
+        color: var(--text);
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 4px 10px;
+        margin: 0 2px;
+        border-radius: 6px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        cursor: pointer;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #fff;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--brand-d);
+        color: #fff;
+    }
 </style>
 @endsection
 
 @section('js')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-$(function(){
-    $('#asistenciasTable').DataTable({language:{url:'//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'},responsive:true,autoWidth:false,order:[[1,'desc'],[2,'asc']]});
-    @if(session('mensaje'))Swal.fire({icon:'{{ session("icono") }}',title:'{{ session("mensaje") }}',showConfirmButton:true,timer:3000});@endif
-    @if($errors->any() && session('modal_id'))$('#editAsistenciaModal{{ session("modal_id") }}').modal('show');@endif
-    @if($errors->has('estudiante_id_create')||$errors->has('curso_id_create')||$errors->has('fecha_create'))$('#createAsistenciaModal').modal('show');@endif
+$(function() {
+    $('#asistenciasTable').DataTable({
+        responsive: true,
+        autoWidth: false,
+        order: [[1, 'desc'], [2, 'asc']]
+    });
+
+    // EDITAR
+    $(document).on('click', '.open-edit-modal', function() {
+        var asistenciaId = $(this).data('id');
+        Swal.fire({
+            title: 'Cargando...',
+            text: 'Obteniendo datos de la asistencia',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        $.ajax({
+            url: '{{ url("docente/asistencias") }}/' + asistenciaId + '/edit',
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                Swal.close();
+                $('#editAsistenciaId').text('#' + data.id);
+                $('#edit_estudiante_id').val(data.estudiante_id);
+                $('#edit_curso_id').val(data.curso_id);
+                $('#edit_fecha').val(data.fecha);
+                $('#edit_estado').val(data.estado);
+                $('#edit_observaciones').val(data.observaciones || '');
+                $('#editForm').attr('action', '{{ url("docente/asistencias") }}/' + asistenciaId);
+                $('#editModal').css('display', 'flex');
+            },
+            error: function(xhr) {
+                Swal.close();
+                let msg = xhr.responseJSON?.error || 'Error al cargar la asistencia';
+                Swal.fire('Error', msg, 'error');
+            }
+        });
+    });
+
+    // ELIMINAR
+    $(document).on('click', '.open-delete-modal', function() {
+        var asistenciaId = $(this).data('id');
+        $('#deleteForm').attr('action', '{{ url("docente/asistencias") }}/' + asistenciaId);
+        $('#deleteModal').css('display', 'flex');
+    });
+
+    // CERRAR MODALES
+    $(document).on('click', '.close-modal, .modal-custom-overlay', function() {
+        $('#editModal, #deleteModal').css('display', 'none');
+    });
+    $(document).on('click', '.modal-custom-container', function(e) {
+        e.stopPropagation();
+    });
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') $('#editModal, #deleteModal').css('display', 'none');
+    });
 });
+
+@if(session('mensaje'))
+Swal.fire({
+    icon: '{{ session("icono") }}',
+    title: '{{ session("mensaje") }}',
+    showConfirmButton: true,
+    timer: 3000
+});
+@endif
 </script>
 @endsection
-

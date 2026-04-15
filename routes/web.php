@@ -233,22 +233,21 @@ Route::prefix('docente')->name('docente.')->middleware(['auth', 'role:docente'])
     // Ficha de estudiante
     Route::get('/estudiantes/{id}', [App\Http\Controllers\Docente\MisEstudiantesController::class, 'show'])->name('estudiantes.show');
 
-    // ==========================================
     // ASISTENCIAS
-    // ==========================================
     Route::get('/asistencias', [App\Http\Controllers\Docente\AsistenciaController::class, 'index'])->name('asistencias.index');
+    Route::get('/asistencias/registrar', [App\Http\Controllers\Docente\AsistenciaController::class, 'create'])->name('asistencias.create');
     Route::post('/asistencias', [App\Http\Controllers\Docente\AsistenciaController::class, 'store'])->name('asistencias.store');
     Route::get('/asistencias/{id}', [App\Http\Controllers\Docente\AsistenciaController::class, 'show'])->name('asistencias.show');
+    Route::get('/asistencias/{id}/edit', [App\Http\Controllers\Docente\AsistenciaController::class, 'edit'])->name('asistencias.edit'); // NUEVA
     Route::put('/asistencias/{id}', [App\Http\Controllers\Docente\AsistenciaController::class, 'update'])->name('asistencias.update');
     Route::delete('/asistencias/{id}', [App\Http\Controllers\Docente\AsistenciaController::class, 'destroy'])->name('asistencias.destroy');
-    Route::post('/asistencias/registro-masivo', [App\Http\Controllers\Docente\AsistenciaController::class, 'registroMasivo'])->name('asistencias.registro-masivo');
 
-    // ==========================================
     // NOTAS
-    // ==========================================
     Route::get('/notas', [App\Http\Controllers\Docente\NotaController::class, 'index'])->name('notas.index');
-    Route::post('/notas', [App\Http\Controllers\Docente\NotaController::class, 'store'])->name('notas.store');
+    Route::get('/notas/registrar', [App\Http\Controllers\Docente\NotaController::class, 'create'])->name('notas.create');
+    Route::post('/notas/registrar', [App\Http\Controllers\Docente\NotaController::class, 'storeMultiple'])->name('notas.store.multiple');
     Route::get('/notas/{id}', [App\Http\Controllers\Docente\NotaController::class, 'show'])->name('notas.show');
+    Route::get('/notas/{id}/edit', [App\Http\Controllers\Docente\NotaController::class, 'edit'])->name('notas.edit');  // NUEVA
     Route::put('/notas/{id}', [App\Http\Controllers\Docente\NotaController::class, 'update'])->name('notas.update');
     Route::delete('/notas/{id}', [App\Http\Controllers\Docente\NotaController::class, 'destroy'])->name('notas.destroy');
     Route::post('/notas/{id}/publicar', [App\Http\Controllers\Docente\NotaController::class, 'publicar'])->name('notas.publicar');

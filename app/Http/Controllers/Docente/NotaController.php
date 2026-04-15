@@ -11,16 +11,15 @@ use App\Models\Periodo;
 use App\Models\Matricula;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class NotaController extends Controller
 {
     /**
-     * Mostrar listado de notas del docente
-     * SOLO muestra notas de los cursos asignados al docente
+     * Mostrar listado de notas del docente (histórico)
      */
     public function index(Request $request)
     {
-        // Verificar que el usuario tenga perfil de docente
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
             return redirect()->route('docente.dashboard')
                 ->with('mensaje', 'Tu perfil de docente no está completo')
@@ -28,76 +27,191 @@ class NotaController extends Controller
         }
 
         $docente = Auth::user()->persona->docente;
-
-        // ✅ CORREGIDO: Obtener SOLO los cursos del docente autenticado (sin with grado)
         $cursos = $docente->cursos()->get();
         $cursosIds = $cursos->pluck('id');
-
-        // Obtener SOLO estudiantes matriculados en los cursos del docente
-        $estudiantes = Estudiante::whereHas('matriculas', function ($query) use ($cursosIds) {
-            $query->whereIn('curso_id', $cursosIds)
-                  ->where('estado', 'Matriculado');
-        })->with('persona')->get();
-
-        // Obtener todos los periodos ordenados por número
         $periodos = Periodo::orderBy('numero')->get();
 
-        // Obtener SOLO matrículas de los cursos del docente
-        $matriculas = Matricula::whereIn('curso_id', $cursosIds)
-            ->where('estado', 'Matriculado')
-            ->with(['estudiante.persona', 'curso'])
-            ->get();
+        $estudiantes = Estudiante::whereHas('matriculas', function ($query) use ($cursosIds) {
+            $query->whereIn('curso_id', $cursosIds)->where('estado', 'Matriculado');
+        })->with('persona')->get();
 
-        // Obtener SOLO docente autenticado
-        $docentes = Docente::where('id', $docente->id)->with('persona')->get();
-
-        // Filtrar notas SOLO del docente autenticado
         $query = Nota::where('docente_id', $docente->id)
             ->with(['matricula.estudiante.persona', 'matricula.curso', 'periodo', 'docente.persona']);
 
-        // Aplicar filtros adicionales
         if ($request->filled('estudiante_id')) {
-            $query->whereHas('matricula', function ($q) use ($request) {
-                $q->where('estudiante_id', $request->estudiante_id);
-            });
+            $query->whereHas('matricula', fn($q) => $q->where('estudiante_id', $request->estudiante_id));
         }
-
         if ($request->filled('curso_id')) {
-            $query->whereHas('matricula', function ($q) use ($request) {
-                $q->where('curso_id', $request->curso_id);
-            });
+            $query->whereHas('matricula', fn($q) => $q->where('curso_id', $request->curso_id));
         }
-
         if ($request->filled('periodo_id')) {
             $query->where('periodo_id', $request->periodo_id);
         }
-
         if ($request->filled('tipo_evaluacion')) {
             $query->where('tipo_evaluacion', $request->tipo_evaluacion);
         }
 
         $notas = $query->orderBy('created_at', 'desc')->get();
 
-        // Reutilizar la vista de admin pero con datos filtrados
-        return view('docente.notas.index', compact(
-            'notas',
-            'estudiantes',
-            'cursos',
-            'periodos',
-            'matriculas',
-            'docentes'
-        ));
+        return view('docente.notas.index', compact('notas', 'estudiantes', 'cursos', 'periodos'));
     }
 
     /**
-     * Guardar nueva nota
+     * Mostrar formulario para registrar notas múltiples por curso.
+     */
+    public function create(Request $request)
+    {
+        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
+            return redirect()->route('docente.dashboard')
+                ->with('mensaje', 'Tu perfil de docente no está completo')
+                ->with('icono', 'error');
+        }
+
+        $docente = Auth::user()->persona->docente;
+        $cursos = $docente->cursos()->get();
+        $periodos = Periodo::orderBy('numero')->get();
+
+        $cursoId = $request->input('curso_id');
+        $periodoId = $request->input('periodo_id');
+        $estudiantes = collect();
+
+        if ($cursoId && $periodoId) {
+            if (!$cursos->contains('id', $cursoId)) {
+                return redirect()->route('docente.notas.create')
+                    ->with('mensaje', 'Curso no válido')
+                    ->with('icono', 'error');
+            }
+
+            $estudiantes = Estudiante::whereHas('matriculas', function ($q) use ($cursoId) {
+                $q->where('curso_id', $cursoId)->where('estado', 'Matriculado');
+            })->with('persona')->get();
+
+            foreach ($estudiantes as $e) {
+                $matricula = Matricula::where('estudiante_id', $e->id)
+                    ->where('curso_id', $cursoId)
+                    ->first();
+
+                if ($matricula) {
+                    $notaExistente = Nota::where('matricula_id', $matricula->id)
+                        ->where('periodo_id', $periodoId)
+                        ->first();
+
+                    $e->matricula_id = $matricula->id;
+                    $e->nota_practica = $notaExistente->nota_practica ?? null;
+                    $e->nota_teoria = $notaExistente->nota_teoria ?? null;
+                    $e->nota_final = $notaExistente->nota_final ?? null;
+                    $e->nota_id = $notaExistente->id ?? null;
+                    $e->tipo_evaluacion = $notaExistente->tipo_evaluacion ?? 'Parcial';
+                    $e->descripcion = $notaExistente->descripcion ?? null;
+                    $e->observaciones = $notaExistente->observaciones ?? null;
+                    $e->fecha_evaluacion = $notaExistente->fecha_evaluacion ?? null; // ← AGREGADO
+                    $e->visible_tutor = $notaExistente->visible_tutor ?? false;
+                } else {
+                    $e->matricula_id = null;
+                    $e->nota_practica = null;
+                    $e->nota_teoria = null;
+                    $e->nota_final = null;
+                    $e->nota_id = null;
+                    $e->tipo_evaluacion = 'Parcial';
+                    $e->fecha_evaluacion = null;
+                }
+            }
+        }
+
+        return view('docente.notas.create', compact('cursos', 'periodos', 'cursoId', 'periodoId', 'estudiantes'));
+    }
+
+    /**
+     * Guardar múltiples notas a la vez.
+     */
+    public function storeMultiple(Request $request)
+    {
+        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
+        }
+
+        $docente = Auth::user()->persona->docente;
+
+        $request->validate([
+            'curso_id' => 'required|exists:cursos,id',
+            'periodo_id' => 'required|exists:periodos,id',
+            'notas' => 'required|array',
+            'notas.*.matricula_id' => 'required|exists:matriculas,id',
+            'notas.*.nota_practica' => 'nullable|numeric|min:0|max:20',
+            'notas.*.nota_teoria' => 'nullable|numeric|min:0|max:20',
+            'notas.*.nota_final' => 'required|numeric|min:0|max:20',
+            'notas.*.tipo_evaluacion' => 'required|in:Parcial,Final,Práctica,Oral,Trabajo',
+            'notas.*.fecha_evaluacion' => 'nullable|date', // ← AGREGADO
+            'notas.*.descripcion' => 'nullable|string|max:500',
+            'notas.*.observaciones' => 'nullable|string|max:500',
+            'notas.*.visible_tutor' => 'nullable|boolean',
+        ]);
+
+        $cursoId = $request->curso_id;
+        $periodoId = $request->periodo_id;
+
+        $cursoIds = $docente->cursos->pluck('id')->toArray();
+        if (!in_array($cursoId, $cursoIds)) {
+            return back()->with('mensaje', 'No puedes registrar notas en este curso')->with('icono', 'error');
+        }
+
+        DB::beginTransaction();
+        try {
+            $registrados = 0;
+            foreach ($request->notas as $item) {
+                if (isset($item['nota_id']) && $item['nota_id']) {
+                    $nota = Nota::find($item['nota_id']);
+                    if ($nota) {
+                        $nota->update([
+                            'nota_practica' => $item['nota_practica'] ?? null,
+                            'nota_teoria' => $item['nota_teoria'] ?? null,
+                            'nota_final' => $item['nota_final'],
+                            'tipo_evaluacion' => $item['tipo_evaluacion'],
+                            'fecha_evaluacion' => $item['fecha_evaluacion'] ?? null,
+                            'descripcion' => $item['descripcion'] ?? null,
+                            'observaciones' => $item['observaciones'] ?? null,
+                            'visible_tutor' => isset($item['visible_tutor']),
+                            'fecha_publicacion' => isset($item['visible_tutor']) ? now() : null,
+                        ]);
+                    }
+                } else {
+                    Nota::create([
+                        'matricula_id' => $item['matricula_id'],
+                        'periodo_id' => $periodoId,
+                        'docente_id' => $docente->id,
+                        'nota_practica' => $item['nota_practica'] ?? null,
+                        'nota_teoria' => $item['nota_teoria'] ?? null,
+                        'nota_final' => $item['nota_final'],
+                        'tipo_evaluacion' => $item['tipo_evaluacion'],
+                        'fecha_evaluacion' => $item['fecha_evaluacion'] ?? null,
+                        'descripcion' => $item['descripcion'] ?? null,
+                        'observaciones' => $item['observaciones'] ?? null,
+                        'visible_tutor' => isset($item['visible_tutor']),
+                        'fecha_publicacion' => isset($item['visible_tutor']) ? now() : null,
+                    ]);
+                }
+                $registrados++;
+            }
+
+            DB::commit();
+
+            return redirect()->route('docente.notas.index')
+                ->with('mensaje', "Se registraron/actualizaron {$registrados} notas correctamente")
+                ->with('icono', 'success');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('mensaje', 'Error al guardar notas: ' . $e->getMessage())
+                        ->with('icono', 'error');
+        }
+    }
+
+    /**
+     * Guardar una nueva nota individual (desde el modal del index)
      */
     public function store(Request $request)
     {
-        // Verificar que el usuario tenga perfil de docente
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
         }
 
         $docente = Auth::user()->persona->docente;
@@ -115,20 +229,17 @@ class NotaController extends Controller
             'visible_tutor_create' => 'nullable|boolean',
         ]);
 
-        // Verificar que la matrícula pertenezca a un curso del docente
         $matricula = Matricula::findOrFail($request->matricula_id_create);
         $cursoIds = $docente->cursos->pluck('id')->toArray();
 
         if (!in_array($matricula->curso_id, $cursoIds)) {
-            return back()->with('mensaje', 'No puedes registrar notas en este curso')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No puedes registrar notas en este curso')->with('icono', 'error');
         }
 
-        // Crear la nota con el docente autenticado
         Nota::create([
             'matricula_id' => $request->matricula_id_create,
             'periodo_id' => $request->periodo_id_create,
-            'docente_id' => $docente->id, // Automáticamente el docente autenticado
+            'docente_id' => $docente->id,
             'nota_practica' => $request->nota_practica_create,
             'nota_teoria' => $request->nota_teoria_create,
             'nota_final' => $request->nota_final_create,
@@ -146,23 +257,40 @@ class NotaController extends Controller
     }
 
     /**
-     * Actualizar nota
+     * Obtener datos de una nota en formato JSON (para editar vía AJAX)
      */
-    public function update(Request $request, $id)
+    public function edit($id)
     {
         $nota = Nota::findOrFail($id);
 
-        // Verificar que el docente pueda modificar esta nota
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return response()->json(['error' => 'No tienes permisos'], 403);
         }
 
         $docente = Auth::user()->persona->docente;
 
         if ($nota->docente_id != $docente->id) {
-            return back()->with('mensaje', 'No puedes modificar esta nota')
-                        ->with('icono', 'error');
+            return response()->json(['error' => 'No puedes editar esta nota'], 403);
+        }
+
+        return response()->json($nota);
+    }
+
+    /**
+     * Actualizar una nota individual
+     */
+    public function update(Request $request, $id)
+    {
+        $nota = Nota::findOrFail($id);
+
+        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
+        }
+
+        $docente = Auth::user()->persona->docente;
+
+        if ($nota->docente_id != $docente->id) {
+            return back()->with('mensaje', 'No puedes modificar esta nota')->with('icono', 'error');
         }
 
         $request->validate([
@@ -204,17 +332,14 @@ class NotaController extends Controller
     {
         $nota = Nota::findOrFail($id);
 
-        // Verificar permisos
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
         }
 
         $docente = Auth::user()->persona->docente;
 
         if ($nota->docente_id != $docente->id) {
-            return back()->with('mensaje', 'No puedes eliminar esta nota')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No puedes eliminar esta nota')->with('icono', 'error');
         }
 
         $nota->delete();
@@ -237,20 +362,16 @@ class NotaController extends Controller
             'docente.persona'
         ])->findOrFail($id);
 
-        // Verificar permisos
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
         }
 
         $docente = Auth::user()->persona->docente;
 
         if ($nota->docente_id != $docente->id) {
-            return back()->with('mensaje', 'No puedes ver esta nota')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No puedes ver esta nota')->with('icono', 'error');
         }
 
-        // Reutilizar la vista de admin
         return view('docente.notas.show', compact('nota'));
     }
 
@@ -261,17 +382,14 @@ class NotaController extends Controller
     {
         $nota = Nota::findOrFail($id);
 
-        // Verificar permisos
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
         }
 
         $docente = Auth::user()->persona->docente;
 
         if ($nota->docente_id != $docente->id) {
-            return back()->with('mensaje', 'No puedes publicar esta nota')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No puedes publicar esta nota')->with('icono', 'error');
         }
 
         $nota->update([
@@ -290,17 +408,14 @@ class NotaController extends Controller
     {
         $nota = Nota::findOrFail($id);
 
-        // Verificar permisos
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
         }
 
         $docente = Auth::user()->persona->docente;
 
         if ($nota->docente_id != $docente->id) {
-            return back()->with('mensaje', 'No puedes despublicar esta nota')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No puedes despublicar esta nota')->with('icono', 'error');
         }
 
         $nota->update([

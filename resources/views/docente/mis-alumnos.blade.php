@@ -6,7 +6,7 @@
 @section('content')
 <div style="padding:0 28px 32px">
 
-    {{-- Header --}}
+    {{-- Header con total a la derecha --}}
     <div class="d-page-hdr">
         <div>
             <h2 class="d-page-hdr__title"><i class="fas fa-user-graduate"></i> Lista de Estudiantes</h2>
@@ -17,39 +17,39 @@
         </span>
     </div>
 
-    {{-- Filtros compactos con tu diseño --}}
-    <div class="d-filters-card" style="margin:16px 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 24px">
-        <form method="GET" action="{{ route('docente.mis-alumnos') }}" class="form-row" style="display:flex;flex-wrap:wrap;gap:12px">
+    {{-- Filtros compactos con botón limpiar pequeño --}}
+    <div class="d-filters-card" style="margin:16px 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <form method="GET" action="{{ route('docente.mis-alumnos') }}" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
             <div style="flex:2;min-width:180px">
-                <label class="form-label" style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Buscar</label>
+                <label style="font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Buscar</label>
                 <div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px 8px">
-                    <i class="fas fa-search text-muted" style="margin-right:8px"></i>
-                    <input type="text" name="search" class="form-control" style="border:none;background:transparent;padding:6px 0;color:var(--text);width:100%" placeholder="Nombre, apellido o DNI..." value="{{ request('search') }}">
+                    <i class="fas fa-search text-muted" style="margin-right:8px;font-size:.75rem"></i>
+                    <input type="text" name="search" style="border:none;background:transparent;padding:6px 0;color:var(--text);width:100%;font-size:.8rem" placeholder="Nombre, apellido o DNI..." value="{{ request('search') }}">
                 </div>
             </div>
-            <div style="flex:1.5;min-width:150px">
-                <label class="form-label" style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Curso</label>
-                <select name="curso_id" class="form-control" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--text)">
+            <div style="flex:1.5;min-width:140px">
+                <label style="font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Curso</label>
+                <select name="curso_id" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 10px;color:var(--text);width:100%;font-size:.8rem">
                     <option value="">Todos los cursos</option>
                     @foreach($cursos as $curso)
                         <option value="{{ $curso->id }}" {{ request('curso_id') == $curso->id ? 'selected' : '' }}>{{ $curso->nombre }}</option>
                     @endforeach
                 </select>
             </div>
-            <div style="flex:1.5;min-width:150px">
-                <label class="form-label" style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Grado</label>
-                <select name="grado_id" class="form-control" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--text)">
+            <div style="flex:1.5;min-width:140px">
+                <label style="font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:4px;display:block">Grado</label>
+                <select name="grado_id" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 10px;color:var(--text);width:100%;font-size:.8rem">
                     <option value="">Todos los grados</option>
                     @foreach($grados as $grado)
                         <option value="{{ $grado->id }}" {{ request('grado_id') == $grado->id ? 'selected' : '' }}>{{ $grado->nombre_completo }}</option>
                     @endforeach
                 </select>
             </div>
-            <div style="flex:1;min-width:130px;display:flex;align-items:flex-end;gap:8px">
-                <button type="submit" class="d-btn d-btn--sky" style="background:var(--brand);border:none;border-radius:10px;padding:8px 16px;color:#fff;font-weight:600;cursor:pointer;width:100%">
+            <div style="display:flex;gap:8px;align-items:center">
+                <button type="submit" class="d-btn d-btn--sky" style="background:var(--brand);border:none;border-radius:30px;padding:5px 14px;color:#fff;font-weight:600;cursor:pointer;font-size:.75rem">
                     <i class="fas fa-search"></i> Filtrar
                 </button>
-                <a href="{{ route('docente.mis-alumnos') }}" class="d-btn" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:var(--text);font-weight:600;text-align:center;width:100%">
+                <a href="{{ route('docente.mis-alumnos') }}" class="d-btn" style="background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 12px;color:var(--text);font-weight:500;font-size:.7rem;text-decoration:none">
                     <i class="fas fa-eraser"></i> Limpiar
                 </a>
             </div>
@@ -57,7 +57,7 @@
     </div>
 
     @if($estudiantes->count() > 0)
-    <div class="d-card" style="margin-top:20px">
+    <div class="d-card">
         <div class="d-card__hdr">
             <div class="d-card__title"><span class="d-card__ico d-card__ico--sky"><i class="fas fa-users"></i></span>Alumnos Asignados</div>
         </div>
@@ -127,32 +127,14 @@
 @section('css')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
 <style>
-/* Reutilizamos los mismos estilos de la vista anterior, más ajustes para filtros */
-.d-filters-card .form-control, .d-filters-card select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-}
-.d-filters-card .form-control:focus, .d-filters-card select:focus {
-    outline: none;
-    border-color: var(--brand);
-}
-.d-btn--sky {
-    background: var(--brand);
-    color: #fff;
+/* Mismos estilos que en la vista anterior, más ajustes de filtros */
+.d-filters-card .d-btn {
     transition: all .2s;
 }
-.d-btn--sky:hover {
-    background: var(--brand-d);
-    transform: translateY(-2px);
+.d-filters-card .d-btn:hover {
+    transform: translateY(-1px);
 }
-.d-btn {
-    transition: all .2s;
-}
-.d-btn:hover {
-    transform: translateY(-2px);
-}
-/* Los demás estilos (d-table, d-av, d-badge, etc.) ya están definidos en el layout o en la vista anterior, pero los repetimos por si acaso */
+/* El resto de estilos son los mismos que en la vista anterior, se heredan */
 .d-table {
     width: 100%;
     border-collapse: collapse;
@@ -173,9 +155,6 @@
 .d-table tbody tr {
     border-bottom: 1px solid var(--border);
     transition: background .15s;
-}
-.d-table tbody tr:last-child {
-    border-bottom: none;
 }
 .d-table tbody tr:hover {
     background: var(--surface2);
@@ -213,7 +192,6 @@
     border: none;
     cursor: pointer;
     transition: all .2s;
-    text-decoration: none;
 }
 .d-btn-icon--sky {
     background: rgba(14,165,233,.1);
@@ -259,9 +237,6 @@
 .d-empty-state strong {
     font-size: .95rem;
     color: var(--text);
-}
-.d-empty-state span {
-    font-size: .8rem;
 }
 </style>
 @endsection

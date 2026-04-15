@@ -20,12 +20,8 @@
                     <div class="d-info-item d-info-item--full"><span class="d-info-lbl">Nombre</span><span class="d-info-val" style="font-size:.95rem">{{ $asistencia->estudiante->persona->nombres }} {{ $asistencia->estudiante->persona->apellidos }}</span></div>
                     <div class="d-info-item"><span class="d-info-lbl">DNI</span><span class="d-info-val d-mono">{{ $asistencia->estudiante->persona->dni }}</span></div>
                     <div class="d-info-item"><span class="d-info-lbl">Código</span><span class="d-info-val d-mono">{{ $asistencia->estudiante->codigo_estudiante }}</span></div>
-                    <div class="d-info-item"><span class="d-info-lbl">Grado</span>
-                        <span class="d-info-val">@if($asistencia->estudiante->grado)<span class="d-badge d-badge--sky">{{ $asistencia->estudiante->grado->nombre_completo }}</span>@else —@endif</span>
-                    </div>
-                    <div class="d-info-item"><span class="d-info-lbl">Estado</span>
-                        <span class="d-info-val"><span class="d-badge d-badge--{{ $asistencia->estudiante->persona->estado=='Activo'?'green':'rose' }}">{{ $asistencia->estudiante->persona->estado }}</span></span>
-                    </div>
+                    <div class="d-info-item"><span class="d-info-lbl">Grado</span><span class="d-info-val">@if($asistencia->estudiante->grado)<span class="d-badge d-badge--sky">{{ $asistencia->estudiante->grado->nombre_completo }}</span>@else —@endif</span></div>
+                    <div class="d-info-item"><span class="d-info-lbl">Estado</span><span class="d-info-val"><span class="d-badge d-badge--{{ $asistencia->estudiante->persona->estado=='Activo'?'green':'rose' }}">{{ $asistencia->estudiante->persona->estado }}</span></span></div>
                 </div>
             </div>
         </div>
@@ -40,9 +36,7 @@
                     <div class="d-info-item d-info-item--full"><span class="d-info-lbl">Curso</span><span class="d-info-val" style="font-size:.95rem">{{ $asistencia->curso->nombre }}</span></div>
                     <div class="d-info-item"><span class="d-info-lbl">Código</span><span class="d-info-val d-mono">{{ $asistencia->curso->codigo ?? 'N/A' }}</span></div>
                     <div class="d-info-item"><span class="d-info-lbl">Área Curricular</span><span class="d-info-val">{{ $asistencia->curso->area_curricular ?? '—' }}</span></div>
-                    <div class="d-info-item d-info-item--full"><span class="d-info-lbl">Docente</span>
-                        <span class="d-info-val">@if($asistencia->docente){{ $asistencia->docente->persona->nombres }} {{ $asistencia->docente->persona->apellidos }}@else —@endif</span>
-                    </div>
+                    <div class="d-info-item d-info-item--full"><span class="d-info-lbl">Docente</span><span class="d-info-val">@if($asistencia->docente){{ $asistencia->docente->persona->nombres }} {{ $asistencia->docente->persona->apellidos }}@else —@endif</span></div>
                 </div>
             </div>
         </div>
@@ -50,28 +44,27 @@
 
     {{-- Detalle asistencia --}}
     <div class="d-card" style="margin-bottom:20px">
-        <div class="d-card__hdr">
+        <div class="d-card__hdr d-flex justify-content-between align-items-center">
             <div class="d-card__title"><span class="d-card__ico d-card__ico--amber"><i class="fas fa-calendar-check"></i></span>Detalle de la Asistencia</div>
             <span class="d-badge d-badge--{{ $asistencia->estado_badge }}" style="font-size:.82rem;padding:6px 14px">{{ $asistencia->estado }}</span>
         </div>
         <div style="padding:20px">
             <div class="d-info-grid" style="grid-template-columns:repeat(4,1fr)">
                 <div class="d-info-item"><span class="d-info-lbl">Fecha</span><span class="d-info-val">{{ $asistencia->fecha_formateada }}</span><span style="font-size:.7rem;color:var(--muted)">{{ $asistencia->dia_semana }}</span></div>
-                <div class="d-info-item"><span class="d-info-lbl">Estado</span><span class="d-info-val"><span class="d-badge d-badge--{{ $asistencia->estado_badge }}">{{ $asistencia->estado }}</span></span></div>
-                <div class="d-info-item d-info-item--full"><span class="d-info-lbl">Observaciones</span><span class="d-info-val">{{ $asistencia->observaciones ?? '—' }}</span></div>
+                <div class="d-info-item"><span class="d-info-lbl">Observaciones</span><span class="d-info-val">{{ $asistencia->observaciones ?? '—' }}</span></div>
             </div>
         </div>
     </div>
 
     {{-- Estadísticas --}}
+    @php
+        $total = $asistencia->estudiante->asistencias()->count();
+        $presentes = $asistencia->estudiante->asistencias()->where('estado','Presente')->count();
+        $ausentes = $asistencia->estudiante->asistencias()->where('estado','Ausente')->count();
+        $tardanzas = $asistencia->estudiante->asistencias()->where('estado','Tardanza')->count();
+        $pct = $total > 0 ? round(($presentes / $total) * 100, 2) : 0;
+    @endphp
     <div class="d-kpi-grid4" style="margin-bottom:20px">
-        @php
-            $total = $asistencia->estudiante->asistencias()->count();
-            $presentes = $asistencia->estudiante->asistencias()->where('estado','Presente')->count();
-            $ausentes = $asistencia->estudiante->asistencias()->where('estado','Ausente')->count();
-            $tardanzas = $asistencia->estudiante->asistencias()->where('estado','Tardanza')->count();
-            $pct = \App\Models\Asistencia::calcularPorcentajeAsistencia($asistencia->estudiante_id);
-        @endphp
         <div class="d-stat-card d-stat-card--sky"><div class="d-stat-card__ico"><i class="fas fa-list"></i></div><div><div class="d-stat-card__val">{{ $total }}</div><div class="d-stat-card__lbl">Total</div></div></div>
         <div class="d-stat-card d-stat-card--green"><div class="d-stat-card__ico"><i class="fas fa-check"></i></div><div><div class="d-stat-card__val">{{ $presentes }}</div><div class="d-stat-card__lbl">Presentes</div></div></div>
         <div class="d-stat-card d-stat-card--rose"><div class="d-stat-card__ico"><i class="fas fa-times"></i></div><div><div class="d-stat-card__val">{{ $ausentes }}</div><div class="d-stat-card__lbl">Ausencias</div></div></div>
@@ -113,6 +106,9 @@
 .d-stat-card--green .d-stat-card__ico{background:rgba(16,185,129,.1);color:var(--green)}
 .d-stat-card--rose .d-stat-card__ico{background:rgba(244,63,94,.1);color:var(--rose)}
 .d-stat-card--amber .d-stat-card__ico{background:rgba(245,158,11,.1);color:var(--amber)}
+.d-badge--sky{background:rgba(14,165,233,.1);color:var(--brand)}
+.d-badge--green{background:rgba(16,185,129,.1);color:var(--green)}
+.d-badge--rose{background:rgba(244,63,94,.1);color:var(--rose)}
 @media(max-width:900px){div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}
 </style>
 @endsection
@@ -120,7 +116,13 @@
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-@if(session('mensaje'))Swal.fire({icon:'{{ session("icono") }}',title:'{{ session("mensaje") }}',showConfirmButton:true,timer:3000});@endif
+@if(session('mensaje'))
+Swal.fire({
+    icon: '{{ session("icono") }}',
+    title: '{{ session("mensaje") }}',
+    showConfirmButton: true,
+    timer: 3000
+});
+@endif
 </script>
 @endsection
-

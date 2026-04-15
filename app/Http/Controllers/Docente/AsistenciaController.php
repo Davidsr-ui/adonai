@@ -7,18 +7,18 @@ use App\Models\Asistencia;
 use App\Models\Estudiante;
 use App\Models\Curso;
 use App\Models\Docente;
+use App\Models\Matricula;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AsistenciaController extends Controller
 {
     /**
-     * Mostrar listado de asistencias del docente
-     * SOLO muestra asistencias de los cursos asignados al docente
+     * Mostrar selector de curso para registrar asistencias.
      */
-    public function index(Request $request)
+    public function create(Request $request)
     {
-        // Verificar que el usuario tenga perfil de docente
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
             return redirect()->route('docente.dashboard')
                 ->with('mensaje', 'Tu perfil de docente no está completo')
@@ -26,127 +26,190 @@ class AsistenciaController extends Controller
         }
 
         $docente = Auth::user()->persona->docente;
-
-        // ✅ CORREGIDO: Obtener SOLO los cursos del docente autenticado (sin with grado)
         $cursos = $docente->cursos()->get();
-        $cursosIds = $cursos->pluck('id');
 
-        // Obtener SOLO estudiantes matriculados en los cursos del docente
-        $estudiantes = Estudiante::whereHas('matriculas', function ($query) use ($cursosIds) {
-            $query->whereIn('curso_id', $cursosIds)
-                  ->where('estado', 'Matriculado');
-        })->with('persona')->get();
+        $cursoId = $request->input('curso_id');
+        $fecha = $request->input('fecha', date('Y-m-d'));
+        $estudiantes = collect();
 
-        // Obtener SOLO docente autenticado (para el formulario)
-        $docentes = Docente::where('id', $docente->id)->with('persona')->get();
+        if ($cursoId) {
+            if (!$cursos->contains('id', $cursoId)) {
+                return redirect()->route('docente.asistencias.create')
+                    ->with('mensaje', 'Curso no válido')
+                    ->with('icono', 'error');
+            }
 
-        // Filtrar asistencias SOLO de los cursos del docente
-        $query = Asistencia::whereIn('curso_id', $cursosIds)
-            ->with(['estudiante.persona', 'curso', 'docente.persona']);
+            $estudiantes = Estudiante::whereHas('matriculas', function ($q) use ($cursoId) {
+                $q->where('curso_id', $cursoId)->where('estado', 'Matriculado');
+            })->with('persona')->get();
 
-        // Aplicar filtros adicionales si existen
-        if ($request->filled('fecha')) {
-            $query->whereDate('fecha', $request->fecha);
+            foreach ($estudiantes as $e) {
+                $asistenciaExistente = Asistencia::where('estudiante_id', $e->id)
+                    ->where('curso_id', $cursoId)
+                    ->where('fecha', $fecha)
+                    ->first();
+                $e->asistencia_estado = $asistenciaExistente ? $asistenciaExistente->estado : null;
+                $e->asistencia_id = $asistenciaExistente ? $asistenciaExistente->id : null;
+                $e->asistencia_observaciones = $asistenciaExistente ? $asistenciaExistente->observaciones : null;
+            }
         }
 
-        if ($request->filled('estudiante_id')) {
-            $query->where('estudiante_id', $request->estudiante_id);
-        }
-
-        if ($request->filled('curso_id')) {
-            $query->where('curso_id', $request->curso_id);
-        }
-
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->estado);
-        }
-
-        $asistencias = $query->orderBy('fecha', 'desc')->get();
-
-        // Reutilizar la vista de admin pero con datos filtrados
-        return view('docente.asistencias.index', compact(
-            'asistencias',
-            'estudiantes',
-            'cursos',
-            'docentes'
-        ));
+        return view('docente.asistencias.create', compact('cursos', 'cursoId', 'fecha', 'estudiantes'));
     }
 
     /**
-     * Guardar nueva asistencia
+     * Guardar asistencias (múltiples a la vez).
      */
     public function store(Request $request)
     {
-        // Verificar que el usuario tenga perfil de docente
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
         }
 
         $docente = Auth::user()->persona->docente;
 
-        // Validar que el curso pertenezca al docente
-        $cursoIds = $docente->cursos->pluck('id')->toArray();
-        $cursoId = $request->input('curso_id_create');
+        $request->validate([
+            'curso_id' => 'required|exists:cursos,id',
+            'fecha' => 'required|date',
+            'asistencias' => 'required|array',
+            'asistencias.*.estudiante_id' => 'required|exists:estudiantes,id',
+            'asistencias.*.estado' => 'required|in:Presente,Ausente,Tardanza,Justificado',
+            'asistencias.*.observaciones' => 'nullable|string|max:500',
+        ]);
 
+        $cursoId = $request->curso_id;
+        $fecha = $request->fecha;
+
+        $cursoIds = $docente->cursos->pluck('id')->toArray();
         if (!in_array($cursoId, $cursoIds)) {
-            return back()->with('mensaje', 'No puedes registrar asistencias en este curso')
+            return back()->with('mensaje', 'No puedes registrar asistencias en este curso')->with('icono', 'error');
+        }
+
+        DB::beginTransaction();
+        try {
+            $registrados = 0;
+            foreach ($request->asistencias as $item) {
+                $asistencia = Asistencia::where('estudiante_id', $item['estudiante_id'])
+                    ->where('curso_id', $cursoId)
+                    ->where('fecha', $fecha)
+                    ->first();
+
+                if ($asistencia) {
+                    $asistencia->update([
+                        'estado' => $item['estado'],
+                        'observaciones' => $item['observaciones'] ?? null,
+                    ]);
+                } else {
+                    Asistencia::create([
+                        'estudiante_id' => $item['estudiante_id'],
+                        'curso_id' => $cursoId,
+                        'docente_id' => $docente->id,
+                        'fecha' => $fecha,
+                        'estado' => $item['estado'],
+                        'observaciones' => $item['observaciones'] ?? null,
+                    ]);
+                }
+                $registrados++;
+            }
+
+            DB::commit();
+
+            return redirect()->route('docente.asistencias.index')
+                ->with('mensaje', "Se registraron/actualizaron {$registrados} asistencias correctamente")
+                ->with('icono', 'success');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('mensaje', 'Error al guardar asistencias: ' . $e->getMessage())
                         ->with('icono', 'error');
         }
-
-        $request->validate([
-            'estudiante_id_create' => 'required|exists:estudiantes,id',
-            'curso_id_create' => 'required|exists:cursos,id',
-            'fecha_create' => 'required|date',
-            'estado_create' => 'required|in:Presente,Ausente,Tardanza,Justificado',
-            'observaciones_create' => 'nullable|string|max:500',
-        ]);
-
-        // Verificar que no exista duplicado
-        $existe = Asistencia::where('estudiante_id', $request->estudiante_id_create)
-            ->where('curso_id', $request->curso_id_create)
-            ->where('fecha', $request->fecha_create)
-            ->exists();
-
-        if ($existe) {
-            return back()->with('mensaje', 'Ya existe un registro de asistencia para este estudiante en esta fecha')
-                        ->with('icono', 'warning');
-        }
-
-        // Crear la asistencia con el docente autenticado
-        Asistencia::create([
-            'estudiante_id' => $request->estudiante_id_create,
-            'curso_id' => $request->curso_id_create,
-            'docente_id' => $docente->id, // Automáticamente el docente autenticado
-            'fecha' => $request->fecha_create,
-            'estado' => $request->estado_create,
-            'observaciones' => $request->observaciones_create,
-        ]);
-
-        return redirect()->route('docente.asistencias.index')
-            ->with('mensaje', 'Asistencia registrada correctamente')
-            ->with('icono', 'success');
     }
 
     /**
-     * Actualizar asistencia
+     * Mostrar listado de asistencias (histórico).
      */
-    public function update(Request $request, $id)
+    public function index(Request $request)
     {
-        $asistencia = Asistencia::findOrFail($id);
-
-        // Verificar que el docente pueda modificar esta asistencia
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return redirect()->route('docente.dashboard')
+                ->with('mensaje', 'Tu perfil de docente no está completo')
+                ->with('icono', 'error');
+        }
+
+        $docente = Auth::user()->persona->docente;
+        $cursos = $docente->cursos()->get();
+        $cursosIds = $cursos->pluck('id');
+
+        $estudiantes = Estudiante::whereHas('matriculas', function ($query) use ($cursosIds) {
+            $query->whereIn('curso_id', $cursosIds)->where('estado', 'Matriculado');
+        })->with('persona')->get();
+
+        $query = Asistencia::whereIn('curso_id', $cursosIds)
+            ->with(['estudiante.persona', 'curso', 'docente.persona']);
+
+        if ($request->filled('fecha')) $query->whereDate('fecha', $request->fecha);
+        if ($request->filled('estudiante_id')) $query->where('estudiante_id', $request->estudiante_id);
+        if ($request->filled('curso_id')) $query->where('curso_id', $request->curso_id);
+        if ($request->filled('estado')) $query->where('estado', $request->estado);
+
+        $asistencias = $query->orderBy('fecha', 'desc')->get();
+
+        return view('docente.asistencias.index', compact('asistencias', 'estudiantes', 'cursos'));
+    }
+
+    /**
+     * Ver detalle de una asistencia.
+     */
+    public function show($id)
+    {
+        $asistencia = Asistencia::with(['estudiante.persona', 'curso', 'docente.persona'])->findOrFail($id);
+
+        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
+        }
+        $docente = Auth::user()->persona->docente;
+        $cursoIds = $docente->cursos->pluck('id')->toArray();
+        if (!in_array($asistencia->curso_id, $cursoIds)) {
+            return back()->with('mensaje', 'No puedes ver esta asistencia')->with('icono', 'error');
+        }
+
+        return view('docente.asistencias.show', compact('asistencia'));
+    }
+
+    /**
+     * Obtener datos de una asistencia en formato JSON (para editar vía AJAX)
+     */
+    public function edit($id)
+    {
+        $asistencia = Asistencia::with(['estudiante.persona', 'curso'])->findOrFail($id);
+
+        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
+            return response()->json(['error' => 'No tienes permisos'], 403);
         }
 
         $docente = Auth::user()->persona->docente;
         $cursoIds = $docente->cursos->pluck('id')->toArray();
 
         if (!in_array($asistencia->curso_id, $cursoIds)) {
-            return back()->with('mensaje', 'No puedes modificar esta asistencia')
-                        ->with('icono', 'error');
+            return response()->json(['error' => 'No puedes editar esta asistencia'], 403);
+        }
+
+        return response()->json($asistencia);
+    }
+
+    /**
+     * Actualizar una asistencia individual.
+     */
+    public function update(Request $request, $id)
+    {
+        $asistencia = Asistencia::findOrFail($id);
+
+        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
+        }
+        $docente = Auth::user()->persona->docente;
+        $cursoIds = $docente->cursos->pluck('id')->toArray();
+        if (!in_array($asistencia->curso_id, $cursoIds)) {
+            return back()->with('mensaje', 'No puedes modificar esta asistencia')->with('icono', 'error');
         }
 
         $request->validate([
@@ -157,13 +220,7 @@ class AsistenciaController extends Controller
             'observaciones' => 'nullable|string|max:500',
         ]);
 
-        $asistencia->update([
-            'estudiante_id' => $request->estudiante_id,
-            'curso_id' => $request->curso_id,
-            'fecha' => $request->fecha,
-            'estado' => $request->estado,
-            'observaciones' => $request->observaciones,
-        ]);
+        $asistencia->update($request->only(['estudiante_id', 'curso_id', 'fecha', 'estado', 'observaciones']));
 
         return redirect()->route('docente.asistencias.index')
             ->with('mensaje', 'Asistencia actualizada correctamente')
@@ -171,116 +228,25 @@ class AsistenciaController extends Controller
     }
 
     /**
-     * Eliminar asistencia
+     * Eliminar asistencia.
      */
     public function destroy($id)
     {
         $asistencia = Asistencia::findOrFail($id);
 
-        // Verificar permisos
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No tienes permisos')->with('icono', 'error');
         }
-
         $docente = Auth::user()->persona->docente;
         $cursoIds = $docente->cursos->pluck('id')->toArray();
-
         if (!in_array($asistencia->curso_id, $cursoIds)) {
-            return back()->with('mensaje', 'No puedes eliminar esta asistencia')
-                        ->with('icono', 'error');
+            return back()->with('mensaje', 'No puedes eliminar esta asistencia')->with('icono', 'error');
         }
 
         $asistencia->delete();
 
         return redirect()->route('docente.asistencias.index')
             ->with('mensaje', 'Asistencia eliminada correctamente')
-            ->with('icono', 'success');
-    }
-
-    /**
-     * Ver detalle de una asistencia
-     */
-    public function show($id)
-    {
-        $asistencia = Asistencia::with([
-            'estudiante.persona',
-            'curso',
-            'docente.persona'
-        ])->findOrFail($id);
-
-        // Verificar permisos
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
-        $cursoIds = $docente->cursos->pluck('id')->toArray();
-
-        if (!in_array($asistencia->curso_id, $cursoIds)) {
-            return back()->with('mensaje', 'No puedes ver esta asistencia')
-                        ->with('icono', 'error');
-        }
-
-        // Reutilizar la vista de admin
-        return view('docente.asistencias.show', compact('asistencia'));
-    }
-
-    /**
-     * Registro masivo de asistencias
-     */
-    public function registroMasivo(Request $request)
-    {
-        // Verificar permisos
-        if (!Auth::user()->persona || !Auth::user()->persona->docente) {
-            return back()->with('mensaje', 'No tienes permisos')
-                        ->with('icono', 'error');
-        }
-
-        $docente = Auth::user()->persona->docente;
-
-        $request->validate([
-            'curso_id' => 'required|exists:cursos,id',
-            'fecha' => 'required|date',
-            'docente_id' => 'nullable|exists:docentes,id',
-        ]);
-
-        // Verificar que el curso pertenezca al docente
-        $cursoIds = $docente->cursos->pluck('id')->toArray();
-        if (!in_array($request->curso_id, $cursoIds)) {
-            return back()->with('mensaje', 'No puedes registrar asistencias en este curso')
-                        ->with('icono', 'error');
-        }
-
-        // Obtener estudiantes matriculados en el curso
-        $matriculas = \App\Models\Matricula::where('curso_id', $request->curso_id)
-            ->where('estado', 'Matriculado')
-            ->get();
-
-        $registrados = 0;
-        foreach ($matriculas as $matricula) {
-            // Verificar que no exista duplicado
-            $existe = Asistencia::where('estudiante_id', $matricula->estudiante_id)
-                ->where('curso_id', $request->curso_id)
-                ->where('fecha', $request->fecha)
-                ->exists();
-
-            if (!$existe) {
-                Asistencia::create([
-                    'estudiante_id' => $matricula->estudiante_id,
-                    'curso_id' => $request->curso_id,
-                    'docente_id' => $docente->id,
-                    'fecha' => $request->fecha,
-                    'estado' => 'Presente',
-                    'observaciones' => 'Registro masivo',
-                ]);
-                $registrados++;
-            }
-        }
-
-        return redirect()->route('docente.asistencias.index')
-            ->with('mensaje', "Se registraron {$registrados} asistencias correctamente")
             ->with('icono', 'success');
     }
 }

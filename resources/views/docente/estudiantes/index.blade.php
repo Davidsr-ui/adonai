@@ -6,7 +6,7 @@
 @section('content')
 <div style="padding:0 28px 32px">
 
-    {{-- Header --}}
+    {{-- Header con total a la derecha --}}
     <div class="d-page-hdr">
         <div>
             <h2 class="d-page-hdr__title"><i class="fas fa-users"></i> Estudiantes del Curso</h2>
@@ -17,24 +17,20 @@
         </span>
     </div>
 
-    {{-- Botones rápidos del curso (con estilos del layout) --}}
-    <div class="row" style="margin:16px 0 24px">
-        <div class="col-md-6 mb-2 mb-md-0">
-            <a href="{{ route('docente.asistencias.index', ['curso_id' => $curso->id]) }}" 
-               class="d-btn d-btn--sky d-btn--block" style="background:var(--brand);color:#fff;border-radius:12px;padding:10px;font-weight:600;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px">
-                <i class="fas fa-clipboard-check"></i> Registrar Asistencias (Curso)
-            </a>
-        </div>
-        <div class="col-md-6">
-            <a href="{{ route('docente.notas.index', ['curso_id' => $curso->id]) }}" 
-               class="d-btn d-btn--green d-btn--block" style="background:var(--green);color:#fff;border-radius:12px;padding:10px;font-weight:600;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px">
-                <i class="fas fa-star"></i> Registrar Notas (Curso)
-            </a>
-        </div>
+    {{-- Botones rápidos del curso (horizontales y compactos) --}}
+    <div class="d-flex" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap">
+        <a href="{{ route('docente.asistencias.index', ['curso_id' => $curso->id]) }}" 
+           class="d-btn d-btn--sky" style="background:var(--brand);color:#fff;border-radius:30px;padding:5px 16px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:6px">
+            <i class="fas fa-clipboard-check"></i> Registrar Asistencias
+        </a>
+        <a href="{{ route('docente.notas.index', ['curso_id' => $curso->id]) }}" 
+           class="d-btn d-btn--green" style="background:var(--green);color:#fff;border-radius:30px;padding:5px 16px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:6px">
+            <i class="fas fa-star"></i> Registrar Notas
+        </a>
     </div>
 
     @if($estudiantes->count() > 0)
-    <div class="d-card" style="margin-top:20px">
+    <div class="d-card" style="margin-top:0">
         <div class="d-card__hdr">
             <div class="d-card__title"><span class="d-card__ico d-card__ico--sky"><i class="fas fa-users"></i></span>Listado de Alumnos</div>
         </div>
@@ -101,7 +97,23 @@
 @section('css')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
 <style>
-/* Ajustes para que DataTables combine con tu diseño */
+/* Tus estilos existentes, solo agregamos ajustes de botones */
+.d-btn--sky, .d-btn--green {
+    transition: all .2s;
+    text-decoration: none;
+}
+.d-btn--sky:hover {
+    background: var(--brand-d) !important;
+    transform: translateY(-1px);
+}
+.d-btn--green:hover {
+    background: #0b9e6e !important;
+    transform: translateY(-1px);
+}
+.d-flex {
+    display: flex;
+}
+/* El resto de estilos (d-table, d-av, etc.) ya están en tu layout, pero los repetimos por consistencia */
 .d-table {
     width: 100%;
     border-collapse: collapse;
@@ -122,9 +134,6 @@
 .d-table tbody tr {
     border-bottom: 1px solid var(--border);
     transition: background .15s;
-}
-.d-table tbody tr:last-child {
-    border-bottom: none;
 }
 .d-table tbody tr:hover {
     background: var(--surface2);
@@ -162,7 +171,6 @@
     border: none;
     cursor: pointer;
     transition: all .2s;
-    text-decoration: none;
 }
 .d-btn-icon--sky {
     background: rgba(14,165,233,.1);
@@ -208,34 +216,6 @@
 .d-empty-state strong {
     font-size: .95rem;
     color: var(--text);
-}
-.d-empty-state span {
-    font-size: .8rem;
-}
-/* Botones personalizados */
-.d-btn--sky {
-    background: var(--brand);
-    color: #fff;
-    transition: all .2s;
-}
-.d-btn--sky:hover {
-    background: var(--brand-d);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(14,165,233,.3);
-}
-.d-btn--green {
-    background: var(--green);
-    color: #fff;
-    transition: all .2s;
-}
-.d-btn--green:hover {
-    background: #0b9e6e;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16,185,129,.3);
-}
-.d-btn--block {
-    display: flex;
-    width: 100%;
 }
 </style>
 @endsection
