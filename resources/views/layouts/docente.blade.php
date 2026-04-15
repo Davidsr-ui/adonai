@@ -7,8 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{{-- Bootstrap 4 CSS --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+{{-- DataTables CSS --}}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-@yield('css')
 <style>
 :root {
     --ff:'Plus Jakarta Sans',sans-serif;
@@ -106,6 +109,7 @@ button{font-family:var(--ff);cursor:pointer;border:none;background:none}
     .d-overlay.open{display:block}
 }
 </style>
+@yield('css')
 </head>
 <body>
 
@@ -202,7 +206,13 @@ button{font-family:var(--ff);cursor:pointer;border:none;background:none}
     </main>
 </div>
 
+{{-- jQuery primero, luego Bootstrap JS, luego Popper --}}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+
 @yield('js')
+
 <script>
 const html = document.documentElement;
 const icon = document.getElementById('themeIcon');
