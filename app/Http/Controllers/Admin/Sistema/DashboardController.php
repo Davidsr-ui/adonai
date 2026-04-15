@@ -43,7 +43,7 @@ class DashboardController extends Controller
             'personas'    => $this->obtenerEstadisticasPersonas(),
             'estudiantes' => $this->obtenerEstadisticasEstudiantes(),
             'docentes'    => $this->obtenerEstadisticasDocentes(),
-            'tutores'     => $this->obtenerEstadisticasTutores(),   // 👈 AÑADIDO
+            'tutores'     => $this->obtenerEstadisticasTutores(),
             'academico'   => $this->obtenerEstadisticasAcademicas($gestionActiva),
             'registros'   => $this->obtenerEstadisticasRegistros($gestionActiva, $periodoActivo),
             'mensajeria'  => $this->obtenerEstadisticasMensajeria(),
@@ -56,7 +56,7 @@ class DashboardController extends Controller
             'matriculas_por_mes'           => $this->obtenerMatriculasPorMes($gestionActiva),
             'asistencias_ultimos_7_dias'   => $this->obtenerAsistenciasUltimos7Dias(),
             'notas_distribucion'           => $this->obtenerDistribucionNotas($periodoActivo),
-            'comportamientos_por_tipo'     => $this->obtenerComportamientosPorTipo($gestionActiva), // ya no se muestra en UI, pero se mantiene por si lo usas luego
+            'comportamientos_por_tipo'     => $this->obtenerComportamientosPorTipo($gestionActiva),
         ];
         
         // Actividad Reciente
@@ -64,7 +64,7 @@ class DashboardController extends Controller
             'ultimas_matriculas'    => $this->obtenerUltimasMatriculas(5),
             'ultimos_mensajes'      => $this->obtenerUltimosMensajes(5),
             'ultimas_notas'         => $this->obtenerUltimasNotas(5),
-            'ultimos_comportamientos' => $this->obtenerUltimosComportamientos(5), // idem anterior, ya no se muestra pero se conserva
+            'ultimos_comportamientos' => $this->obtenerUltimosComportamientos(5),
         ];
         
         // Alertas y Notificaciones
@@ -78,7 +78,7 @@ class DashboardController extends Controller
         // Top Rankings
         $rankings = [
             'mejores_estudiantes'      => $this->obtenerMejoresEstudiantes($periodoActivo, 10),
-            'cursos_mas_matriculas'    => $this->obtenerCursosConMasMatriculas($gestionActiva, 5), // ya no se muestra, pero se deja por si lo necesitas luego
+            'cursos_mas_matriculas'    => $this->obtenerCursosConMasMatriculas($gestionActiva, 5),
             'docentes_mas_cursos'      => $this->obtenerDocentesConMasCursos($gestionActiva, 5),
             'talleres_mas_solicitados' => $this->obtenerTalleresMasSolicitados(5),
         ];
@@ -104,7 +104,7 @@ class DashboardController extends Controller
             'activos'     => User::whereHas('persona', function($q) {
                 $q->where('estado', 'Activo');
             })->count(),
-            'verificados' => User::whereNotNull('email_verified_at')->count(),
+            // 'verificados' eliminado porque la columna email_verified_at ya no existe
             'con_persona' => User::has('persona')->count(),
         ];
     }
@@ -164,7 +164,6 @@ class DashboardController extends Controller
             })->count(),
         ];
     }
-
 
     /**
      * Estadísticas Académicas
@@ -323,7 +322,6 @@ class DashboardController extends Controller
 
     /**
      * Comportamientos por Tipo
-     * (Se deja disponible aunque ya no se pinte en el dashboard)
      */
     private function obtenerComportamientosPorTipo($gestion)
     {
@@ -371,7 +369,6 @@ class DashboardController extends Controller
 
     /**
      * Últimos Comportamientos
-     * (ya no se muestra en el dashboard, pero lo dejamos por si luego se reutiliza)
      */
     private function obtenerUltimosComportamientos($limit = 5)
     {
@@ -492,7 +489,6 @@ class DashboardController extends Controller
 
     /**
      * Cursos con Más Matrículas
-     * (Ya no se muestra, pero se deja disponible)
      */
     private function obtenerCursosConMasMatriculas($gestion, $limit = 5)
     {
@@ -532,26 +528,10 @@ class DashboardController extends Controller
 
     /**
      * Talleres más solicitados
-     *
-     * NOTA:
-     * - Si ya tienes una tabla de inscripciones de talleres (ej: inscripciones_taller),
-     *   ajusta aquí el nombre de la tabla / columnas.
-     * - Por ahora, si no hay tabla de inscripciones, se usa cupos_maximos como aproximación.
      */
     private function obtenerTalleresMasSolicitados($limit = 5)
     {
-        // Si tienes una tabla real de inscripciones de talleres, podrías hacer algo como:
-        // if (Schema::hasTable('inscripciones_taller')) {
-        //     return DB::table('inscripciones_taller')
-        //         ->join('tallers', 'inscripciones_taller.taller_id', '=', 'tallers.id')
-        //         ->select('tallers.nombre', DB::raw('COUNT(*) as total'))
-        //         ->groupBy('tallers.id', 'tallers.nombre')
-        //         ->orderByDesc('total')
-        //         ->limit($limit)
-        //         ->get();
-        // }
-
-        // Fallback: ordenamos por cupos_maximos para que al menos el ranking funcione
+        // Fallback: ordenamos por cupos_maximos
         return Taller::where('activo', 1)
             ->select('nombre', DB::raw('cupos_maximos as total'))
             ->orderByDesc('cupos_maximos')
@@ -559,8 +539,7 @@ class DashboardController extends Controller
             ->get();
     }
 
-    // Métodos REST no usados: redirigen al dashboard
-
+    // Métodos REST no usados
     public function create()
     {
         return redirect()->route('admin.dashboard.index');

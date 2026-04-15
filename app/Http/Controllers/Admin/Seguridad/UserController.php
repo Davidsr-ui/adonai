@@ -14,14 +14,11 @@ use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = User::with(['persona', 'roles']);
         
-        // Filtros
+        // Filtro búsqueda
         if ($request->has('buscar') && $request->buscar) {
             $buscar = $request->buscar;
             $query->where(function($q) use ($buscar) {
@@ -35,12 +32,14 @@ class UserController extends Controller
             });
         }
         
+        // Filtro por rol
         if ($request->has('rol') && $request->rol) {
             $query->whereHas('roles', function($q) use ($request) {
                 $q->where('roles.id', $request->rol);
             });
         }
         
+        // Filtro por estado (activo/inactivo según persona)
         if ($request->has('estado') && $request->estado !== '') {
             if ($request->estado == 'activo') {
                 $query->whereHas('persona', function($q) {
@@ -53,14 +52,7 @@ class UserController extends Controller
             }
         }
         
-        if ($request->has('verificado') && $request->verificado !== '') {
-            if ($request->verificado == '1') {
-                $query->whereNotNull('email_verified_at');
-            } else {
-                $query->whereNull('email_verified_at');
-            }
-        }
-        
+        // Filtro por tener persona vinculada
         if ($request->has('tiene_persona') && $request->tiene_persona !== '') {
             if ($request->tiene_persona == '1') {
                 $query->has('persona');
@@ -69,12 +61,10 @@ class UserController extends Controller
             }
         }
         
-        $usuarios = $query->orderBy('created_at', 'desc')->get();
+        $usuarios = $query->orderBy('created_at', 'desc')->paginate(15);
         
-        // Obtener todos los roles
         $roles = Role::all();
         
-        // Obtener personas sin usuario (SOLO docentes, tutores y administradores - SIN estudiantes)
         $personasSinUsuario = Persona::whereNull('user_id')
                              ->where('estado', 'Activo')
                              ->where(function($query) {
@@ -85,50 +75,26 @@ class UserController extends Controller
                              ->orderBy('apellidos')
                              ->get();
         
-        // --- CORRECCIÓN FINAL DE ESTADÍSTICAS ---
         $totalUsuarios = User::count();
         $usuariosActivos = User::whereHas('persona', function($q) { 
             $q->where('estado', 'Activo'); 
         })->count();
-        $usuariosVerificados = User::whereNotNull('email_verified_at')->count();
-        $usuariosConPersona = User::has('persona')->count(); // Agregado para prevenir el siguiente error
+        $usuariosConPersona = User::has('persona')->count();
 
         $estadisticas = [
-            // Nombres exactos que pide tu vista (index.blade.php)
             'total'       => $totalUsuarios,
             'activos'     => $usuariosActivos,
-            'verificados' => $usuariosVerificados, // Esto soluciona tu error actual (línea 36)
-            'con_persona' => $usuariosConPersona,  // Esto previene el error en la línea 47
-
-            // Nombres antiguos (por compatibilidad)
-            'total_usuarios'       => $totalUsuarios,
-            'usuarios_activos'     => $usuariosActivos,
-            'usuarios_verificados' => $usuariosVerificados,
-            'nuevos_este_mes'      => User::whereMonth('created_at', now()->month)
-                                         ->whereYear('created_at', now()->year)
-                                         ->count()
+            'con_persona' => $usuariosConPersona,
         ];
-        // ----------------------------------------
         
-        return view('admin.usuarios.index', compact(
-            'usuarios',
-            'roles',
-            'personasSinUsuario',
-            'estadisticas'
-        ));
+        return view('admin.usuarios.index', compact('usuarios', 'roles', 'personasSinUsuario', 'estadisticas'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return redirect()->route('admin.usuarios.index');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -152,26 +118,18 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
             
-            // Crear usuario
             $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
             $user->password = Hash::make($request->password);
-            
-            if ($request->verificar_email) {
-                $user->email_verified_at = now();
-            }
-            
             $user->save();
             
-            // Vincular con persona si se seleccionó
             if ($request->persona_id) {
                 $persona = Persona::find($request->persona_id);
                 $persona->user_id = $user->id;
                 $persona->save();
             }
             
-            // Asignar roles
             if ($request->has('roles')) {
                 $user->roles()->attach($request->roles);
             }
@@ -190,17 +148,11 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $usuario = User::with(['persona', 'roles.permissions'])
-                        ->findOrFail($id);
-        
+        $usuario = User::with(['persona', 'roles.permissions'])->findOrFail($id);
         $todosLosRoles = Role::all();
         
-        // Obtener personas sin usuario (SOLO docentes, tutores y administradores - SIN estudiantes)
         $personasSinUsuario = Persona::whereNull('user_id')
                              ->where('estado', 'Activo')
                              ->where(function($query) {
@@ -211,7 +163,6 @@ class UserController extends Controller
                              ->orderBy('apellidos')
                              ->get();
 
-        // Si el usuario actual tiene persona, añadirla al listado para poder mantenerla
         if ($usuario->persona) {
             $personasSinUsuario->prepend($usuario->persona);
         }
@@ -219,17 +170,11 @@ class UserController extends Controller
         return view('admin.usuarios.show', compact('usuario', 'todosLosRoles', 'personasSinUsuario'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         return redirect()->route('admin.usuarios.index');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);
@@ -263,29 +208,21 @@ class UserController extends Controller
             
             $user->name = $request->name;
             $user->email = $request->email;
-            
-            // Actualizar contraseña solo si se proporciona
             if ($request->filled('password')) {
                 $user->password = Hash::make($request->password);
             }
-            
             $user->save();
             
-            // Actualizar persona
             if ($request->persona_id) {
-                // Desvincular persona anterior si existe
                 if ($user->persona && $user->persona->id != $request->persona_id) {
                     $personaAnterior = $user->persona;
                     $personaAnterior->user_id = null;
                     $personaAnterior->save();
                 }
-                
-                // Vincular nueva persona
                 $persona = Persona::find($request->persona_id);
                 $persona->user_id = $user->id;
                 $persona->save();
             } else {
-                // Si no se selecciona persona, desvincular la actual
                 if ($user->persona) {
                     $personaAnterior = $user->persona;
                     $personaAnterior->user_id = null;
@@ -293,7 +230,6 @@ class UserController extends Controller
                 }
             }
             
-            // Sincronizar roles
             if ($request->has('roles')) {
                 $user->roles()->sync($request->roles);
             } else {
@@ -314,29 +250,17 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {
             DB::beginTransaction();
-            
             $user = User::findOrFail($id);
-            
-            // Desvincular persona si existe
             if ($user->persona) {
-                $persona = $user->persona;
-                $persona->user_id = null;
-                $persona->save();
+                $user->persona->user_id = null;
+                $user->persona->save();
             }
-            
-            // Desasociar roles
             $user->roles()->detach();
-            
-            // Eliminar el usuario
             $user->delete();
-            
             DB::commit();
 
             return redirect()->route('admin.usuarios.index')
@@ -351,51 +275,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Verificar email del usuario
-     */
-    public function verificarEmail(string $id)
-    {
-        try {
-            $user = User::findOrFail($id);
-            $user->email_verified_at = now();
-            $user->save();
-
-            return redirect()->back()
-                ->with('mensaje', 'Email verificado correctamente')
-                ->with('icono', 'success');
-
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('mensaje', 'Error al verificar email: ' . $e->getMessage())
-                ->with('icono', 'error');
-        }
-    }
-
-    /**
-     * Quitar verificación de email
-     */
-    public function quitarVerificacionEmail(string $id)
-    {
-        try {
-            $user = User::findOrFail($id);
-            $user->email_verified_at = null;
-            $user->save();
-
-            return redirect()->back()
-                ->with('mensaje', 'Verificación de email removida')
-                ->with('icono', 'success');
-
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('mensaje', 'Error: ' . $e->getMessage())
-                ->with('icono', 'error');
-        }
-    }
-
-    /**
-     * Cambiar contraseña del usuario
-     */
     public function cambiarPassword(Request $request, string $id)
     {
         $request->validate([
@@ -422,23 +301,17 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Activar usuario (a través de su persona)
-     */
     public function activar(string $id)
     {
         try {
             $user = User::findOrFail($id);
-            
             if ($user->persona) {
                 $user->persona->estado = 'Activo';
                 $user->persona->save();
             }
-
             return redirect()->back()
                 ->with('mensaje', 'Usuario activado correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('mensaje', 'Error: ' . $e->getMessage())
@@ -446,23 +319,17 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Desactivar usuario (a través de su persona)
-     */
     public function desactivar(string $id)
     {
         try {
             $user = User::findOrFail($id);
-            
             if ($user->persona) {
                 $user->persona->estado = 'Inactivo';
                 $user->persona->save();
             }
-
             return redirect()->back()
                 ->with('mensaje', 'Usuario desactivado correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('mensaje', 'Error: ' . $e->getMessage())
@@ -470,9 +337,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Vincular usuario con persona
-     */
     public function vincularPersona(Request $request, string $id)
     {
         $request->validate([
@@ -481,35 +345,24 @@ class UserController extends Controller
 
         try {
             DB::beginTransaction();
-            
             $user = User::findOrFail($id);
-            
-            // Desvincular persona anterior si existe
             if ($user->persona) {
-                $personaAnterior = $user->persona;
-                $personaAnterior->user_id = null;
-                $personaAnterior->save();
+                $user->persona->user_id = null;
+                $user->persona->save();
             }
-            
-            // Vincular nueva persona
             $persona = Persona::find($request->persona_id);
-            
-            // Verificar que la persona no esté ya vinculada a otro usuario
             if ($persona->user_id && $persona->user_id != $user->id) {
                 return redirect()->back()
                     ->with('mensaje', 'Esta persona ya está vinculada a otro usuario')
                     ->with('icono', 'error');
             }
-            
             $persona->user_id = $user->id;
             $persona->save();
-            
             DB::commit();
 
             return redirect()->back()
                 ->with('mensaje', 'Persona vinculada correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -518,28 +371,20 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Desvincular persona del usuario
-     */
     public function desvincularPersona(string $id)
     {
         try {
             DB::beginTransaction();
-            
             $user = User::findOrFail($id);
-            
             if ($user->persona) {
-                $persona = $user->persona;
-                $persona->user_id = null;
-                $persona->save();
+                $user->persona->user_id = null;
+                $user->persona->save();
             }
-            
             DB::commit();
 
             return redirect()->back()
                 ->with('mensaje', 'Persona desvinculada correctamente')
                 ->with('icono', 'success');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

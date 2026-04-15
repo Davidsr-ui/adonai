@@ -10,18 +10,17 @@
 @stop
 
 @section('content')
-
     {{-- TARJETAS ESTADÍSTICAS --}}
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
-            <div class="card card-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-auto">
-                            <span class="bg-blue text-white avatar rounded"><i class="fas fa-users"></i></span>
+                            <span class="bg-primary text-white avatar rounded-circle"><i class="fas fa-users"></i></span>
                         </div>
                         <div class="col">
-                            <div class="font-weight-medium">{{ $estadisticas['total'] }}</div>
+                            <div class="fw-bold fs-3">{{ $estadisticas['total'] }}</div>
                             <div class="text-muted">Total Usuarios</div>
                         </div>
                     </div>
@@ -29,14 +28,14 @@
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="card card-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-auto">
-                            <span class="bg-green text-white avatar rounded"><i class="fas fa-user-check"></i></span>
+                            <span class="bg-success text-white avatar rounded-circle"><i class="fas fa-user-check"></i></span>
                         </div>
                         <div class="col">
-                            <div class="font-weight-medium">{{ $estadisticas['activos'] }}</div>
+                            <div class="fw-bold fs-3">{{ $estadisticas['activos'] }}</div>
                             <div class="text-muted">Activos</div>
                         </div>
                     </div>
@@ -44,29 +43,14 @@
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="card card-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-auto">
-                            <span class="bg-yellow text-white avatar rounded"><i class="fas fa-envelope-open"></i></span>
+                            <span class="bg-cyan text-white avatar rounded-circle"><i class="fas fa-id-card"></i></span>
                         </div>
                         <div class="col">
-                            <div class="font-weight-medium">{{ $estadisticas['verificados'] }}</div>
-                            <div class="text-muted">Verificados</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card card-sm">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <span class="bg-purple text-white avatar rounded"><i class="fas fa-id-card"></i></span>
-                        </div>
-                        <div class="col">
-                            <div class="font-weight-medium">{{ $estadisticas['con_persona'] }}</div>
+                            <div class="fw-bold fs-3">{{ $estadisticas['con_persona'] }}</div>
                             <div class="text-muted">Con Persona Vinculada</div>
                         </div>
                     </div>
@@ -76,7 +60,7 @@
     </div>
 
     {{-- FILTROS --}}
-    <div class="card mb-4">
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-header" style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#filtros">
             <h3 class="card-title"><i class="fas fa-filter me-2"></i>Filtros de Búsqueda</h3>
             <div class="card-options"><i class="fas fa-chevron-down"></i></div>
@@ -107,14 +91,6 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">Verificado</label>
-                            <select name="verificado" class="form-select">
-                                <option value="">Todos</option>
-                                <option value="1" {{ request('verificado') === '1' ? 'selected' : '' }}>Verificados</option>
-                                <option value="0" {{ request('verificado') === '0' ? 'selected' : '' }}>No verificados</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
                             <label class="form-label">Tiene Persona</label>
                             <select name="tiene_persona" class="form-select">
                                 <option value="">Todos</option>
@@ -123,8 +99,8 @@
                             </select>
                         </div>
                         <div class="col-md-1 d-flex align-items-end gap-2">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
-                            <a href="{{ route('admin.usuarios.index') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i></a>
+                            <button type="submit" class="btn btn-primary rounded-pill"><i class="fas fa-search"></i></button>
+                            <a href="{{ route('admin.usuarios.index') }}" class="btn btn-secondary rounded-pill"><i class="fas fa-eraser"></i></a>
                         </div>
                     </div>
                 </form>
@@ -133,18 +109,18 @@
     </div>
 
     {{-- TABLA --}}
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Usuarios Registrados</h3>
-            <div class="card-options">
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
+    <div class="card shadow-sm border-0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mb-0">Usuarios Registrados</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#createUserModal">
                     <i class="fas fa-plus me-1"></i> Crear Usuario
                 </button>
             </div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body">
             <div class="table-responsive">
-                <table id="usersTable" class="table table-vcenter table-hover card-table">
+                <table id="usersTable" class="table table-bordered table-hover table-sm align-middle">
                     <thead>
                         <tr>
                             <th class="w-1">ID</th>
@@ -153,7 +129,6 @@
                             <th>Persona</th>
                             <th>Roles</th>
                             <th>Estado</th>
-                            <th>Verificado</th>
                             <th>Registro</th>
                             <th class="w-1">Acciones</th>
                         </tr>
@@ -174,44 +149,43 @@
                                     <div class="fw-semibold">{{ $usuario->persona->nombres }} {{ $usuario->persona->apellidos }}</div>
                                     <div class="text-muted small"><i class="fas fa-id-card me-1"></i>{{ $usuario->persona->dni }}</div>
                                 @else
-                                    <span class="badge bg-warning-lt text-warning">Sin persona vinculada</span>
+                                    <span class="badge bg-warning text-dark">Sin persona vinculada</span>
                                 @endif
                             </td>
                             <td>
                                 @if($usuario->roles->count() > 0)
                                     @foreach($usuario->roles as $rol)
-                                        <span class="badge bg-blue-lt text-blue me-1">{{ $rol->display_name }}</span>
+                                        <span class="badge bg-info text-dark me-1">{{ $rol->display_name }}</span>
                                     @endforeach
                                 @else
-                                    <span class="badge bg-secondary-lt">Sin roles</span>
+                                    <span class="badge bg-secondary">Sin roles</span>
                                 @endif
                             </td>
                             <td>
-                                @if($usuario->esta_activo)
-                                    <span class="badge bg-success-lt text-success">Activo</span>
+                                @if($usuario->persona && $usuario->persona->estado == 'Activo')
+                                    <span class="badge bg-success">Activo</span>
                                 @else
-                                    <span class="badge bg-danger-lt text-danger">Inactivo</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($usuario->esta_verificado)
-                                    <span class="badge bg-success-lt text-success"><i class="fas fa-check me-1"></i>Sí</span>
-                                @else
-                                    <span class="badge bg-warning-lt text-warning"><i class="fas fa-times me-1"></i>No</span>
+                                    <span class="badge bg-danger">Inactivo</span>
                                 @endif
                             </td>
                             <td class="text-muted small">{{ $usuario->created_at->format('d/m/Y') }}</td>
                             <td>
-                                <div class="btn-list flex-nowrap">
-                                    <a href="{{ route('admin.usuarios.show', $usuario->id) }}" class="btn btn-sm btn-info" title="Ver"><i class="fas fa-eye"></i></a>
-                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $usuario->id }}"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ $usuario->id }}"><i class="fas fa-trash"></i></button>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <a href="{{ route('admin.usuarios.show', $usuario->id) }}" class="btn btn-outline-info btn-sm rounded-pill" title="Ver">
+                                        <i class="fas fa-eye me-1"></i> Ver
+                                    </a>
+                                    <button class="btn btn-outline-success btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $usuario->id }}" title="Editar">
+                                        <i class="fas fa-edit me-1"></i> Editar
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ $usuario->id }}" title="Eliminar">
+                                        <i class="fas fa-trash me-1"></i> Eliminar
+                                    </button>
                                 </div>
-                            </td>
+                             </div>
                         </tr>
 
-                        {{-- MODAL EDITAR --}}
-                        <div class="modal modal-blur fade" id="editUserModal{{ $usuario->id }}" tabindex="-1">
+                        {{-- MODAL EDITAR (mismo contenido, pero sin verificación) --}}
+                        <div class="modal fade" id="editUserModal{{ $usuario->id }}" tabindex="-1">
                             <div class="modal-dialog modal-xl modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header bg-success text-white">
@@ -240,7 +214,7 @@
                                                 </div>
                                                 <div class="col-12">
                                                     <label class="form-label">Vincular con Persona</label>
-                                                    <select name="persona_id" class="form-select select2-edit-{{ $usuario->id }}">
+                                                    <select name="persona_id" class="form-select" id="select2-edit-{{ $usuario->id }}">
                                                         <option value="">Sin persona</option>
                                                         @foreach($personasSinUsuario as $persona)
                                                             <option value="{{ $persona->id }}" {{ $usuario->persona && $usuario->persona->id == $persona->id ? 'selected' : '' }}>
@@ -256,14 +230,14 @@
                                                 </div>
                                                 <div class="col-12">
                                                     <label class="form-label fw-semibold">Roles</label>
-                                                    <div class="row g-2">
+                                                    <div class="d-flex flex-wrap gap-2">
                                                         @foreach($roles as $role)
-                                                        <div class="col-auto">
-                                                            <label class="form-check form-check-inline">
-                                                                <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}" {{ $usuario->roles->contains($role->id) ? 'checked' : '' }}>
-                                                                <span class="form-check-label"><span class="badge bg-blue-lt">{{ $role->display_name }}</span></span>
-                                                            </label>
-                                                        </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}" id="role_{{ $role->id }}_{{ $usuario->id }}" {{ $usuario->roles->contains($role->id) ? 'checked' : '' }}>
+                                                                <label class="form-check-label" for="role_{{ $role->id }}_{{ $usuario->id }}">
+                                                                    <span class="badge bg-info text-dark">{{ $role->display_name }}</span>
+                                                                </label>
+                                                            </div>
                                                         @endforeach
                                                     </div>
                                                 </div>
@@ -271,7 +245,7 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                            <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Actualizar</button>
+                                            <button type="submit" class="btn btn-success rounded-pill"><i class="fas fa-save me-1"></i>Actualizar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -279,7 +253,7 @@
                         </div>
 
                         {{-- MODAL ELIMINAR --}}
-                        <div class="modal modal-blur fade" id="deleteUserModal{{ $usuario->id }}" tabindex="-1">
+                        <div class="modal fade" id="deleteUserModal{{ $usuario->id }}" tabindex="-1">
                             <div class="modal-dialog modal-sm modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header bg-danger text-white">
@@ -302,36 +276,39 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary w-50" data-bs-dismiss="modal">Cancelar</button>
-                                            <button type="submit" class="btn btn-danger w-50"><i class="fas fa-trash me-1"></i>Eliminar</button>
+                                            <button type="submit" class="btn btn-danger w-50 rounded-pill"><i class="fas fa-trash me-1"></i>Eliminar</button>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
-
                         @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
-
-        {{-- PAGINACIÓN --}}
-        @if($usuarios instanceof \Illuminate\Pagination\LengthAwarePaginator && $usuarios->hasPages())
         <div class="card-footer d-flex align-items-center">
-            <p class="m-0 text-muted">
-                Mostrando <span class="fw-semibold">{{ $usuarios->firstItem() }}</span> a
-                <span class="fw-semibold">{{ $usuarios->lastItem() }}</span> de
-                <span class="fw-semibold">{{ $usuarios->total() }}</span> usuarios
-            </p>
-            <ul class="pagination m-0 ms-auto">
-                {{ $usuarios->appends(request()->query())->links('pagination::bootstrap-5') }}
-            </ul>
+            @if($usuarios instanceof \Illuminate\Pagination\LengthAwarePaginator && $usuarios->hasPages())
+                <p class="m-0 text-muted">
+                    Mostrando <span class="fw-semibold">{{ $usuarios->firstItem() }}</span> a
+                    <span class="fw-semibold">{{ $usuarios->lastItem() }}</span> de
+                    <span class="fw-semibold">{{ $usuarios->total() }}</span> usuarios
+                </p>
+                <ul class="pagination m-0 ms-auto">
+                    {{ $usuarios->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </ul>
+            @elseif($usuarios instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
+                <ul class="pagination m-0 ms-auto">
+                    {{ $usuarios->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </ul>
+            @else
+                <p class="m-0 text-muted">Mostrando {{ $usuarios->count() }} usuarios</p>
+            @endif
         </div>
-        @endif
     </div>
 
-    {{-- MODAL CREAR USUARIO --}}
-    <div class="modal modal-blur fade" id="createUserModal" tabindex="-1">
+    {{-- MODAL CREAR USUARIO (sin verificación) --}}
+    <div class="modal fade" id="createUserModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
@@ -360,7 +337,7 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Vincular con Persona (Opcional)</label>
-                                <select name="persona_id" class="form-select select2-create">
+                                <select name="persona_id" class="form-select" id="select2-create">
                                     <option value="">Sin persona</option>
                                     @foreach($personasSinUsuario as $persona)
                                         <option value="{{ $persona->id }}">{{ $persona->nombres }} {{ $persona->apellidos }} - DNI: {{ $persona->dni }}</option>
@@ -368,21 +345,15 @@
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="verificar_email" value="1">
-                                    <span class="form-check-label">Marcar email como verificado</span>
-                                </label>
-                            </div>
-                            <div class="col-12">
                                 <label class="form-label fw-semibold">Asignar Roles</label>
-                                <div class="row g-2">
+                                <div class="d-flex flex-wrap gap-2">
                                     @foreach($roles as $role)
-                                    <div class="col-auto">
-                                        <label class="form-check form-check-inline">
-                                            <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}">
-                                            <span class="form-check-label"><span class="badge bg-blue-lt">{{ $role->display_name }}</span></span>
-                                        </label>
-                                    </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}" id="role_create_{{ $role->id }}">
+                                            <label class="form-check-label" for="role_create_{{ $role->id }}">
+                                                <span class="badge bg-info text-dark">{{ $role->display_name }}</span>
+                                            </label>
+                                        </div>
                                     @endforeach
                                 </div>
                             </div>
@@ -390,108 +361,174 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Guardar</button>
+                        <button type="submit" class="btn btn-primary rounded-pill"><i class="fas fa-save me-1"></i>Guardar</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
 @stop
 
 @section('css')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <style>
-        /* ── Badges modo oscuro — colores que combinan con el fondo oscuro ── */
-        [data-bs-theme="dark"] .badge.bg-danger-lt {
-            background-color: #3d1f1f !important;
-            color: #ff8a8a !important;
-            border: 1px solid rgba(255,100,100,0.3) !important;
-        }
-        [data-bs-theme="dark"] .badge.bg-success-lt {
-            background-color: #1a3329 !important;
-            color: #6edbb4 !important;
-            border: 1px solid rgba(70,200,140,0.3) !important;
-        }
-        [data-bs-theme="dark"] .badge.bg-warning-lt {
-            background-color: #3a2d10 !important;
-            color: #ffc96e !important;
-            border: 1px solid rgba(255,180,50,0.3) !important;
-        }
-        [data-bs-theme="dark"] .badge.bg-blue-lt {
-            background-color: #1a2a3d !important;
-            color: #7ec8f7 !important;
-            border: 1px solid rgba(80,160,230,0.3) !important;
-        }
-        [data-bs-theme="dark"] .badge.bg-secondary-lt {
-            background-color: #2a2a2a !important;
-            color: #aaaaaa !important;
-            border: 1px solid rgba(150,150,150,0.2) !important;
-        }
-        /* ── Cards en modo oscuro ── */
-        [data-bs-theme="dark"] .card {
-            background-color: #1e2a3a !important;
-            border-color: rgba(255,255,255,0.07) !important;
-            color: #c8d3e0 !important;
-        }
-        [data-bs-theme="dark"] .card .text-muted {
-            color: #7a8fa8 !important;
-        }
-        [data-bs-theme="dark"] .card-header {
-            background-color: #1e2a3a !important;
-            border-bottom-color: rgba(255,255,255,0.07) !important;
-        }
-        [data-bs-theme="dark"] .card-footer {
-            background-color: #1e2a3a !important;
-            border-top-color: rgba(255,255,255,0.07) !important;
-        }
-        [data-bs-theme="dark"] .table td,
-        [data-bs-theme="dark"] .table th {
-            border-color: rgba(255,255,255,0.06) !important;
-        }
-        [data-bs-theme="dark"] .table-hover tbody tr:hover {
-            background-color: rgba(255,255,255,0.04) !important;
-        }
-    </style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<style>
+    .gap-2 { gap: 0.5rem; }
+    .rounded-pill { border-radius: 50rem !important; padding-left: 0.9rem; padding-right: 0.9rem; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background-size: cover; background-position: center; }
+
+    /* Modo oscuro */
+    body[data-bs-theme="dark"] .card {
+        background-color: #1e2438 !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .card-header {
+        background-color: #171c2c !important;
+        border-bottom-color: #2a3446 !important;
+        color: #f8f9fa;
+    }
+    body[data-bs-theme="dark"] .card-footer {
+        background-color: #171c2c !important;
+        border-top-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .table,
+    body[data-bs-theme="dark"] .table-bordered {
+        background-color: #1a1e2c !important;
+        color: #e9ecef !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .table td,
+    body[data-bs-theme="dark"] .table th,
+    body[data-bs-theme="dark"] .table-bordered th,
+    body[data-bs-theme="dark"] .table-bordered td {
+        border-color: #2a3446 !important;
+        color: #e9ecef !important;
+        background-color: #1a1e2c !important;
+    }
+    body[data-bs-theme="dark"] .table thead th {
+        background-color: #0f1220 !important;
+        color: #f8f9fa !important;
+        border-bottom-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .table-hover > tbody > tr:hover > * {
+        background-color: #2c3145 !important;
+    }
+    body[data-bs-theme="dark"] .form-control,
+    body[data-bs-theme="dark"] .form-select,
+    body[data-bs-theme="dark"] .input-group-text {
+        background-color: #0f1220 !important;
+        border-color: #2a3446 !important;
+        color: #e9ecef !important;
+    }
+    body[data-bs-theme="dark"] .btn-outline-info {
+        color: #6fcf97;
+        border-color: #6fcf97;
+    }
+    body[data-bs-theme="dark"] .btn-outline-info:hover {
+        background-color: #6fcf97;
+        color: #0f1220;
+    }
+    body[data-bs-theme="dark"] .btn-outline-success {
+        color: #6fcf97;
+        border-color: #6fcf97;
+    }
+    body[data-bs-theme="dark"] .btn-outline-success:hover {
+        background-color: #6fcf97;
+        color: #0f1220;
+    }
+    body[data-bs-theme="dark"] .btn-outline-danger {
+        color: #e74c5c;
+        border-color: #e74c5c;
+    }
+    body[data-bs-theme="dark"] .btn-outline-danger:hover {
+        background-color: #e74c5c;
+        color: #0f1220;
+    }
+    body[data-bs-theme="dark"] .btn-secondary {
+        background-color: #2a3446;
+        border-color: #3a4458;
+        color: #e9ecef;
+    }
+    body[data-bs-theme="dark"] .text-muted {
+        color: #a8b3cf !important;
+    }
+    body[data-bs-theme="dark"] .badge.bg-info {
+        background-color: #17a2b8 !important;
+        color: #0f1220 !important;
+    }
+    body[data-bs-theme="dark"] .badge.bg-warning {
+        background-color: #d39e00 !important;
+        color: #1a1e2c !important;
+    }
+    body[data-bs-theme="dark"] .badge.bg-secondary {
+        background-color: #3a4458 !important;
+    }
+    body[data-bs-theme="dark"] .alert-info {
+        background-color: #1a1e2c;
+        border-color: #2a3446;
+        color: #e9ecef;
+    }
+    body[data-bs-theme="dark"] .alert-warning {
+        background-color: #2a1e0c;
+        border-color: #664d00;
+        color: #ffd966;
+    }
+    /* Select2 modo oscuro */
+    body[data-bs-theme="dark"] .select2-container--default .select2-selection--single {
+        background-color: #0f1220 !important;
+        border-color: #2a3446 !important;
+        color: #e9ecef !important;
+    }
+    body[data-bs-theme="dark"] .select2-dropdown {
+        background-color: #1a1e2c !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .select2-container--default .select2-results__option {
+        color: #e9ecef !important;
+    }
+    body[data-bs-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #2c3145 !important;
+    }
+</style>
 @stop
 
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        $(document).ready(function() {
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#select2-create').select2({
+        dropdownParent: $('#createUserModal'),
+        width: '100%',
+        placeholder: 'Seleccione una persona',
+        allowClear: true
+    });
 
-            $('.select2-create').select2({
-                dropdownParent: $('#createUserModal'),
-                width: '100%',
-                placeholder: 'Seleccione una persona',
-                allowClear: true
-            });
+    @foreach($usuarios as $usuario)
+    $('#select2-edit-{{ $usuario->id }}').select2({
+        dropdownParent: $('#editUserModal{{ $usuario->id }}'),
+        width: '100%',
+        placeholder: 'Seleccione una persona',
+        allowClear: true
+    });
+    @endforeach
 
-            @foreach($usuarios as $usuario)
-            $('.select2-edit-{{ $usuario->id }}').select2({
-                dropdownParent: $('#editUserModal{{ $usuario->id }}'),
-                width: '100%',
-                placeholder: 'Seleccione una persona',
-                allowClear: true
-            });
-            @endforeach
-
-            @if(session('mensaje'))
-                Swal.fire({
-                    icon: "{{ session('icono') }}",
-                    title: "{{ session('mensaje') }}",
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-            @endif
-
-            @if($errors->any() && session('modal_id'))
-                new bootstrap.Modal(document.getElementById("editUserModal{{ session('modal_id') }}")).show();
-            @endif
-
-            @if($errors->has('name') || $errors->has('email') || $errors->has('password'))
-                new bootstrap.Modal(document.getElementById('createUserModal')).show();
-            @endif
-
+    @if(session('mensaje'))
+        Swal.fire({
+            icon: "{{ session('icono') }}",
+            title: "{{ session('mensaje') }}",
+            timer: 3000,
+            showConfirmButton: false
         });
-    </script>
+    @endif
+
+    @if($errors->any() && session('modal_id'))
+        var modal = new bootstrap.Modal(document.getElementById('editUserModal{{ session('modal_id') }}'));
+        modal.show();
+    @endif
+
+    @if($errors->has('name') || $errors->has('email') || $errors->has('password'))
+        var modalCreate = new bootstrap.Modal(document.getElementById('createUserModal'));
+        modalCreate.show();
+    @endif
+});
+</script>
+@stop

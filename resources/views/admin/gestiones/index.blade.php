@@ -12,7 +12,7 @@
 @section('content')
 <div class="row mb-4">
     <div class="col-md-12">
-        <a href="{{url('/admin/gestiones/create')}}" class="btn btn-primary">
+        <a href="{{ url('/admin/gestiones/create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i> Crear nueva gestión
         </a>
     </div>
@@ -65,20 +65,20 @@
                     <hr class="my-2">
                     
                     <div class="d-flex gap-2 justify-content-center">
-                        <a href="{{url('/admin/gestiones/'.$gestion->id.'/edit')}}" 
-                           class="btn btn-outline-success btn-sm flex-grow-1">
+                        <a href="{{ url('/admin/gestiones/'.$gestion->id.'/edit') }}" 
+                           class="btn btn-outline-success btn-sm flex-grow-1 rounded-pill">
                             <i class="fas fa-pencil-alt me-1"></i> Editar
                         </a>
                         
-                        <form action="{{ url('/admin/gestiones/'.$gestion->id)}}" 
+                        <form action="{{ url('/admin/gestiones/'.$gestion->id) }}" 
                               method="POST" 
-                              id="deleteForm{{$gestion->id}}">
+                              id="deleteForm{{ $gestion->id }}">
                             @csrf
                             @method('DELETE')
                             <button type="button" 
-                                    class="btn btn-outline-danger btn-sm" 
-                                    onclick="confirmarEliminacion({{$gestion->id}})">
-                                <i class="fas fa-trash"></i>
+                                    class="btn btn-outline-danger btn-sm rounded-pill" 
+                                    onclick="confirmarEliminacion({{ $gestion->id }})">
+                                <i class="fas fa-trash me-1"></i>
                             </button>
                         </form>
                     </div>
@@ -126,6 +126,47 @@
     .badge {
         font-weight: 500;
         font-size: 0.85rem;
+    }
+    
+    .rounded-pill {
+        border-radius: 50rem !important;
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+    }
+
+    /* Modo oscuro */
+    body[data-bs-theme="dark"] .card {
+        background-color: #1e2438 !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .bg-light {
+        background: #171c2c !important;
+    }
+    body[data-bs-theme="dark"] .text-muted {
+        color: #a8b3cf !important;
+    }
+    body[data-bs-theme="dark"] hr {
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .btn-outline-success {
+        color: #6fcf97;
+        border-color: #6fcf97;
+    }
+    body[data-bs-theme="dark"] .btn-outline-success:hover {
+        background-color: #6fcf97;
+        color: #0f1220;
+    }
+    body[data-bs-theme="dark"] .btn-outline-danger {
+        color: #e74c5c;
+        border-color: #e74c5c;
+    }
+    body[data-bs-theme="dark"] .btn-outline-danger:hover {
+        background-color: #e74c5c;
+        color: #0f1220;
+    }
+    body[data-bs-theme="dark"] .badge.bg-warning {
+        background-color: #d39e00 !important;
+        color: #1a1e2c !important;
     }
 </style>
 @stop

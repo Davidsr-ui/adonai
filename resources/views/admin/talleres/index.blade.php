@@ -10,24 +10,19 @@
 @stop
 
 @section('content')
-
-    {{-- ALERTAS --}}
+    {{-- ALERTAS CON SWEETALERT (usando session('success') del controlador) --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            <ul class="mb-0 mt-1">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+            });
+        </script>
     @endif
 
     {{-- CABECERA CON BOTÓN --}}
@@ -36,26 +31,26 @@
             <h2 class="page-title mb-0">Lista de Talleres</h2>
             <p class="text-muted mb-0 small">Administra los talleres disponibles del colegio</p>
         </div>
-        <button class="btn btn-primary" onclick="abrirModal()">
+        <button class="btn btn-primary rounded-pill" onclick="abrirModal()">
             <i class="fas fa-plus me-1"></i> Agregar Taller
         </button>
     </div>
 
-    {{-- TABLA --}}
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
+    {{-- TABLA SIN DATATABLES --}}
+    <div class="card shadow-sm border-0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mb-0">
                 <i class="fas fa-list me-2 text-muted"></i>Talleres Registrados
             </h3>
-            <div class="card-options">
-                <span class="badge bg-blue-lt text-blue">
+            <div class="card-tools">
+                <span class="badge bg-primary">
                     {{ $talleres->count() }} taller{{ $talleres->count() !== 1 ? 'es' : '' }}
                 </span>
             </div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-vcenter table-hover card-table">
+                <table class="table table-bordered table-hover table-sm align-middle">
                     <thead>
                         <tr>
                             <th style="width:80px">Imagen</th>
@@ -67,36 +62,36 @@
                             <th>Costo</th>
                             <th>Cupos</th>
                             <th>Estado</th>
-                            <th class="w-1">Acciones</th>
+                            <th style="width:120px">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($talleres as $taller)
                         <tr>
                             <td>
-                                @if($taller->imagen)
+                                @if($taller->imagen && Storage::disk('public')->exists($taller->imagen))
                                     <img src="{{ asset('storage/'.$taller->imagen) }}"
                                          class="rounded" style="width:64px;height:46px;object-fit:cover;">
                                 @else
-                                    <span class="avatar rounded bg-secondary-lt text-secondary">
-                                        <i class="fas fa-image"></i>
-                                    </span>
+                                    <div class="avatar rounded bg-secondary-lt d-flex align-items-center justify-content-center" style="width:64px;height:46px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
                                 @endif
-                            </td>
+                             </div>
                             <td>
                                 <div class="fw-semibold">{{ $taller->nombre }}</div>
                                 @if($taller->descripcion)
                                     <div class="text-muted small text-truncate" style="max-width:180px">{{ $taller->descripcion }}</div>
                                 @endif
-                            </td>
+                             </div>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="avatar avatar-xs rounded-circle bg-blue-lt text-blue">
+                                    <span class="avatar avatar-xs rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:24px;height:24px;">
                                         {{ strtoupper(substr($taller->instructor, 0, 1)) }}
                                     </span>
                                     <span>{{ $taller->instructor }}</span>
                                 </div>
-                            </td>
+                             </div>
                             <td>
                                 @if($taller->duracion_inicio && $taller->duracion_fin)
                                     @php
@@ -110,7 +105,7 @@
                                 @else
                                     <span class="text-muted small">Sin fechas</span>
                                 @endif
-                            </td>
+                             </div>
                             <td>
                                 @if($taller->horario_inicio && $taller->horario_fin)
                                     <div class="small">
@@ -121,66 +116,62 @@
                                 @else
                                     <span class="text-muted small">No definido</span>
                                 @endif
-                            </td>
+                             </div>
                             <td>
                                 @if($taller->categoria)
-                                    <span class="badge bg-purple-lt text-purple">{{ $taller->categoria }}</span>
+                                    <span class="badge bg-secondary">{{ $taller->categoria }}</span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
-                            </td>
+                             </div>
                             <td>
                                 @if($taller->costo)
-                                    <span class="fw-semibold text-green">S/ {{ number_format($taller->costo, 2) }}</span>
+                                    <span class="fw-semibold text-success">S/ {{ number_format($taller->costo, 2) }}</span>
                                 @else
-                                    <span class="badge bg-green-lt text-green">Gratuito</span>
+                                    <span class="badge bg-success text-white">Gratuito</span>
                                 @endif
-                            </td>
+                             </div>
                             <td>
                                 <div class="d-flex align-items-center gap-1">
                                     <i class="fas fa-users text-muted small"></i>
                                     <span class="fw-semibold">{{ $taller->cupos_maximos }}</span>
                                 </div>
-                            </td>
+                             </div>
                             <td>
                                 @if($taller->activo)
-                                    <span class="badge bg-success-lt text-success">
-                                        <i class="fas fa-check me-1"></i>Activo
-                                    </span>
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Activo</span>
                                 @else
-                                    <span class="badge bg-danger-lt text-danger">
-                                        <i class="fas fa-times me-1"></i>Inactivo
-                                    </span>
+                                    <span class="badge bg-danger"><i class="fas fa-times me-1"></i>Inactivo</span>
                                 @endif
-                            </td>
+                             </div>
                             <td>
-                                <div class="btn-list flex-nowrap">
-                                    <button class="btn btn-sm btn-warning" onclick='editarTaller(@json($taller))' title="Editar">
-                                        <i class="fas fa-edit"></i>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <button class="btn btn-outline-warning btn-sm rounded-pill" onclick='editarTaller(@json($taller))' title="Editar">
+                                        <i class="fas fa-edit me-1"></i> Editar
                                     </button>
-                                    <button class="btn btn-sm btn-danger" onclick="eliminarTaller({{ $taller->id }})" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="eliminarTaller({{ $taller->id }})" title="Eliminar">
+                                        <i class="fas fa-trash me-1"></i> Eliminar
                                     </button>
                                 </div>
-                            </td>
+                             </div>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="10" class="text-center py-5">
-                                <div class="empty">
-                                    <div class="empty-icon">
-                                        <i class="fas fa-chalkboard fa-2x text-muted"></i>
-                                    </div>
-                                    <p class="empty-title mt-2">No hay talleres registrados</p>
-                                    <p class="empty-subtitle text-muted">Agrega el primer taller haciendo clic en el botón de arriba.</p>
-                                    <div class="empty-action">
-                                        <button class="btn btn-primary" onclick="abrirModal()">
-                                            <i class="fas fa-plus me-1"></i> Agregar Taller
-                                        </button>
+                            <tr>
+                                <td colspan="10" class="text-center py-5">
+                                    <div class="empty">
+                                        <div class="empty-icon">
+                                            <i class="fas fa-chalkboard fa-2x text-muted"></i>
+                                        </div>
+                                        <p class="empty-title mt-2">No hay talleres registrados</p>
+                                        <p class="empty-subtitle text-muted">Agrega el primer taller haciendo clic en el botón de arriba.</p>
+                                        <div class="empty-action">
+                                            <button class="btn btn-primary rounded-pill" onclick="abrirModal()">
+                                                <i class="fas fa-plus me-1"></i> Agregar Taller
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -188,8 +179,8 @@
         </div>
     </div>
 
-    {{-- MODAL AGREGAR / EDITAR --}}
-    <div class="modal modal-blur fade" id="tallerModal" tabindex="-1">
+    {{-- MODAL AGREGAR / EDITAR (con estilos corregidos para modo oscuro) --}}
+    <div class="modal fade" id="tallerModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white" id="modalHeader">
@@ -249,17 +240,17 @@
                                 <small class="text-muted">Formatos: JPG, PNG — Máx: 2MB</small>
                             </div>
                             <div class="col-12">
-                                <label class="form-check form-switch">
+                                <div class="form-check form-switch">
                                     <input type="hidden" name="activo" value="0">
                                     <input type="checkbox" name="activo" id="activoCheck" class="form-check-input" value="1" checked>
-                                    <span class="form-check-label">Taller Activo</span>
-                                </label>
+                                    <label class="form-check-label" for="activoCheck">Taller Activo</label>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary rounded-pill">
                             <i class="fas fa-save me-1"></i> Guardar Taller
                         </button>
                     </div>
@@ -267,87 +258,132 @@
             </div>
         </div>
     </div>
-
 @stop
 
 @section('css')
 <style>
-    /* ── Título de página visible en modo oscuro ── */
-    [data-bs-theme="dark"] .page-title {
-        color: #c8d3e0 !important;
+    .gap-2 { gap: 0.5rem; }
+    .rounded-pill { border-radius: 50rem !important; padding-left: 0.9rem; padding-right: 0.9rem; }
+    .avatar.avatar-xs { width: 24px; height: 24px; font-size: 0.75rem; }
+
+    /* Modo oscuro para la tabla y cards */
+    body[data-bs-theme="dark"] .card {
+        background-color: #1e2438 !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .card-header {
+        background-color: #171c2c !important;
+        border-bottom-color: #2a3446 !important;
+        color: #f8f9fa;
+    }
+    body[data-bs-theme="dark"] .table,
+    body[data-bs-theme="dark"] .table-bordered {
+        background-color: #1a1e2c !important;
+        color: #e9ecef !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .table td,
+    body[data-bs-theme="dark"] .table th,
+    body[data-bs-theme="dark"] .table-bordered th,
+    body[data-bs-theme="dark"] .table-bordered td {
+        border-color: #2a3446 !important;
+        color: #e9ecef !important;
+        background-color: #1a1e2c !important;
+    }
+    body[data-bs-theme="dark"] .table thead th {
+        background-color: #0f1220 !important;
+        color: #f8f9fa !important;
+        border-bottom-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .table-hover > tbody > tr:hover > * {
+        background-color: #2c3145 !important;
     }
 
-    /* ── Badges en modo oscuro ── */
-    [data-bs-theme="dark"] .badge.bg-success-lt {
-        background-color: #1a3329 !important;
-        color: #6edbb4 !important;
-        border: 1px solid rgba(70,200,140,0.25) !important;
+    /* Modo oscuro para el modal */
+    body[data-bs-theme="dark"] .modal-content {
+        background-color: #1e2438 !important;
+        border-color: #2a3446 !important;
     }
-    [data-bs-theme="dark"] .badge.bg-danger-lt {
-        background-color: #3d1f1f !important;
-        color: #ff8a8a !important;
-        border: 1px solid rgba(255,100,100,0.25) !important;
+    body[data-bs-theme="dark"] .modal-header {
+        border-bottom-color: #2a3446 !important;
     }
-    [data-bs-theme="dark"] .badge.bg-purple-lt {
-        background-color: #2a1f3d !important;
-        color: #c084fc !important;
-        border: 1px solid rgba(160,100,255,0.25) !important;
+    body[data-bs-theme="dark"] .modal-footer {
+        border-top-color: #2a3446 !important;
     }
-    [data-bs-theme="dark"] .badge.bg-green-lt {
-        background-color: #1a3329 !important;
-        color: #6edbb4 !important;
-        border: 1px solid rgba(70,200,140,0.25) !important;
-    }
-    [data-bs-theme="dark"] .badge.bg-blue-lt {
-        background-color: #1a2a3d !important;
-        color: #7ec8f7 !important;
-        border: 1px solid rgba(80,160,230,0.25) !important;
-    }
-    [data-bs-theme="dark"] .badge.bg-secondary-lt {
-        background-color: #2a2a2a !important;
-        color: #aaaaaa !important;
+    body[data-bs-theme="dark"] .modal-body {
+        background-color: #1e2438 !important;
+        color: #e9ecef !important;
     }
 
-    /* ── Cards en modo oscuro ── */
-    [data-bs-theme="dark"] .card {
-        background-color: #1e2a3a !important;
-        border-color: rgba(255,255,255,0.07) !important;
-        color: #c8d3e0 !important;
+    /* Inputs y selects dentro del modal en modo oscuro */
+    body[data-bs-theme="dark"] .form-control,
+    body[data-bs-theme="dark"] .form-select {
+        background-color: #0f1220 !important;
+        border-color: #2a3446 !important;
+        color: #e9ecef !important;
     }
-    [data-bs-theme="dark"] .card-header,
-    [data-bs-theme="dark"] .card-footer {
-        background-color: #1e2a3a !important;
-        border-color: rgba(255,255,255,0.07) !important;
+    body[data-bs-theme="dark"] .form-control:focus,
+    body[data-bs-theme="dark"] .form-select:focus {
+        background-color: #0f1220 !important;
+        color: #e9ecef !important;
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
     }
-    [data-bs-theme="dark"] .table td,
-    [data-bs-theme="dark"] .table th {
-        border-color: rgba(255,255,255,0.06) !important;
-        color: #c8d3e0 !important;
+    body[data-bs-theme="dark"] .form-check-input {
+        background-color: #0f1220;
+        border-color: #2a3446;
     }
-    [data-bs-theme="dark"] .table thead th {
-        color: #7a8fa8 !important;
+    body[data-bs-theme="dark"] .form-check-input:checked {
+        background-color: #4e73df;
+        border-color: #4e73df;
     }
-    [data-bs-theme="dark"] .table-hover tbody tr:hover {
-        background-color: rgba(255,255,255,0.04) !important;
+    body[data-bs-theme="dark"] .form-check-label {
+        color: #e9ecef;
     }
-    [data-bs-theme="dark"] .text-muted {
-        color: #7a8fa8 !important;
+    body[data-bs-theme="dark"] .btn-close-white {
+        filter: invert(1);
     }
-    [data-bs-theme="dark"] .text-green {
-        color: #6edbb4 !important;
+
+    /* Botones y badges */
+    body[data-bs-theme="dark"] .btn-outline-warning {
+        color: #ffc107;
+        border-color: #ffc107;
     }
-    [data-bs-theme="dark"] .empty-title {
-        color: #c8d3e0 !important;
+    body[data-bs-theme="dark"] .btn-outline-warning:hover {
+        background-color: #ffc107;
+        color: #0f1220;
+    }
+    body[data-bs-theme="dark"] .btn-outline-danger {
+        color: #e74c5c;
+        border-color: #e74c5c;
+    }
+    body[data-bs-theme="dark"] .btn-outline-danger:hover {
+        background-color: #e74c5c;
+        color: #0f1220;
+    }
+    body[data-bs-theme="dark"] .btn-secondary {
+        background-color: #2a3446;
+        border-color: #3a4458;
+        color: #e9ecef;
+    }
+    body[data-bs-theme="dark"] .text-muted {
+        color: #a8b3cf !important;
+    }
+    body[data-bs-theme="dark"] .text-success {
+        color: #6fcf97 !important;
+    }
+    body[data-bs-theme="dark"] .badge.bg-secondary {
+        background-color: #3a4458 !important;
+    }
+    body[data-bs-theme="dark"] .avatar.bg-secondary-lt {
+        background-color: #2a3446 !important;
+        color: #a8b3cf;
     }
 </style>
 @stop
 
 @section('js')
 <script>
-$(document).ready(function() {
-    setTimeout(function() { $('.alert').fadeOut('slow'); }, 5000);
-});
-
 function abrirModal(taller = null) {
     const form = document.getElementById('tallerForm');
     const title = document.getElementById('modalTitle');
@@ -355,6 +391,7 @@ function abrirModal(taller = null) {
     const methodInput = document.getElementById('formMethod');
 
     form.reset();
+    document.getElementById('activoCheck').checked = true;
 
     if (taller) {
         title.innerHTML = '<i class="fas fa-edit me-2"></i>Editar Taller';
@@ -378,7 +415,6 @@ function abrirModal(taller = null) {
         header.className = 'modal-header bg-primary text-white';
         form.action = "{{ route('admin.talleres.store') }}";
         methodInput.value = '';
-        document.getElementById('activoCheck').checked = true;
     }
 
     new bootstrap.Modal(document.getElementById('tallerModal')).show();
@@ -387,14 +423,26 @@ function abrirModal(taller = null) {
 function editarTaller(taller) { abrirModal(taller); }
 
 function eliminarTaller(id) {
-    if (!confirm('¿Está seguro de eliminar este taller?')) return;
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = "{{ url('admin/talleres') }}/" + id;
-    form.innerHTML = `<input type="hidden" name="_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="_method" value="DELETE">`;
-    document.body.appendChild(form);
-    form.submit();
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Esta acción eliminará el taller permanentemente",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ url('admin/talleres') }}/" + id;
+            form.innerHTML = `<input type="hidden" name="_token" value="{{ csrf_token() }}">
+                              <input type="hidden" name="_method" value="DELETE">`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
 }
 </script>
 @stop

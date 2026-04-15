@@ -53,7 +53,8 @@ class BlogController extends Controller
         Blog::create($data);
 
         return redirect()->route('admin.blog.index')
-            ->with('success', 'Publicación creada correctamente');
+            ->with('mensaje', 'Publicación creada correctamente')
+            ->with('icono', 'success');
     }
 
     /**
@@ -95,7 +96,8 @@ class BlogController extends Controller
         $post->update($data);
 
         return redirect()->route('admin.blog.index')
-            ->with('success', 'Publicación actualizada correctamente');
+            ->with('mensaje', 'Publicación actualizada correctamente')
+            ->with('icono', 'success');
     }
 
     /**
@@ -112,7 +114,9 @@ class BlogController extends Controller
 
         $post->delete();
 
-        return back()->with('success', 'Publicación eliminada correctamente');
+        return redirect()->route('admin.blog.index')
+            ->with('mensaje', 'Publicación eliminada correctamente')
+            ->with('icono', 'success');
     }
 
     // ==========================================

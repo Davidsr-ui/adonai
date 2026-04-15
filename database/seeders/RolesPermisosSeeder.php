@@ -101,7 +101,6 @@ class RolesPermisosSeeder extends Seeder
             [
                 'name'              => 'Administrador General',
                 'password'          => Hash::make('Admin123'), // Asegúrate que esta sea la clave que quieres
-                'email_verified_at' => now(),
                 'estado'            => 'Activo' // Agregué esto por si tu tabla usuarios lo pide
             ]
         );

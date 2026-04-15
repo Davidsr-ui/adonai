@@ -3,130 +3,125 @@
 @section('title', 'Editar Publicación')
 
 @section('content')
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0 pt-3 pb-1">
+        <h5 class="card-title fw-bold mb-0">
+            <i class="fas fa-edit text-primary me-2"></i>Actualizar Publicación
+        </h5>
+    </div>
+    <div class="card-body">
+        {{-- Mostrar errores de validación --}}
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-<div class="pagetitle">
-    <h1>Editar Publicación</h1>
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ route('admin.dashboard') }}">Inicio</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{{ route('admin.blog.index') }}">Blog</a>
-            </li>
-            <li class="breadcrumb-item active">Editar</li>
-        </ol>
-    </nav>
-</div>
+        <form action="{{ route('admin.blog.update', $post->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
 
-<section class="section">
-
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title m-0">Actualizar Publicación</h5>
-        </div>
-
-        <div class="card-body">
-
-            {{-- ✅ CORRECTO: POST con @method('PUT') --}}
-            <form action="{{ route('admin.blog.update', $post->id) }}"
-                  method="POST"
-                  enctype="multipart/form-data">
-
-                @csrf
-                @method('PUT')
-
-                <div class="row mb-3">
-                    <div class="col-md-8">
-                        <label class="form-label">Título</label>
-                        <input type="text" name="titulo" class="form-control"
-                               value="{{ old('titulo', $post->titulo) }}" required>
-                        @error('titulo')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Categoría</label>
-                        <select name="categoria" class="form-select" required>
-                            <option value="Premios" {{ old('categoria', $post->categoria) == 'Premios' ? 'selected' : '' }}>Premios</option>
-                            <option value="Concursos" {{ old('categoria', $post->categoria) == 'Concursos' ? 'selected' : '' }}>Concursos</option>
-                            <option value="Académico" {{ old('categoria', $post->categoria) == 'Académico' ? 'selected' : '' }}>Académico</option>
-                            <option value="Eventos" {{ old('categoria', $post->categoria) == 'Eventos' ? 'selected' : '' }}>Eventos</option>
-                            <option value="Comunidad" {{ old('categoria', $post->categoria) == 'Comunidad' ? 'selected' : '' }}>Comunidad</option>
-                        </select>
-                        @error('categoria')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Título <span class="text-danger">*</span></label>
+                    <input type="text" name="titulo" class="form-control" value="{{ old('titulo', $post->titulo) }}" required>
+                    @error('titulo') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" name="fecha" class="form-control"
-                               value="{{ old('fecha', $post->fecha->format('Y-m-d')) }}" required>
-                        @error('fecha')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-8">
-                        <label class="form-label">Autor</label>
-                        <input type="text" name="autor" class="form-control"
-                               value="{{ old('autor', $post->autor) }}">
-                        @error('autor')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                    <select name="categoria" class="form-select" required>
+                        <option value="Premios" {{ old('categoria', $post->categoria) == 'Premios' ? 'selected' : '' }}>Premios</option>
+                        <option value="Concursos" {{ old('categoria', $post->categoria) == 'Concursos' ? 'selected' : '' }}>Concursos</option>
+                        <option value="Académico" {{ old('categoria', $post->categoria) == 'Académico' ? 'selected' : '' }}>Académico</option>
+                        <option value="Eventos" {{ old('categoria', $post->categoria) == 'Eventos' ? 'selected' : '' }}>Eventos</option>
+                        <option value="Comunidad" {{ old('categoria', $post->categoria) == 'Comunidad' ? 'selected' : '' }}>Comunidad</option>
+                    </select>
+                    @error('categoria') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Descripción Corta</label>
+                <div class="col-md-4">
+                    <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                    <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $post->fecha->format('Y-m-d')) }}" required>
+                    @error('fecha') <small class="text-danger">{{ $message }}</small> @enderror
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Autor</label>
+                    <input type="text" name="autor" class="form-control" value="{{ old('autor', $post->autor) }}">
+                    @error('autor') <small class="text-danger">{{ $message }}</small> @enderror
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Descripción Corta <span class="text-danger">*</span></label>
                     <textarea name="descripcion_corta" rows="3" class="form-control" required>{{ old('descripcion_corta', $post->descripcion_corta) }}</textarea>
-                    @error('descripcion_corta')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
+                    @error('descripcion_corta') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Contenido Completo</label>
+                <div class="col-md-12">
+                    <label class="form-label">Contenido Completo <span class="text-danger">*</span></label>
                     <textarea name="contenido" rows="7" class="form-control" required>{{ old('contenido', $post->contenido) }}</textarea>
-                    @error('contenido')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
+                    @error('contenido') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
-
-                <div class="mb-3">
+                <div class="col-md-12">
                     <label class="form-label">Imagen Actual</label><br>
                     @if ($post->portada)
-                        <img src="{{ asset('storage/' . $post->portada) }}"
-                             width="120"
-                             class="rounded mb-2">
+                        <img src="{{ asset('storage/' . $post->portada) }}" width="120" class="rounded mb-2">
                     @else
                         <span class="text-muted">Sin imagen</span>
                     @endif
                 </div>
-
-                <div class="mb-3">
+                <div class="col-md-12">
                     <label class="form-label">Cambiar Imagen</label>
                     <input type="file" name="portada" class="form-control">
-                    <small class="text-muted">Formatos: JPG, JPEG, PNG - Máx: 2MB</small>
-                    @error('portada')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
+                    <small class="text-muted">Formatos: JPG, JPEG, PNG — Máx. 2MB</small>
+                    @error('portada') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
+            </div>
 
-                <div class="text-end">
-                    <a href="{{ route('admin.blog.index') }}" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">Actualizar</button>
-                </div>
+            <hr class="my-3">
 
-            </form>
-
-        </div>
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{{ route('admin.blog.index') }}" class="btn btn-secondary rounded-pill">Cancelar</a>
+                <button type="submit" class="btn btn-primary rounded-pill"><i class="fas fa-save me-1"></i>Actualizar</button>
+            </div>
+        </form>
     </div>
+</div>
+@stop
 
-</section>
+@section('css')
+<style>
+    .gap-2 { gap: 0.5rem; }
+    .rounded-pill { border-radius: 50rem !important; padding-left: 0.9rem; padding-right: 0.9rem; }
 
-@endsection
+    body[data-bs-theme="dark"] .card,
+    body[data-bs-theme="dark"] .modal-content {
+        background-color: #1e2438 !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .card-header.bg-white {
+        background-color: #171c2c !important;
+        border-bottom-color: #2a3446 !important;
+        color: #f8f9fa;
+    }
+    body[data-bs-theme="dark"] .form-control,
+    body[data-bs-theme="dark"] .form-select {
+        background-color: #0f1220 !important;
+        border-color: #2a3446 !important;
+        color: #e9ecef !important;
+    }
+    body[data-bs-theme="dark"] .btn-secondary {
+        background-color: #2a3446;
+        border-color: #3a4458;
+        color: #e9ecef;
+    }
+    body[data-bs-theme="dark"] .text-muted {
+        color: #a8b3cf !important;
+    }
+    body[data-bs-theme="dark"] .alert-danger {
+        background-color: #2a1c1c;
+        border-color: #8b3c3c;
+        color: #f5a3a3;
+    }
+</style>
+@stop

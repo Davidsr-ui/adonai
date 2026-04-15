@@ -201,8 +201,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:administrador'
     Route::post('usuarios/create', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'store'])->name('usuarios.store');
     Route::put('usuarios/{id}', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'update'])->name('usuarios.update');
     Route::delete('usuarios/{id}', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'destroy'])->name('usuarios.destroy');
-    Route::post('usuarios/{id}/verificar-email', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'verificarEmail'])->name('usuarios.verificar-email');
-    Route::post('usuarios/{id}/quitar-verificacion', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'quitarVerificacionEmail'])->name('usuarios.quitar-verificacion');
     Route::post('usuarios/{id}/cambiar-password', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'cambiarPassword'])->name('usuarios.cambiar-password');
     Route::post('usuarios/{id}/activar', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'activar'])->name('usuarios.activar');
     Route::post('usuarios/{id}/desactivar', [App\Http\Controllers\Admin\Seguridad\UserController::class, 'desactivar'])->name('usuarios.desactivar');

@@ -11,27 +11,17 @@ use Illuminate\Support\Facades\Validator;
 
 class TutorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $tutores = Tutor::with(['persona', 'estudiantes'])->get();
         return view('admin.tutores.index', compact('tutores'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        // Vista manejada en el modal del index
         return redirect()->route('admin.tutores.index');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -46,13 +36,11 @@ class TutorController extends Controller
             'estado_create' => 'required|in:Activo,Inactivo',
             'codigo_tutor_create' => 'nullable|max:50|unique:tutores,codigo_tutor',
             'ocupacion_create' => 'nullable|max:100',
-            // FOTO DE PERFIL
             'foto_perfil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         DB::beginTransaction();
         try {
-            // Crear persona
             $persona = new Persona();
             $persona->dni = $request->dni_create;
             $persona->nombres = $request->nombres_create;
@@ -64,7 +52,6 @@ class TutorController extends Controller
             $persona->telefono_emergencia = $request->telefono_emergencia_create;
             $persona->estado = $request->estado_create;
 
-            // FOTO DE PERFIL
             if ($request->hasFile('foto_perfil')) {
                 $file = $request->file('foto_perfil');
                 $name = 'persona_' . time() . '.' . $file->getClientOriginalExtension();
@@ -72,12 +59,11 @@ class TutorController extends Controller
                 $persona->foto_perfil = 'personas/' . $name;
             }
 
-
-
-
             $persona->save();
 
-            // Crear tutor
+            // ✅ CREAR USUARIO PARA EL TUTOR (si no existe)
+            $persona->crearUsuarioSiNoExiste('tutor', $request->dni_create);
+
             $tutor = new Tutor();
             $tutor->persona_id = $persona->id;
             $tutor->codigo_tutor = $request->codigo_tutor_create;
@@ -92,34 +78,23 @@ class TutorController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.tutores.index')
-                ->with('mensaje', 'Error al crear el tutor')
+                ->with('mensaje', 'Error al crear el tutor: ' . $e->getMessage())
                 ->with('icono', 'error');
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
         $tutor = Tutor::findOrFail($id);
         $tutor->load(['persona', 'estudiantes.persona']);
-
         return view('admin.tutores.show', compact('tutor'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
-        // Vista manejada en el modal del index
         return redirect()->route('admin.tutores.index');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
         $tutor = Tutor::findOrFail($id);
@@ -136,8 +111,6 @@ class TutorController extends Controller
             'estado' => 'required|in:Activo,Inactivo',
             'codigo_tutor' => 'nullable|max:50|unique:tutores,codigo_tutor,' . $tutor->id,
             'ocupacion' => 'nullable|max:100',
-
-            // FOTO DE PERFIL
             'foto_perfil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -150,12 +123,10 @@ class TutorController extends Controller
 
         DB::beginTransaction();
         try {
-            // Verificar que tiene persona
             if (!$tutor->persona) {
                 throw new \Exception('El tutor no tiene una persona asociada');
             }
 
-            // Actualizar persona
             $persona = $tutor->persona;
             $persona->dni = $request->dni;
             $persona->nombres = $request->nombres;
@@ -166,14 +137,11 @@ class TutorController extends Controller
             $persona->telefono = $request->telefono;
             $persona->telefono_emergencia = $request->telefono_emergencia;
             $persona->estado = $request->estado;
-            // FOTO DE PERFIL
-            if ($request->hasFile('foto_perfil')) {
 
-                // BORRAR FOTO ANTERIOR
+            if ($request->hasFile('foto_perfil')) {
                 if ($persona->foto_perfil && file_exists(storage_path('app/public/' . $persona->foto_perfil))) {
                     unlink(storage_path('app/public/' . $persona->foto_perfil));
                 }
-
                 $file = $request->file('foto_perfil');
                 $name = 'persona_' . time() . '.' . $file->getClientOriginalExtension();
                 $file->storeAs('personas', $name, 'public');
@@ -182,7 +150,11 @@ class TutorController extends Controller
 
             $persona->save();
 
-            // Actualizar tutor
+            // ✅ Si la persona no tiene usuario, créalo (por si acaso)
+            if (!$persona->user_id) {
+                $persona->crearUsuarioSiNoExiste('tutor', $request->dni);
+            }
+
             $tutor->codigo_tutor = $request->codigo_tutor;
             $tutor->ocupacion = $request->ocupacion;
             $tutor->save();
@@ -200,38 +172,23 @@ class TutorController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         $tutor = Tutor::with('persona')->findOrFail($id);
 
         DB::beginTransaction();
         try {
-
             $persona = $tutor->persona;
 
-            // ===========================================
-            // 1. ELIMINAR FOTO DE PERFIL (si existe)
-            // ===========================================
             if ($persona && $persona->foto_perfil) {
-
                 $rutaFoto = storage_path('app/public/' . $persona->foto_perfil);
-
                 if (file_exists($rutaFoto)) {
                     unlink($rutaFoto);
                 }
             }
 
-            // ===========================================
-            // 2. ELIMINAR REGISTRO DE TUTOR
-            // ===========================================
             $tutor->delete();
 
-            // ===========================================
-            // 3. SOFT DELETE DE PERSONA
-            // ===========================================
             if ($persona) {
                 $persona->delete();
             }
@@ -243,7 +200,6 @@ class TutorController extends Controller
                 ->with('icono', 'success');
         } catch (\Exception $e) {
             DB::rollBack();
-
             return redirect()->route('admin.tutores.index')
                 ->with('mensaje', 'Error al eliminar el tutor: ' . $e->getMessage())
                 ->with('icono', 'error');

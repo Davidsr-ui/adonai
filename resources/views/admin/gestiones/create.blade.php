@@ -27,13 +27,16 @@
                                 <label for="año" class="mb-1">
                                     <i class="fas fa-calendar-alt text-secondary me-1"></i> Año
                                 </label>
-                                <input type="number" 
-                                       class="form-control" 
-                                       name="año" 
-                                       value="{{ old('año', date('Y')) }}" 
-                                       placeholder="Ej: 2024" 
-                                       min="2000" 
-                                       max="2100">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           name="año" 
+                                           value="{{ old('año', date('Y')) }}" 
+                                           placeholder="Ej: 2024" 
+                                           min="2000" 
+                                           max="2100">
+                                </div>
                                 @error('año')
                                     <small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</small>
                                 @enderror
@@ -46,12 +49,15 @@
                                     <i class="fas fa-university text-secondary me-1"></i> 
                                     Nombre de la Gestión <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       name="nombre" 
-                                       value="{{ old('nombre') }}" 
-                                       placeholder="Ej: Gestión 2024" 
-                                       required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-university"></i></span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="nombre" 
+                                           value="{{ old('nombre') }}" 
+                                           placeholder="Ej: Gestión 2024" 
+                                           required>
+                                </div>
                                 @error('nombre')
                                     <small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</small>
                                 @enderror
@@ -66,11 +72,14 @@
                                     <i class="fas fa-calendar text-secondary me-1"></i> 
                                     Fecha de Inicio <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" 
-                                       class="form-control" 
-                                       name="fecha_inicio" 
-                                       value="{{ old('fecha_inicio') }}" 
-                                       required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           name="fecha_inicio" 
+                                           value="{{ old('fecha_inicio') }}" 
+                                           required>
+                                </div>
                                 @error('fecha_inicio')
                                     <small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</small>
                                 @enderror
@@ -83,11 +92,14 @@
                                     <i class="fas fa-calendar-check text-secondary me-1"></i> 
                                     Fecha de Fin <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" 
-                                       class="form-control" 
-                                       name="fecha_fin" 
-                                       value="{{ old('fecha_fin') }}" 
-                                       required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           name="fecha_fin" 
+                                           value="{{ old('fecha_fin') }}" 
+                                           required>
+                                </div>
                                 @error('fecha_fin')
                                     <small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</small>
                                 @enderror
@@ -102,18 +114,21 @@
                                     <i class="fas fa-toggle-on text-secondary me-1"></i> 
                                     Estado <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-control" name="estado" required>
-                                    <option value="">Seleccione un estado</option>
-                                    <option value="Planificado" {{ old('estado') == 'Planificado' ? 'selected' : '' }}>
-                                        <i class="fas fa-clock"></i> Planificado
-                                    </option>
-                                    <option value="Activo" {{ old('estado') == 'Activo' ? 'selected' : '' }}>
-                                        <i class="fas fa-check-circle"></i> Activo
-                                    </option>
-                                    <option value="Finalizado" {{ old('estado') == 'Finalizado' ? 'selected' : '' }}>
-                                        <i class="fas fa-check-double"></i> Finalizado
-                                    </option>
-                                </select>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-toggle-on"></i></span>
+                                    <select class="form-control" name="estado" required>
+                                        <option value="">Seleccione un estado</option>
+                                        <option value="Planificado" {{ old('estado') == 'Planificado' ? 'selected' : '' }}>
+                                            Planificado
+                                        </option>
+                                        <option value="Activo" {{ old('estado') == 'Activo' ? 'selected' : '' }}>
+                                            Activo
+                                        </option>
+                                        <option value="Finalizado" {{ old('estado') == 'Finalizado' ? 'selected' : '' }}>
+                                            Finalizado
+                                        </option>
+                                    </select>
+                                </div>
                                 @error('estado')
                                     <small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</small>
                                 @enderror
@@ -134,7 +149,7 @@
                     <hr class="my-3">
                     
                     <div class="d-flex gap-2 justify-content-end">
-                        <a href="{{url('/admin/gestiones')}}" class="btn btn-light px-4">
+                        <a href="{{ url('/admin/gestiones') }}" class="btn btn-light px-4">
                             <i class="fas fa-arrow-left me-2"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary px-4">
@@ -168,42 +183,72 @@
 
 @section('css')
 <style>
-    .form-control {
+    .form-control, .input-group-text {
         border-radius: 6px;
-        border: 1px solid #dee2e6;
-        transition: all 0.2s;
     }
-    
     .form-control:focus {
         border-color: #4a90e2;
         box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
     }
-    
     .card {
         border-radius: 10px;
     }
-    
     .btn {
         border-radius: 6px;
         font-weight: 500;
     }
-    
     .btn-light {
         background-color: #f8f9fa;
         border: 1px solid #dee2e6;
     }
-    
     .btn-light:hover {
         background-color: #e9ecef;
     }
-    
     .gap-2 {
         gap: 0.5rem;
     }
-    
     .alert-light {
         background-color: #f8f9fa;
         border-radius: 6px;
+    }
+
+    /* Modo oscuro */
+    body[data-bs-theme="dark"] .card,
+    body[data-bs-theme="dark"] .card-header {
+        background-color: #1e2438 !important;
+        border-color: #2a3446 !important;
+    }
+    body[data-bs-theme="dark"] .card-header {
+        background-color: #171c2c !important;
+    }
+    body[data-bs-theme="dark"] .form-control,
+    body[data-bs-theme="dark"] .input-group-text,
+    body[data-bs-theme="dark"] select.form-control {
+        background-color: #0f1220 !important;
+        border-color: #2a3446 !important;
+        color: #e9ecef !important;
+    }
+    body[data-bs-theme="dark"] .input-group-text {
+        background-color: #1a1e2c !important;
+    }
+    body[data-bs-theme="dark"] .alert-light {
+        background-color: #171c2c !important;
+        border-color: #2a3446 !important;
+        color: #e9ecef;
+    }
+    body[data-bs-theme="dark"] .btn-light {
+        background-color: #2a3446;
+        border-color: #3a4458;
+        color: #e9ecef;
+    }
+    body[data-bs-theme="dark"] .btn-light:hover {
+        background-color: #3a4458;
+    }
+    body[data-bs-theme="dark"] hr {
+        border-color: #2a3446;
+    }
+    body[data-bs-theme="dark"] .text-muted {
+        color: #a8b3cf !important;
     }
 </style>
 @stop
