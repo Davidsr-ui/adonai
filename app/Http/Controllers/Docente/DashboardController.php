@@ -20,7 +20,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // ✅ CORRECCIÓN: Verificar sin redirigir
+        // Verificar sin redirigir
         $user = Auth::user();
         $persona = $user->persona;
         
@@ -43,7 +43,7 @@ class DashboardController extends Controller
         $periodos = Periodo::orderBy('numero')->get();
         $periodoActual = Periodo::where('estado', 'Activo')->first();
 
-        // ✅ FORMA CORRECTA: Obtener asignaciones del docente con grados
+        // Obtener asignaciones del docente con grados
         $asignaciones = DocenteCurso::where('docente_id', $docente->id)
             ->with(['curso', 'grado', 'gestion'])
             ->get();
@@ -55,10 +55,10 @@ class DashboardController extends Controller
         // Obtener grados donde enseña
         $gradosIds = $asignaciones->pluck('grado_id')->unique();
 
-        // Obtener estudiantes matriculados en los cursos del docente
+        // ✅ CORRECCIÓN: Cambiado 'Activa' por 'Matriculado' (valor real en la BD)
         $estudiantes = Estudiante::whereHas('matriculas', function ($query) use ($cursosIds) {
             $query->whereIn('curso_id', $cursosIds)
-                  ->where('estado', 'Activa');
+                  ->where('estado', 'Matriculado');
         })->with('persona')->get();
 
         // Estadísticas de Asistencias (últimos 7 días)
@@ -106,7 +106,7 @@ class DashboardController extends Controller
             'gestionActual',
             'periodos',
             'periodoActual',
-            'asignaciones',  // ← Ahora pasamos asignaciones en lugar de cursos
+            'asignaciones',
             'cursos',
             'estudiantes',
             'totalAsistencias',

@@ -34,7 +34,6 @@
                                 <th>Curso</th>
                                 <th>Grado</th>
                                 <th>Gestión</th>
-                                <th style="text-align:center">Créditos</th>
                                 <th style="text-align:center">Tutor</th>
                                 <th style="text-align:center">Acciones</th>
                             </tr>
@@ -49,21 +48,20 @@
                                 </td>
                                 <td><span class="d-badge d-badge--sky">{{ $a->grado->nombre_completo }}</span></td>
                                 <td><span class="d-badge d-badge--slate">{{ $a->gestion->nombre }}</span></td>
-                                <td style="text-align:center"><span class="d-badge d-badge--violet">{{ $a->curso->creditos }} cr.</span></td>
                                 <td style="text-align:center">
                                     @if($a->es_tutor_aula)
                                         <span class="d-badge d-badge--green"><i class="fas fa-star"></i> Sí</span>
                                     @else
                                         <span style="color:var(--muted);font-size:.78rem">—</span>
                                     @endif
-                                </td>
+                                 </div>
                                 <td style="text-align:center">
                                     <div style="display:flex;gap:6px;justify-content:center">
                                         <a href="{{ route('docente.estudiantes.index', ['curso_id'=>$a->curso_id,'grado_id'=>$a->grado_id]) }}" class="d-btn-icon d-btn-icon--sky" title="Estudiantes"><i class="fas fa-users"></i></a>
                                         <a href="{{ route('docente.asistencias.index', ['curso_id'=>$a->curso_id]) }}" class="d-btn-icon d-btn-icon--amber" title="Asistencias"><i class="fas fa-clipboard-check"></i></a>
                                         <a href="{{ route('docente.notas.index', ['curso_id'=>$a->curso_id]) }}" class="d-btn-icon d-btn-icon--green" title="Notas"><i class="fas fa-star"></i></a>
                                     </div>
-                                </td>
+                                 </div>
                             </tr>
                             @endforeach
                         </tbody>
@@ -97,17 +95,17 @@
 .d-page-hdr__sub{font-size:.78rem;color:var(--muted);margin:4px 0 0}
 .d-table{width:100%;border-collapse:collapse;font-size:.82rem}
 .d-table thead tr{border-bottom:2px solid var(--border)}
-.d-table thead th{padding:11px 14px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);white-space:nowrap}
+.d-table thead th{padding:11px 14px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
 .d-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
-.d-table tbody tr:last-child{border-bottom:none}
 .d-table tbody tr:hover{background:var(--surface2)}
 .d-table tbody td{padding:11px 14px;color:var(--text)}
 .d-btn-icon{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;border:none;cursor:pointer;transition:all .2s;text-decoration:none}
 .d-btn-icon--sky{background:rgba(14,165,233,.1);color:var(--brand)}.d-btn-icon--sky:hover{background:var(--brand);color:#fff}
 .d-btn-icon--amber{background:rgba(245,158,11,.1);color:var(--amber)}.d-btn-icon--amber:hover{background:var(--amber);color:#fff}
 .d-btn-icon--green{background:rgba(16,185,129,.1);color:var(--green)}.d-btn-icon--green:hover{background:var(--green);color:#fff}
+.d-badge--sky{background:rgba(14,165,233,.1);color:var(--brand)}
+.d-badge--green{background:rgba(16,185,129,.1);color:var(--green)}
 .d-badge--slate{background:rgba(100,116,139,.1);color:var(--slate)}
-.d-badge--violet{background:rgba(139,92,246,.1);color:var(--violet)}
 .d-warn-box{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:var(--amber-bg);border:1px solid rgba(245,158,11,.25);border-radius:var(--radius);color:var(--amber)}
 .d-warn-box p{font-size:.8rem;margin:0;opacity:.85}
 .d-empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 20px;color:var(--muted);text-align:center}
@@ -127,4 +125,3 @@ $(document).ready(function(){
 });
 </script>
 @endsection
-

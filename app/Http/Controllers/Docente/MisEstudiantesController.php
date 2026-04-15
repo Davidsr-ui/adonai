@@ -11,11 +11,13 @@ use Illuminate\Support\Facades\Auth;
 class MisEstudiantesController extends Controller
 {
     /**
-     * Mostrar los estudiantes de los cursos del docente
+     * Lista de estudiantes del docente
+     * Si llegan curso_id y grado_id, muestra solo los de ese curso (vista por curso)
+     * Si no, muestra todos con filtros (vista mis-alumnos)
      */
     public function index(Request $request)
     {
-        // Verificar que el usuario tenga perfil de docente
+        // Verificar perfil de docente
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
             return redirect()->route('docente.dashboard')
                 ->with('mensaje', 'Tu perfil de docente no está completo')
@@ -23,36 +25,45 @@ class MisEstudiantesController extends Controller
         }
 
         $docente = Auth::user()->persona->docente;
+        $asignaciones = DocenteCurso::where('docente_id', $docente->id)->with(['curso', 'grado'])->get();
+        $cursosIds = $asignaciones->pluck('curso_id')->unique();
 
-        // ✅ CORRECTO: Obtener asignaciones del docente
-        $asignaciones = DocenteCurso::where('docente_id', $docente->id)
-            ->with(['curso', 'grado'])
-            ->get();
+        // Verificar si se está filtrando por curso y grado específicos (desde mis-cursos)
+        $cursoId = $request->input('curso_id');
+        $gradoId = $request->input('grado_id');
 
-        // Obtener cursos y grados únicos para filtros
+        if ($cursoId && $gradoId) {
+            // Modo "estudiantes por curso": solo estudiantes de ese curso y grado
+            $estudiantes = Estudiante::whereHas('matriculas', function ($q) use ($cursoId, $gradoId) {
+                $q->where('curso_id', $cursoId)
+                  ->where('grado_id', $gradoId)
+                  ->where('estado', 'Matriculado');
+            })->with(['persona', 'grado'])->get();
+
+            // Obtener información del curso para los botones de asistencias y notas
+            $curso = \App\Models\Curso::find($cursoId);
+            $grado = \App\Models\Grado::find($gradoId);
+
+            return view('docente.estudiantes.index', compact('estudiantes', 'curso', 'grado'));
+        }
+
+        // Modo "mis alumnos": todos los estudiantes del docente con filtros
         $cursos = $asignaciones->pluck('curso')->unique('id');
         $grados = $asignaciones->pluck('grado')->unique('id');
-        
-        $cursosIds = $cursos->pluck('id');
 
-        // Obtener SOLO estudiantes matriculados en los cursos del docente
         $query = Estudiante::whereHas('matriculas', function ($q) use ($cursosIds) {
-            $q->whereIn('curso_id', $cursosIds)
-              ->where('estado', 'Activa');
-        })->with(['persona', 'grado', 'tutor.persona']);
+            $q->whereIn('curso_id', $cursosIds)->where('estado', 'Matriculado');
+        })->with(['persona', 'grado']);
 
         // Aplicar filtros
         if ($request->filled('curso_id')) {
             $query->whereHas('matriculas', function ($q) use ($request) {
-                $q->where('curso_id', $request->curso_id)
-                  ->where('estado', 'Activa');
+                $q->where('curso_id', $request->curso_id)->where('estado', 'Matriculado');
             });
         }
-
         if ($request->filled('grado_id')) {
             $query->where('grado_id', $request->grado_id);
         }
-
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('persona', function ($q) use ($search) {
@@ -62,19 +73,17 @@ class MisEstudiantesController extends Controller
             });
         }
 
-        $estudiantes = $query->orderBy('grado_id')
-                            ->get();
+        $estudiantes = $query->orderBy('grado_id')->get();
 
-        // ✅ CORREGIDO: Usar la ruta correcta de la vista
-        return view('docente.estudiantes.index', compact('estudiantes', 'cursos', 'grados', 'asignaciones'));
+        return view('docente.mis-alumnos', compact('estudiantes', 'cursos', 'grados', 'asignaciones'));
     }
 
     /**
-     * Mostrar detalle de un estudiante
+     * Mostrar ficha detallada de un estudiante
      */
     public function show($id)
     {
-        // Verificar que el usuario tenga perfil de docente
+        // Verificar perfil de docente
         if (!Auth::user()->persona || !Auth::user()->persona->docente) {
             return redirect()->route('docente.dashboard')
                 ->with('mensaje', 'Tu perfil de docente no está completo')
@@ -82,29 +91,25 @@ class MisEstudiantesController extends Controller
         }
 
         $docente = Auth::user()->persona->docente;
+        $cursosIds = DocenteCurso::where('docente_id', $docente->id)->pluck('curso_id')->unique();
 
-        // Obtener cursos del docente
-        $cursosIds = $docente->cursos->pluck('id');
-
-        // Buscar estudiante
         $estudiante = Estudiante::with([
             'persona',
             'grado',
-            'tutor.persona',
+            'tutores.persona',
             'matriculas' => function ($query) use ($cursosIds) {
-                $query->whereIn('curso_id', $cursosIds)->where('estado', 'Activa');
+                $query->whereIn('curso_id', $cursosIds)->where('estado', 'Matriculado');
             },
             'matriculas.curso'
         ])->findOrFail($id);
 
-        // Verificar que el estudiante esté en alguno de los cursos del docente
         if ($estudiante->matriculas->isEmpty()) {
-            return redirect()->route('docente.estudiantes.index')
+            return redirect()->route('docente.mis-alumnos')
                 ->with('mensaje', 'Este estudiante no está en tus cursos')
                 ->with('icono', 'error');
         }
 
-        // Obtener asistencias del estudiante en los cursos del docente
+        // Asistencias, notas, comportamientos (igual que antes)
         $asistencias = \App\Models\Asistencia::where('estudiante_id', $estudiante->id)
             ->whereIn('curso_id', $cursosIds)
             ->where('docente_id', $docente->id)
@@ -113,7 +118,6 @@ class MisEstudiantesController extends Controller
             ->limit(10)
             ->get();
 
-        // Obtener notas del estudiante en los cursos del docente
         $notas = \App\Models\Nota::where('docente_id', $docente->id)
             ->whereHas('matricula', function ($query) use ($estudiante) {
                 $query->where('estudiante_id', $estudiante->id);
@@ -122,7 +126,6 @@ class MisEstudiantesController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Obtener comportamientos del estudiante registrados por el docente
         $comportamientos = \App\Models\Comportamiento::where('estudiante_id', $estudiante->id)
             ->where('docente_id', $docente->id)
             ->with('curso')
@@ -130,29 +133,17 @@ class MisEstudiantesController extends Controller
             ->limit(10)
             ->get();
 
-        // Estadísticas de asistencia
         $totalAsistencias = $asistencias->count();
         $presentes = $asistencias->where('estado', 'Presente')->count();
         $ausentes = $asistencias->where('estado', 'Ausente')->count();
         $tardanzas = $asistencias->where('estado', 'Tardanza')->count();
-        $porcentajeAsistencia = $totalAsistencias > 0 
-            ? round(($presentes / $totalAsistencias) * 100, 2) 
-            : 0;
-
-        // Promedio de notas
+        $porcentajeAsistencia = $totalAsistencias > 0 ? round(($presentes / $totalAsistencias) * 100, 2) : 0;
         $promedioNotas = $notas->avg('nota_final');
 
         return view('docente.estudiante-detalle', compact(
-            'estudiante',
-            'asistencias',
-            'notas',
-            'comportamientos',
-            'totalAsistencias',
-            'presentes',
-            'ausentes',
-            'tardanzas',
-            'porcentajeAsistencia',
-            'promedioNotas'
+            'estudiante', 'asistencias', 'notas', 'comportamientos',
+            'totalAsistencias', 'presentes', 'ausentes', 'tardanzas',
+            'porcentajeAsistencia', 'promedioNotas'
         ));
     }
 }

@@ -220,19 +220,21 @@ Route::prefix('docente')->name('docente.')->middleware(['auth', 'role:docente'])
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\Docente\DashboardController::class, 'index'])->name('dashboard');
 
-    // Mis Cursos
-    Route::get('/mis-cursos', function () {
-        return view('docente.mis-cursos');
-    })->name('mis-cursos');
+    // Mis Cursos (USANDO CONTROLADOR, no closure)
+    Route::get('/mis-cursos', [App\Http\Controllers\Docente\MisCursosController::class, 'index'])->name('mis-cursos');
+    Route::get('/curso/{id}', [App\Http\Controllers\Docente\MisCursosController::class, 'show'])->name('curso.show');
 
-    // ==========================================
-    // MIS ESTUDIANTES (filtrados por cursos del docente)
-    // ==========================================
+    // Mis Alumnos (lista completa con filtros) - CORREGIDO: usa MisEstudiantesController
+    Route::get('/mis-alumnos', [App\Http\Controllers\Docente\MisEstudiantesController::class, 'index'])->name('mis-alumnos');
+
+    // Estudiantes por curso (desde mis-cursos) - recibe curso_id y grado_id
     Route::get('/estudiantes', [App\Http\Controllers\Docente\MisEstudiantesController::class, 'index'])->name('estudiantes.index');
+
+    // Ficha de estudiante
     Route::get('/estudiantes/{id}', [App\Http\Controllers\Docente\MisEstudiantesController::class, 'show'])->name('estudiantes.show');
 
     // ==========================================
-    // ASISTENCIAS (con controlador - filtradas por docente)
+    // ASISTENCIAS
     // ==========================================
     Route::get('/asistencias', [App\Http\Controllers\Docente\AsistenciaController::class, 'index'])->name('asistencias.index');
     Route::post('/asistencias', [App\Http\Controllers\Docente\AsistenciaController::class, 'store'])->name('asistencias.store');
@@ -242,7 +244,7 @@ Route::prefix('docente')->name('docente.')->middleware(['auth', 'role:docente'])
     Route::post('/asistencias/registro-masivo', [App\Http\Controllers\Docente\AsistenciaController::class, 'registroMasivo'])->name('asistencias.registro-masivo');
 
     // ==========================================
-    // NOTAS (con controlador - filtradas por docente)
+    // NOTAS
     // ==========================================
     Route::get('/notas', [App\Http\Controllers\Docente\NotaController::class, 'index'])->name('notas.index');
     Route::post('/notas', [App\Http\Controllers\Docente\NotaController::class, 'store'])->name('notas.store');
@@ -253,7 +255,7 @@ Route::prefix('docente')->name('docente.')->middleware(['auth', 'role:docente'])
     Route::post('/notas/{id}/despublicar', [App\Http\Controllers\Docente\NotaController::class, 'despublicar'])->name('notas.despublicar');
 
     // ==========================================
-    // COMPORTAMIENTOS (con controlador - filtrados por docente)
+    // COMPORTAMIENTOS
     // ==========================================
     Route::get('/comportamientos', [App\Http\Controllers\Docente\ComportamientoController::class, 'index'])->name('comportamientos.index');
     Route::post('/comportamientos', [App\Http\Controllers\Docente\ComportamientoController::class, 'store'])->name('comportamientos.store');
@@ -264,7 +266,7 @@ Route::prefix('docente')->name('docente.')->middleware(['auth', 'role:docente'])
     Route::post('/comportamientos/{id}/cancelar-notificacion', [App\Http\Controllers\Docente\ComportamientoController::class, 'cancelarNotificacion'])->name('comportamientos.cancelar-notificacion');
 
     // ==========================================
-    // REPORTES (con controlador - filtrados por docente)
+    // REPORTES
     // ==========================================
     Route::get('/reportes', [App\Http\Controllers\Docente\ReporteController::class, 'index'])->name('reportes.index');
     Route::post('/reportes', [App\Http\Controllers\Docente\ReporteController::class, 'store'])->name('reportes.store');
@@ -277,20 +279,15 @@ Route::prefix('docente')->name('docente.')->middleware(['auth', 'role:docente'])
     Route::post('/reportes/{id}/calcular-datos', [App\Http\Controllers\Docente\ReporteController::class, 'calcularDatos'])->name('reportes.calcular-datos');
 
     // ==========================================
-    // 🆕 NUEVAS FUNCIONALIDADES ACADÉMICAS
+    // MENSAJERÍA
     // ==========================================
-
-    // Mis Alumnos
-    Route::get('/mis-alumnos', [App\Http\Controllers\Docente\DocenteAcademicoController::class, 'misAlumnos'])->name('mis-alumnos');
-
-    // CUS24 - Ficha de Alumno
-    Route::get('/alumno/{id}/ficha', [App\Http\Controllers\Docente\DocenteAcademicoController::class, 'fichaAlumno'])->name('alumno.ficha');
-
-    // CUS26 - Mensajería con Tutores
     Route::get('/mensajeria', [App\Http\Controllers\Docente\DocenteAcademicoController::class, 'mensajes'])->name('mensajeria');
     Route::post('/mensajeria/enviar', [App\Http\Controllers\Docente\DocenteAcademicoController::class, 'enviarMensaje'])->name('mensajeria.enviar');
     Route::post('/mensajeria/{id}/responder', [App\Http\Controllers\Docente\DocenteAcademicoController::class, 'responderMensaje'])->name('mensajeria.responder');
     Route::get('/mensajeria/{id}', [App\Http\Controllers\Docente\DocenteAcademicoController::class, 'verMensaje'])->name('mensajeria.ver');
+
+    // Ficha de alumno (opcional, si la usas)
+    Route::get('/alumno/{id}/ficha', [App\Http\Controllers\Docente\DocenteAcademicoController::class, 'fichaAlumno'])->name('alumno.ficha');
 });
 
 // ==========================================
