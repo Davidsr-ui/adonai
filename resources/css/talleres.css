@@ -56,63 +56,7 @@ WORKSHOPS SECTION - COMPLETO CORREGIDO
     padding: 10px 5px;
 }
 
-.filter-chip {
-    background: var(--color-blanco);
-    border: 2px solid var(--color-gris-claro);
-    padding: 12px 24px;
-    border-radius: 25px;
-    cursor: pointer;
-    color: var(--color-negro);
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: var(--sombra-suave);
-    position: relative;
-    z-index: 1;
-    white-space: nowrap;
-    flex-shrink: 0;
-    min-width: max-content;
-    font-size: 0.95rem;
-    font-family: 'Roboto', sans-serif;
-}
-
-/* Botón "Todos" especial */
-.filter-chip.todos,
-.filter-chip:first-child {
-    background: var(--gradiente-secundario);
-    color: var(--color-blanco);
-    border-color: transparent;
-    z-index: 2;
-}
-
-.filter-chip:hover {
-    border-color: var(--color-amarillo);
-    transform: translateY(-2px);
-    box-shadow: var(--sombra-media);
-    z-index: 3;
-}
-
-.filter-chip.active {
-    background: var(--gradiente-primario);
-    color: var(--color-blanco);
-    border-color: transparent;
-    box-shadow: var(--sombra-intensa);
-    transform: translateY(-2px);
-    z-index: 4;
-}
-
-.filter-chip.todos:hover,
-.filter-chip:first-child:hover {
-    background: var(--gradiente-primario);
-    transform: translateY(-2px);
-}
-
-.filter-chip.todos.active,
-.filter-chip:first-child.active {
-    background: var(--gradiente-primario);
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-}
-
-/* Cuadrícula de talleres */
+/* Cuadricula de talleres */
 .workshops-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -544,10 +488,6 @@ WORKSHOPS SECTION - COMPLETO CORREGIDO
         gap: 8px;
     }
     
-    .filter-chip {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
 }
 
 @media (max-width: 768px) {
@@ -588,12 +528,7 @@ WORKSHOPS SECTION - COMPLETO CORREGIDO
         border-radius: 10px;
     }
     
-    .filter-chip {
-        padding: 8px 16px;
-        font-size: 0.85rem;
-    }
-    
-    .workshops-grid {
+.workshops-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
@@ -646,12 +581,7 @@ WORKSHOPS SECTION - COMPLETO CORREGIDO
         font-size: 1.6rem;
     }
     
-    .filter-chip {
-        padding: 6px 14px;
-        font-size: 0.8rem;
-    }
-    
-    .modal-panel {
+.modal-panel {
         padding: 1.25rem;
     }
     

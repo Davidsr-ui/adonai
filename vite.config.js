@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/css/blog.css',
                 'resources/css/tour.css',
                 'resources/css/talleres.css',
+                'resources/css/talleres-filtros.css',
                 'resources/css/docentes.css',
                 'resources/css/cursos.css',
 

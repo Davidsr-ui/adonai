@@ -70,7 +70,14 @@ class Horario extends Model
      */
     public function scopeOrdenado($query)
     {
-        return $query->orderByRaw("FIELD(dia_semana, 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado')")
+        $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        $orderCase = 'CASE dia_semana ';
+        foreach ($dias as $i => $dia) {
+            $orderCase .= "WHEN '{$dia}' THEN " . ($i + 1) . ' ';
+        }
+        $orderCase .= 'ELSE 99 END';
+
+        return $query->orderByRaw($orderCase)
                      ->orderBy('hora_inicio', 'asc');
     }
 

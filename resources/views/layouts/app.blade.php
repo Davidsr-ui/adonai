@@ -7,7 +7,7 @@
     <title>@yield('title', 'Colegio Adonai - Educación Cristiana de Excelencia')</title>
 
     <!-- CSS y JS con Vite -->
-    @vite(['resources/css/style.css', 'resources/js/script.js', 'resources/css/blog.css', 'resources/css/talleres.css', 'resources/js/talleres.js', 'resources/css/docentes.css', 'resources/js/docentes.js', 'resources/css/cursos.css', 'resources/js/cursos.js'])
+    @vite(['resources/css/style.css', 'resources/js/script.js', 'resources/css/blog.css', 'resources/css/talleres.css', 'resources/css/talleres-filtros.css', 'resources/js/talleres.js', 'resources/css/docentes.css', 'resources/js/docentes.js', 'resources/css/cursos.css', 'resources/js/cursos.js'])
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">

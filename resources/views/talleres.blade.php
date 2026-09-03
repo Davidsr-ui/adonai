@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Colegio Adonai - Educación Cristiana de Excelencia')
 
@@ -14,14 +14,14 @@
         </div>
 
         <!-- Filtros -->
-        <div class="filter-row" role="tablist" aria-label="Filtrar talleres">
-            <button class="filter-chip active" data-filter="all">Todos</button>
-            <button class="filter-chip" data-filter="musica">Música</button>
-            <button class="filter-chip" data-filter="deportes">Deportes</button>
-            <button class="filter-chip" data-filter="arte">Arte</button>
-            <button class="filter-chip" data-filter="robotica">Robótica</button>
-            <button class="filter-chip" data-filter="teatro">Teatro</button>
-            <button class="filter-chip" data-filter="oratoria">Oratoria</button>
+        <div class="taller-filtros" role="tablist" aria-label="Filtrar talleres">
+            <button class="taller-filtro-btn is-active" data-filter="all">Todos</button>
+            <button class="taller-filtro-btn" data-filter="musica">Música</button>
+            <button class="taller-filtro-btn" data-filter="deportes">Deportes</button>
+            <button class="taller-filtro-btn" data-filter="arte">Arte</button>
+            <button class="taller-filtro-btn" data-filter="robotica">Robótica</button>
+            <button class="taller-filtro-btn" data-filter="teatro">Teatro</button>
+            <button class="taller-filtro-btn" data-filter="oratoria">Oratoria</button>
         </div>
 
         @php
@@ -181,13 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.workshop-card');
     const modal = document.getElementById('workshop-modal');
     const closeBtns = document.querySelectorAll('[data-close]');
-    const filterChips = document.querySelectorAll('.filter-chip');
+    const filterChips = document.querySelectorAll('.taller-filtro-btn');
 
     // Filtros
     filterChips.forEach(chip => {
         chip.addEventListener('click', () => {
-            filterChips.forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
+            filterChips.forEach(c => c.classList.remove('is-active'));
+            chip.classList.add('is-active');
 
             const filter = chip.dataset.filter;
 

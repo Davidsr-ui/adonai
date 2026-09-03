@@ -254,9 +254,15 @@ class DashboardController extends Controller
     {
         if (!$gestion) return collect([]);
 
+        // MONTH() es de MySQL; en SQLite el equivalente es strftime('%m', created_at).
+        $driver = DB::connection()->getDriverName();
+        $mesExpr = $driver === 'sqlite'
+            ? "CAST(strftime('%m', created_at) AS INTEGER) as mes"
+            : 'MONTH(created_at) as mes';
+
         return Matricula::where('gestion_id', $gestion->id)
             ->select(
-                DB::raw('MONTH(created_at) as mes'),
+                DB::raw($mesExpr),
                 DB::raw('COUNT(*) as total')
             )
             ->groupBy('mes')

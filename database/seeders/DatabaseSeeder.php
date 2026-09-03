@@ -13,5 +13,8 @@ class DatabaseSeeder extends Seeder
     {
         // Solo llamamos al maestro que acabas de configurar
         $this->call(RolesPermisosSeeder::class);
+
+        // Poblado masivo de datos de prueba (horarios, gestiones, docentes, alumnos, apoderados, etc.)
+        $this->call(DemoDataSeeder::class);
     }
 }
